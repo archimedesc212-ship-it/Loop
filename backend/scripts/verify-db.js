@@ -72,7 +72,7 @@ function diff(a, b) {
     console.log(`Verifying in throw-away database "${VERIFY}" with account "${VERIFY_APP}" (the main database "${db.database}" is only read)\n`);
 
     // 1. upgrade path
-    run(['scripts/setup-db.js', '--baseline-only']);
+    run(['scripts/setup-db.js', '--baseline-only', '--allow-destructive'], { NODE_ENV: 'test' });
     const before = await conn.query(`SELECT COUNT(*) AS n FROM \`${VERIFY}\`.schema_migrations`);
     step(before[0][0].n === 1, 'baseline 1.0 + seed built (schema version 0000)');
     const out = run(['scripts/migrate.js']);

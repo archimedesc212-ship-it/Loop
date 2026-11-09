@@ -8,8 +8,8 @@
     "frontend"
   ],
   "scripts": {
-    "setup": "npm run db:setup && npm run build",
-    "db:setup": "npm run db:setup --workspace backend",
+    "setup": "npm run db:seed:generate && node backend/scripts/setup-db.js --allow-destructive && npm run build",
+    "db:setup": "node backend/scripts/setup-db.js",
     "db:migrate": "npm run db:migrate --workspace backend",
     "db:status": "npm run db:status --workspace backend",
     "db:seed:generate": "npm run seed:generate --workspace backend",

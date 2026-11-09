@@ -6,6 +6,7 @@
 //   npm run db:setup -- --baseline-only build the frozen baseline + seed only, no migrations
 //                                       (used to prove that `db:migrate` upgrades an existing database)
 const path = require('path');
+const fs = require('fs');
 const mysql = require('mysql2/promise');
 const { db } = require('../src/config/env');
 const { runSqlFile } = require('./sql-runner');
@@ -24,6 +25,18 @@ const ident = (s, what) => {
 (async () => {
   let conn;
   try {
+    // db:setup drops and recreates the selected database. Require an explicit
+    // opt-in and never allow this bootstrap path in a production environment.
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('Refusing destructive db:setup in production. Use npm run db:migrate for an existing database.');
+    }
+    if (!process.argv.includes('--allow-destructive')) {
+      throw new Error('db:setup drops and recreates the target database. For a brand-new, verified-empty database only, run: npm run db:setup -- --allow-destructive');
+    }
+    const seedFile = path.join(DB_DIR, SEED);
+    if (!fs.existsSync(seedFile) || fs.statSync(seedFile).size === 0) {
+      throw new Error('database/07_seed.sql is missing or empty. Run npm run db:seed:generate first; no database has been changed.');
+    }
     if (!db.ownerUser) throw new Error('DB_OWNER_USER is not set in .env');
     ident(db.database, 'DB_NAME'); ident(db.appUser, 'DB_APP_USER');
     if (!/^[A-Za-z0-9_.%-]+$/.test(db.appHost)) throw new Error('DB_APP_HOST has invalid characters');
