@@ -1,3 +1,4 @@
+import { demoRequest } from '../lib/demoMode';
 // Thin fetch wrapper. Every call goes to the Express API (/api/...), which
 // queries MySQL; the frontend never holds data it did not get from there.
 //
@@ -50,6 +51,8 @@ export function buildHeaders(method, hasBody, cookieSource) {
 const QUIET_401 = new Set(['/auth/me', '/auth/login', '/auth/register']);
 
 export async function request(method, path, body) {
+  // Presentation mode is intentionally database-free: all demo data stays in this browser.
+  if (import.meta.env.VITE_DEMO_MODE !== 'false') return demoRequest(method, path, body);
   let res;
   let text;
   const controller = new AbortController();
