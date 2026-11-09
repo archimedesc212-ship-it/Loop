@@ -37,22 +37,15 @@ Never run **npm run db:setup** against an existing or valuable database: the cur
 Import this same repository as a Vercel project with:
 
 - Root Directory: repository root (**.**), not **frontend**
-- Framework: Other (the checked-in **vercel.ts** owns build and routing)
+- Framework: Vite (the checked-in **vercel.json** owns build output and routing)
 - Install Command: **npm ci**
 - Build Command: **npm run build**
 - Output Directory: **frontend/dist**
 - Node.js version: **22.x** (the version used by the documented verification run)
 
-Set **LOOP_API_ORIGIN** in Vercel Project Settings. It is required at build time for every deployment that uses **vercel.ts**, including Preview deployments. Use the bare HTTPS origin of the relevant Render API service, for example **https://loop-muse-api.onrender.com** — no trailing path, no **/api**, no credentials, query string or fragment.
+The checked-in **vercel.json** sends **/api/** to the Render API at **https://loop-41r7.onrender.com/api/** and sends other paths to **/index.html** for client-side routing. If the Render hostname changes, update the API rewrite destination in **vercel.json** and run **npm run deploy:check** before deploying.
 
-For Production, point the Production variable at the production Render API. For Preview, either:
-
-1. configure a separate Render preview service and isolated MySQL database, then set the Preview value to that service; or
-2. deliberately point Preview to the production API only after accepting that preview builds will access production data and adding the exact preview origin(s) to the backend's **CORS_ORIGIN** allowlist.
-
-Do not expose production data to untrusted pull-request previews. If there is no approved Preview API origin, disable Preview deployments until one is configured; a missing **LOOP_API_ORIGIN** intentionally fails the build rather than silently shipping a frontend with a broken API proxy.
-
-The **vercel.ts** configuration validates that this value is a bare HTTPS origin, sends **/api/** to Render, and sends other routes to the SPA entry point. It does not expose the Render hostname to browser JavaScript.
+The current rewrite is shared by Production and Preview deployments. Do not send untrusted Preview builds to production data: disable Preview deployments or create an isolated preview API and database, then use a separately reviewed deployment configuration for that environment.
 
 For local development, use **npm run dev**: Vite proxies **/api** to the local Express process on port 4000. Do not point local browser code directly at the production Render hostname.
 
@@ -80,7 +73,7 @@ Run the static deployment contract check from the repository root:
     npm run test:web
     npm run build
 
-For a production-origin check, set **LOOP_API_ORIGIN** in the shell and run **npm run deploy:check -- --production**. The preflight does not connect to Render, Vercel, or MySQL and does not replace the full database-backed suite.
+The preflight validates the checked-in HTTPS API rewrite and SPA fallback without contacting Render, Vercel, or MySQL. It does not replace the full database-backed suite.
 
 After both providers are configured:
 
