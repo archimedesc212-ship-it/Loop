@@ -52,6 +52,10 @@ exports.auth = {
   me: async (req, res) => res.json(await meBody(req)),
   session: async (req, res) => {
     if (req.user) return res.json({ authenticated: true, ...(await meBody(req)) });
+    return res.status(200).json({ authenticated: false });
+  },
+  createGuestSession: async (req, res) => {
+    if (req.user) return res.json({ authenticated: true, ...(await meBody(req)) });
     const suffix = crypto.randomBytes(12).toString('hex');
     const created = await auth.register({
       username: `guest_${suffix}`,
@@ -68,7 +72,7 @@ exports.auth = {
     });
     const user = await auth.profile(created.user.id);
     setSessionCookies(res, created.session);
-    return res.status(200).json({
+    return res.status(201).json({
       authenticated: true, ...user,
       session: { id: created.session.sessionId, expiresAt: created.session.expiresAt, csrfToken: created.session.csrfToken },
     });
