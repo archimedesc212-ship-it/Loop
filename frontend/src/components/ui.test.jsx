@@ -7,7 +7,7 @@ describe('shared UI states', () => {
   it('ErrorState explains a database outage and offers retry', () => {
     const retry = vi.fn();
     render(<ErrorState error={{ code: 'DATABASE_UNAVAILABLE', message: 'The music database is unavailable right now.' }} onRetry={retry} />);
-    expect(screen.getByRole('alert').textContent).toContain('MUSE can’t reach its database');
+    expect(screen.getByRole('alert').textContent).toContain('LOOP can’t reach its database');
     fireEvent.click(screen.getByText('Try again'));
     expect(retry).toHaveBeenCalled();
   });
