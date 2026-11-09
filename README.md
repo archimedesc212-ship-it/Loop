@@ -232,6 +232,7 @@ Latest results, the full test-case table and the browser walk-throughs are in [d
 | [docs/CONCURRENCY.md](docs/CONCURRENCY.md) | Transactions, isolation levels, locking, the deadlock fix, experiments |
 | [docs/SECURITY.md](docs/SECURITY.md) | Sessions, CSRF, RBAC, least privilege, privacy, content rights, known gaps |
 | [docs/PROVIDERS.md](docs/PROVIDERS.md) | Provider integration guide, final API credentials checklist, step-by-step key setup |
+| [docs/DATASETS.md](docs/DATASETS.md) | Safe Kaggle 1950–2019 music-feature dataset import, CC BY 4.0 attribution, and limits (metadata/features only; no audio) |
 | [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Every environment variable |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production configuration, upgrades, backup and recovery |
 | [docs/STATUS.md](docs/STATUS.md) | Implemented / tested / partial / blocked matrix and limitations |
