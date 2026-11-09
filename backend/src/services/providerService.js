@@ -65,6 +65,10 @@ async function test(code, { fetchImpl } = {}) {
         const r = await providers.musicbrainz.discover({ query: 'recording:"Vande Mataram"', limit: 1, fetchImpl });
         return { sample: r.records ? r.records.length : 0 };
       }
+      case 'THEAUDIODB': {
+        const r = await providers.theAudioDb.artistArtwork({ name: 'Coldplay', fetchImpl });
+        return { sample: r ? 1 : 0, note: 'artist metadata/artwork only; no audio is provided' };
+      }
       case 'TMDB': return { sample: (await providers.tmdb.searchMovie({ title: 'Baahubali', fetchImpl })).length };
       case 'YOUTUBE_DATA': return { sample: (await providers.youtube.searchVideos({ q: 'Indian classical music', max: 1, fetchImpl })).length, note: 'used 1 of the daily search calls' };
       case 'AI': {
