@@ -4,7 +4,7 @@ const fs = require('fs');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
-const { corsOrigins, nodeEnv, trustProxy } = require('./config/env');
+const { corsOrigins, nodeEnv, trustProxy, validateEnvironment } = require('./config/env');
 const routes = require('./routes');
 const readiness = require('./services/readinessService');
 const { externalPreview } = require('./providers');
@@ -51,6 +51,22 @@ app.use('/api', (req, res, next) => { res.set('Cache-Control', 'no-store'); next
 
 // Liveness: the process is up. Does not touch the database.
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// Do not let a missing cloud database leave the frontend spinning indefinitely.
+// Liveness remains available; all database-backed endpoints return a clear 503.
+app.use('/api', (req, res, next) => {
+  try {
+    validateEnvironment();
+    return next();
+  } catch {
+    return res.status(503).json({
+      error: {
+        code: 'DATABASE_NOT_CONFIGURED',
+        message: 'LOOP is deployed, but its MySQL database connection is not configured yet.',
+      },
+    });
+  }
+});
 
 // Readiness: database reachable, schema at the expected version, provider states.
 app.get('/api/ready', async (req, res, next) => {
