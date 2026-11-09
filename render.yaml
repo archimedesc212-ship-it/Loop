@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: loop-muse
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_TIMEZONE
+        value: "+05:30"
+      - key: JOBS_ENABLED
+        value: "true"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DB_HOST
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_APP_USER
+        sync: false
+      - key: DB_APP_PASSWORD
+        sync: false
