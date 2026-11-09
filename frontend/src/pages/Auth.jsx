@@ -46,7 +46,6 @@ export function Login() {
       nav(u.onboarded ? loc.state?.from || '/' : '/welcome', { replace: true });
     } catch (err) { setError(err); } finally { setBusy(false); }
   };
-  const demo = (login, password) => setForm({ login, password });
   return (
     <div className="auth">
       <Art />
@@ -61,14 +60,6 @@ export function Login() {
           <Field label="Password"><input className="input" type="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required /></Field>
           <button className="btn primary" disabled={busy || !form.login || !form.password}>{busy ? 'Signing in…' : 'Sign in'}</button>
           <p className="small soft">New to LOOP? <Link to="/register" className="link">Create an account</Link></p>
-          <div className="card stack" style={{ '--gap': '8px', padding: 14 }}>
-            <span className="tiny muted">Demo accounts (seed data)</span>
-            <div className="row wrap" style={{ '--gap': '6px' }}>
-              <button type="button" className="chip" onClick={() => demo('aarav', 'Listener@123')}>Listener · aarav</button>
-              <button type="button" className="chip" onClick={() => demo('kavya', 'Curator@123')}>Curator · kavya</button>
-              <button type="button" className="chip" onClick={() => demo('admin', 'Admin@123')}>Admin · admin</button>
-            </div>
-          </div>
         </form>
       </div>
     </div>
