@@ -45,7 +45,8 @@ const server = read('backend/src/server.js');
 const scheduler = read('backend/src/services/scheduler.js');
 const auth = read('backend/src/middleware/auth.js');
 const apiClient = read('frontend/src/services/api.js');
-const loginPage = read('frontend/src/pages/Auth.jsx');
+const appEntry = read('frontend/src/App.jsx');
+const apiFunction = read('api/index.js');
 const gitignore = read('.gitignore');
 const hybridDocs = read('docs/DEPLOYMENT_HYBRID.md');
 
@@ -69,15 +70,18 @@ const rewrites = Array.isArray(vercel.rewrites) ? vercel.rewrites : [];
 const apiRewrite = rewrites.find((rule) => rule && rule.source === '/api/:path*');
 let validApiRewrite = false;
 try {
-  const target = new URL(apiRewrite && apiRewrite.destination);
-  validApiRewrite = target.protocol === 'https:'
-    && /^\/api\/:path\*$/.test(target.pathname)
-    && !target.username && !target.password && !target.search && !target.hash;
+  const target = new URL(apiRewrite && apiRewrite.destination, 'https://vercel.internal');
+  validApiRewrite = target.origin === 'https://vercel.internal'
+    && target.pathname === '/api'
+    && target.searchParams.get('__loop_path') === ':path*'
+    && !target.username && !target.password && !target.hash;
 } catch {
   validApiRewrite = false;
 }
-requireCheck(validApiRewrite,
-  'Vercel proxies /api/* to a valid HTTPS API origin.');
+requireCheck(validApiRewrite
+  && /__loop_path/.test(apiFunction)
+  && /app\\(req, res\\)/.test(apiFunction),
+  'Vercel forwards same-origin /api/* requests to the API function and restores the Express route.');
 requireCheck(rewrites.some((rule) => rule && rule.source === '/(.*)' && rule.destination === '/index.html'),
   'Vercel routes client-side pages to the SPA entry point.');
 requireCheck(!Object.prototype.hasOwnProperty.call(vercel, 'crons'),
@@ -136,8 +140,10 @@ requireCheck(/Never run.*db:reset:unsafe/.test(hybridDocs)
   && /JOBS_ENABLED/.test(hybridDocs)
   && /vercel\.json/.test(hybridDocs),
   'The hybrid runbook documents database safety, scheduler and the Vercel JSON config.');
-requireCheck(!/Varsha@27|Quick access|Demo account/.test(loginPage),
-  'The public sign-in page does not display shared test credentials.');
+requireCheck(/path="\\/login"\\s+element={<Navigate to="\\/" replace \/>}/.test(appEntry)
+  && /useAuth/.test(appEntry)
+  && !/Varsha@27|Admin@123|Quick access|Demo account/.test(appEntry),
+  'The current app entry handles legacy auth routes and does not expose shared test credentials.');
 
 passes.push('The HTTPS API rewrite is validated from vercel.json; no API-origin secret is required.');
 
