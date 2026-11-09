@@ -77,7 +77,7 @@ requireCheck(/process\.env\.LOOP_API_ORIGIN/.test(vercel)
   && /search\s*\|\|/.test(vercel)
   && /hash\s*\|\|/.test(vercel)
   && /username\s*\|\|/.test(vercel)
-  && /password\s*\|\|/.test(vercel),
+  && /parsedApiOrigin\.password/.test(vercel),
   'Vercel requires a validated bare HTTPS LOOP_API_ORIGIN.');
 requireCheck(/source:\s*'\/api\/:path\*'/.test(vercel)
   && /parsedApiOrigin\.origin/.test(vercel)
