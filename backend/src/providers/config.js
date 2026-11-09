@@ -36,7 +36,7 @@ module.exports = {
   },
   theAudioDb: {
     // TheAudioDB publishes 123 as its shared free/test key; premium users may override it.
-    enabled: on(e.THEAUDIODB_ENABLED, true),
+    enabled: e.THEAUDIODB_ENABLED === undefined ? true : on(e.THEAUDIODB_ENABLED),
     apiKey: e.THEAUDIODB_API_KEY || '123',
     baseUrl: e.THEAUDIODB_BASE_URL || 'https://www.theaudiodb.com/api/v1/json',
     minIntervalMs: 2200, // stays below the documented 30 requests/minute free limit
