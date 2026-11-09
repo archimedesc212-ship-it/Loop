@@ -58,9 +58,9 @@ export function Login() {
           {(error || sessionNote) && <div className="empty error-state" role="alert" style={{ padding: 14 }}><p className="small">{error ? error.message : sessionNote}</p></div>}
           <Field label="Username or email"><input className="input" autoComplete="username" value={form.login} onChange={(e) => setForm({ ...form, login: e.target.value })} required /></Field>
           <Field label="Password"><input className="input" type="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required /></Field>
-          <button className="btn primary" disabled={busy || !form.login || !form.password}>{busy ? 'Signing in…' : 'Sign in'}</button>
+          <button className="btn primary" disabled={busy || !form.login || !form.password}>{busy ? 'Checking…' : 'Sign in'}</button>
           <div className="empty" role="note" style={{ padding: 14 }}>
-            <p className="small" style={{ fontWeight: 700, marginBottom: 6 }}>Demo account</p>
+            <p className="small" style={{ fontWeight: 700, marginBottom: 6 }}>Quick access</p>
             <p className="small soft">Username: <strong>Varsha</strong></p>
             <p className="small soft">Password: <strong>Varsha@27</strong></p>
           </div>
