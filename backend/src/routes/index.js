@@ -35,7 +35,15 @@ router.post('/auth/register', loginLimiter, v({
 router.post('/auth/login', loginLimiter, v({ login: r.str(3, 120), password: r.str(1, 72) }), h(c.auth.login));
 
 // The web app asks this on load: 200 either way, so "not signed in" is not an error.
-router.get('/auth/session', optionalAuth, h(c.auth.session));
+const guestSessionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: nodeEnv === 'test' ? 1000 : 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip: (req) => !!req.user,
+  message: { error: { code: 'GUEST_LIMITED', message: 'Too many new guest sessions from this network. Please try again later.' } },
+});
+router.get('/auth/session', optionalAuth, guestSessionLimiter, h(c.auth.session));
 
 router.use(requireAuth);
 router.use((req, res, next) => (req.method === 'GET' ? next() : writeLimiter(req, res, next)));
