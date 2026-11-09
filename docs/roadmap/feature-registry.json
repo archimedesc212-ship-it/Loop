@@ -1,0 +1,3328 @@
+{
+ "title": "LOOP × MUSE — 87-feature master registry",
+ "credit": "Developed by Vaishnav Sai",
+ "statusDefinitions": {
+  "VERIFIED": "Source exists and an automated test that passes today proves the behaviour.",
+  "IMPLEMENTED-UNVERIFIED": "Source exists, but no automated test covers the core behaviour yet.",
+  "PARTIAL": "Some of the behaviour exists; the listed gaps remain.",
+  "PLANNED": "Designed (data, API, UI, security, tests) but not implemented in the application.",
+  "BLOCKED": "Needs an external provider, licence, platform capability or hardware that is not available.",
+  "NOT IMPLEMENTED": "No working implementation and no detailed design yet."
+ },
+ "dependencyDefinitions": {
+  "CORE": "Needs only MUSE (MySQL + Express + React).",
+  "INFRA": "Needs extra infrastructure we control (e.g. a WebSocket channel, a job scheduler).",
+  "PROVIDER": "Needs a licensed external provider or API key.",
+  "PLATFORM": "Needs a browser or operating-system capability that is not available everywhere."
+ },
+ "phases": [
+  {
+   "id": "S1",
+   "name": "Stage 1 — Core product release (original 1–12)"
+  },
+  {
+   "id": "S2",
+   "name": "Stage 2 — Intelligence and personal experience (original 13–24)"
+  },
+  {
+   "id": "S3",
+   "name": "Stage 3 — Advanced DBMS showcase (original 25–32)"
+  },
+  {
+   "id": "P4",
+   "name": "Phase 4 — Intelligence on existing data (low risk, little or no schema change)",
+   "features": [
+    41,
+    42,
+    45,
+    55,
+    48,
+    51,
+    49,
+    47,
+    57
+   ]
+  },
+  {
+   "id": "P5",
+   "name": "Phase 5 — Social and collaboration",
+   "features": [
+    37,
+    34,
+    38,
+    35,
+    39,
+    40
+   ]
+  },
+  {
+   "id": "P6",
+   "name": "Phase 6 — Shared listening and engagement",
+   "features": [
+    33,
+    36,
+    50,
+    52,
+    53
+   ]
+  },
+  {
+   "id": "P7",
+   "name": "Phase 7 — Provider- and platform-dependent",
+   "features": [
+    43,
+    44,
+    46,
+    54,
+    56,
+    62,
+    70,
+    78
+   ]
+  },
+  {
+   "id": "P8",
+   "name": "Phase 8 — Listening tools (no new tables except bookmarks)",
+   "features": [
+    58,
+    59,
+    72,
+    60,
+    61,
+    63
+   ]
+  },
+  {
+   "id": "P9",
+   "name": "Phase 9 — Playlist tools, sharing and community (needs P5)",
+   "features": [
+    64,
+    65,
+    68,
+    66,
+    67,
+    69,
+    73,
+    71,
+    74,
+    75
+   ]
+  },
+  {
+   "id": "P10",
+   "name": "Phase 10 — Account, privacy and security",
+   "features": [
+    76,
+    77,
+    79,
+    80,
+    81
+   ]
+  },
+  {
+   "id": "P11",
+   "name": "Phase 11 — Operations and platform",
+   "features": [
+    83,
+    84,
+    87,
+    86,
+    85,
+    82
+   ]
+  }
+ ],
+ "phaseGate": [
+  "All backend tests (npm test) and frontend tests (npm run test:web) pass; npm run roadmap:verify confirms every VERIFIED feature cites a test that passed in that run.",
+  "The submitted 64-table baseline is unchanged: node backend/scripts/test-phase2-sql.js shows 0 structural differences, node backend/scripts/roadmap/phase2-data-regression.js shows no submitted row missing except rows removed by designed jobs, and npm run phase3:test passes. (Do not run npm run db:phase2 for this: it regenerates the submitted files.)",
+  "The promoted proposed migration passes npm run roadmap:test-migration (fresh install, re-run, partial states, interrupted runs, drift, grants) and npm run roadmap:mutation catches every listed mutation.",
+  "npm run roadmap:check passes (no reference to a table, route, screen or test that does not exist).",
+  "The migration is reviewed by a second person, then copied from proposed/ to database/migrations/ under its number and applied with npm run db:migrate — never edited after it has been applied anywhere."
+ ],
+ "features": [
+  {
+   "id": 1,
+   "name": "Multi-Mood Blending",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Combine moods with percentage weights.",
+   "reuse": {
+    "tables": [
+     "moods",
+     "recommendation_batches",
+     "recommendation_batch_moods",
+     "recommendation_items"
+    ],
+    "api": [
+     "POST /recommendations/mood"
+    ],
+    "ui": [
+     "frontend/src/pages/Mood.jsx"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "picking moods returns a ranked, explained list stored in the database"
+    ]
+   },
+   "gaps": [
+    "Up to 4 moods are accepted but weighted equally; no percentage weights or 100 % validation."
+   ]
+  },
+  {
+   "id": 2,
+   "name": "Mood Journey Engine",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "NOT IMPLEMENTED",
+   "summary": "Generate a listening path from a start mood to a target mood with gradual audio-feature transitions.",
+   "reuse": {
+    "tables": [
+     "moods",
+     "audio_features",
+     "recommendation_batches"
+    ]
+   },
+   "gaps": [
+    "GET /insights/journey reports past moods; it does not generate journeys."
+   ]
+  },
+  {
+   "id": 3,
+   "name": "Context-Aware Recommendations",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "Recommend for a listening context (study, workout …) with preferences and language.",
+   "reuse": {
+    "tables": [
+     "contexts",
+     "context_moods",
+     "user_context_preferences"
+    ],
+    "api": [
+     "GET /recommendations/context/:code"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "focus mode prefers instrumental, low-speech songs",
+     "other strategies respond: daily, regional, recovery, worlds, recommendations/:userId"
+    ]
+   }
+  },
+  {
+   "id": 4,
+   "name": "Why This Song?",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "Explain each recommendation from the stored score components.",
+   "reuse": {
+    "tables": [
+     "recommendation_items",
+     "recommendation_reasons",
+     "reason_types"
+    ],
+    "views": [
+     "v_recommendation_explanations"
+    ],
+    "ui": [
+     "frontend/src/components/Rec.jsx"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "picking moods returns a ranked, explained list stored in the database"
+    ]
+   }
+  },
+  {
+   "id": 5,
+   "name": "Skip-Aware Learning",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Learn from completions, partial plays, skips, replays, dismissals, likes and ratings.",
+   "reuse": {
+    "tables": [
+     "listening_history",
+     "song_dismissals",
+     "user_likes",
+     "ratings"
+    ],
+    "routines": [
+     "sp_refresh_user_preferences"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "a short listen is a skip; completion % is derived by the database, not trusted from the client",
+     "behaviour changes recommendations: a 1★ song disappears, a liked song seeds \"Because you liked\""
+    ]
+   },
+   "gaps": [
+    "Skips are weighted (w_skip) with decay in preference refresh, but no test proves repeated skips change rankings."
+   ]
+  },
+  {
+   "id": 6,
+   "name": "Recommendation Diversity",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Artist, genre and language diversity with adjustable discovery.",
+   "reuse": {
+    "tables": [
+     "model_parameters"
+    ],
+    "routines": [
+     "sp_generate_recommendations"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "diversity: no artist appears more than the configured cap"
+    ]
+   },
+   "gaps": [
+    "No user-adjustable discovery intensity."
+   ]
+  },
+  {
+   "id": 7,
+   "name": "Smart Cold Start",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "Recommend for new users from onboarding choices.",
+   "reuse": {
+    "api": [
+     "POST /me/onboarding"
+    ],
+    "ui": [
+     "frontend/src/pages/Onboarding.jsx"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "onboarding stores weights that drive the first recommendations"
+    ]
+   }
+  },
+  {
+   "id": 8,
+   "name": "Recommendation Confidence",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "NOT IMPLEMENTED",
+   "summary": "Label evidence quality: strong match, partial, limited data, new-user fallback.",
+   "reuse": {
+    "tables": [
+     "recommendation_items"
+    ]
+   }
+  },
+  {
+   "id": 9,
+   "name": "Mood Dial",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "NOT IMPLEMENTED",
+   "summary": "Pick a point on energy × positivity instead of a named mood.",
+   "reuse": {
+    "tables": [
+     "moods",
+     "audio_features"
+    ],
+    "routines": [
+     "fn_nearest_mood"
+    ]
+   }
+  },
+  {
+   "id": 10,
+   "name": "Multilingual Search Intelligence",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Native script, aliases, transliteration, partial words, language filters.",
+   "reuse": {
+    "tables": [
+     "artist_aliases",
+     "songs"
+    ],
+    "api": [
+     "GET /search"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "search finds songs, aliases and moods via SQL",
+     "search edge cases: empty, one character, nothing found, very long"
+    ]
+   },
+   "gaps": [
+    "No transliteration between scripts."
+   ]
+  },
+  {
+   "id": 11,
+   "name": "Cross-Device Continuity",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Same playlists, likes, ratings, history and settings on every device.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "user_likes",
+     "ratings",
+     "listening_history",
+     "user_profiles"
+    ]
+   },
+   "gaps": [
+    "Queue and playback position are not synced."
+   ]
+  },
+  {
+   "id": 12,
+   "name": "Interactive ER Explorer",
+   "phase": "S1",
+   "dependency": "CORE",
+   "status": "NOT IMPLEMENTED",
+   "summary": "Browse tables, keys and relationships in the app.",
+   "gaps": [
+    "Static diagrams exist in docs/erd; no in-app explorer."
+   ]
+  },
+  {
+   "id": 13,
+   "name": "Mood Diary",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "NOT IMPLEMENTED",
+   "summary": "Optional daily mood check-ins with privacy controls."
+  },
+  {
+   "id": 14,
+   "name": "One-Tap Listening Modes",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "Study, Workout, Travel, Late Night, Focus, Relax mapped to MUSE contexts.",
+   "reuse": {
+    "tables": [
+     "contexts"
+    ],
+    "api": [
+     "GET /contexts",
+     "GET /recommendations/context/:code"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "focus mode prefers instrumental, low-speech songs"
+    ]
+   }
+  },
+  {
+   "id": 15,
+   "name": "Surprise Me",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Discovery outside the usual taste, with a reason.",
+   "reuse": {
+    "api": [
+     "GET /recommendations/discovery"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "discovery only returns songs the user has never played"
+    ]
+   },
+   "gaps": [
+    "No adjustable discovery intensity."
+   ]
+  },
+  {
+   "id": 16,
+   "name": "Human vs Model Comparison",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "Show the AI mood confidence next to the listener's and the average human rating.",
+   "reuse": {
+    "tables": [
+     "song_moods",
+     "song_mood_ratings"
+    ],
+    "views": [
+     "v_song_mood_rating_stats"
+    ],
+    "ui": [
+     "frontend/src/components/MoodRatings.jsx"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "user ratings never change the AI mood prediction",
+     "the average and count per song and mood match the stored ratings"
+    ]
+   }
+  },
+  {
+   "id": 17,
+   "name": "Save My Mood Mix",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Save, rename, edit, reorder and regenerate recommendation results as playlists.",
+   "reuse": {
+    "api": [
+     "POST /playlists/from-batch",
+     "PATCH /playlists/:id"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "a generated list saves as a playlist in rank order; someone else cannot save it"
+    ]
+   },
+   "gaps": [
+    "No reorder or regenerate."
+   ]
+  },
+  {
+   "id": 18,
+   "name": "Personal Music Wrapped",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Weekly, monthly and yearly summaries.",
+   "reuse": {
+    "api": [
+     "GET /insights/journey",
+     "GET /insights/profile"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "listening insights are computed from the plays"
+    ]
+   },
+   "gaps": [
+    "Daily/weekly/monthly only; no yearly summary or shareable recap."
+   ]
+  },
+  {
+   "id": 19,
+   "name": "Taste Evolution Timeline",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "How moods, genres, artists and languages change over time.",
+   "reuse": {
+    "api": [
+     "GET /insights/journey"
+    ]
+   },
+   "gaps": [
+    "Moods only; no genre/artist/language evolution."
+   ]
+  },
+  {
+   "id": 20,
+   "name": "Mood Calendar Heatmap",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Calendar view of listening and mood check-ins.",
+   "reuse": {
+    "api": [
+     "GET /insights/activity"
+    ],
+    "ui": [
+     "frontend/src/components/Charts.jsx"
+    ]
+   },
+   "gaps": [
+    "Listening heatmap only; depends on 13 for mood check-ins."
+   ]
+  },
+  {
+   "id": 21,
+   "name": "Skip Pattern Intelligence",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Skip analysis by song, genre, mood, artist, context and time.",
+   "reuse": {
+    "tables": [
+     "listening_history"
+    ]
+   },
+   "gaps": [
+    "Platform-level SQL (Phase 3 Q06) exists; no per-user skip report in the app."
+   ]
+  },
+  {
+   "id": 22,
+   "name": "Artist Discovery Graph",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "NOT IMPLEMENTED",
+   "summary": "Artists linked by real collaborations, shared albums and genres.",
+   "reuse": {
+    "tables": [
+     "song_artists",
+     "album_artists",
+     "song_genres"
+    ]
+   }
+  },
+  {
+   "id": 23,
+   "name": "Personal Recommendation Controls",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "More/less like this, do not recommend again, prefer artist, explore genres.",
+   "reuse": {
+    "api": [
+     "PUT /songs/:id/dismiss",
+     "PUT /songs/:id/like",
+     "PUT /songs/:id/rating"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "\"Not for me\" removes a song from future recommendations until undone; paused in private sessions"
+    ]
+   },
+   "gaps": [
+    "No 'prefer this artist' or 'explore new genres' controls."
+   ]
+  },
+  {
+   "id": 24,
+   "name": "Privacy Control Centre",
+   "phase": "S2",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Incognito, sessions, deletion, export, explanation of stored data.",
+   "reuse": {
+    "tables": [
+     "incognito_sessions",
+     "auth_sessions"
+    ],
+    "api": [
+     "POST /incognito",
+     "GET /me/sessions",
+     "DELETE /me"
+    ],
+    "ui": [
+     "frontend/src/pages/Private.jsx"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "the database itself rejects permanent history while a private session is active",
+     "sessions list, revoke one, sign out everywhere"
+    ]
+   },
+   "gaps": [
+    "No personal data export."
+   ]
+  },
+  {
+   "id": 25,
+   "name": "SQL Query Studio",
+   "phase": "S3",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Guided, read-only SQL studio with results, timing and CSV.",
+   "gaps": [
+    "Exists as the Phase 3 Streamlit/HTML apps (phase3/), verified by phase3/run_query_tests.py; not yet inside the LOOP app."
+   ]
+  },
+  {
+   "id": 26,
+   "name": "SQL Execution Plan Visualizer",
+   "phase": "S3",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Real EXPLAIN output explained.",
+   "reuse": {
+    "api": [
+     "GET /admin/performance"
+    ]
+   },
+   "gaps": [
+    "EXPLAIN examples in the Workbench queries file and slow-query digests for admins; no visualizer."
+   ]
+  },
+  {
+   "id": 27,
+   "name": "Index Performance Lab",
+   "phase": "S3",
+   "dependency": "INFRA",
+   "status": "NOT IMPLEMENTED",
+   "summary": "Index comparisons on a disposable lab schema only."
+  },
+  {
+   "id": 28,
+   "name": "Transaction Demonstrator",
+   "phase": "S3",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "COMMIT, ROLLBACK and constraint failures on disposable data.",
+   "gaps": [
+    "Demonstrated by SQL scripts (constraint tests with rollback); no UI."
+   ]
+  },
+  {
+   "id": 29,
+   "name": "Permission Matrix",
+   "phase": "S3",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Roles and permissions, enforced on the backend.",
+   "reuse": {
+    "tables": [
+     "roles",
+     "permissions",
+     "role_permissions"
+    ],
+    "views": [
+     "v_user_permissions"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "protected routes need a valid token"
+    ]
+   },
+   "gaps": [
+    "Enforcement exists; no matrix screen."
+   ]
+  },
+  {
+   "id": 30,
+   "name": "Data Quality Centre",
+   "phase": "S3",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Duplicates, missing metadata, broken imports and contradictions.",
+   "reuse": {
+    "tables": [
+     "review_queue",
+     "source_records"
+    ],
+    "views": [
+     "v_data_quality"
+    ],
+    "api": [
+     "GET /admin/health",
+     "GET /admin/reviews"
+    ]
+   },
+   "tests": {
+    "existing": [
+     "ingestion is idempotent and review decisions are enforced and audited"
+    ]
+   },
+   "gaps": [
+    "No detection of suspicious ratings or contradictory mood classifications."
+   ]
+  },
+  {
+   "id": 31,
+   "name": "Database Scenario Simulator",
+   "phase": "S3",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Safe test scenarios on disposable data.",
+   "gaps": [
+    "Scripts and tests (empty catalogue, constraint tests); no UI."
+   ]
+  },
+  {
+   "id": 32,
+   "name": "Mood Disagreement Analysis",
+   "phase": "S3",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Where human ratings and model confidence disagree, with sample-size thresholds.",
+   "reuse": {
+    "tables": [
+     "song_moods",
+     "song_mood_ratings"
+    ],
+    "views": [
+     "v_song_mood_rating_stats"
+    ]
+   },
+   "gaps": [
+    "Aggregates exist; no disagreement report."
+   ]
+  },
+  {
+   "id": 33,
+   "name": "LOOP Listening Rooms",
+   "phase": "P6",
+   "dependency": "INFRA",
+   "status": "PLANNED",
+   "summary": "A host plays a shared queue to invited listeners in real time.",
+   "reuse": {
+    "tables": [
+     "users",
+     "songs",
+     "moods",
+     "listening_sessions",
+     "listening_history"
+    ],
+    "api": [
+     "POST /playback/start"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "listening_rooms",
+     "listening_room_members",
+     "listening_room_queue"
+    ],
+    "why": "A room has its own lifecycle, members with roles and an ordered shared queue; no existing table models a shared session (listening_sessions belong to one user)."
+   },
+   "api": [
+    "POST /rooms",
+    "GET /rooms/:id",
+    "POST /rooms/:id/members",
+    "POST /rooms/:id/queue",
+    "PUT /rooms/:id/state (host only, with state_version)",
+    "POST /rooms/:id/join",
+    "POST /rooms/:id/leave",
+    "GET /rooms/:id/events (Server-Sent Events or WebSocket)"
+   ],
+   "frontend": [
+    "Room screen with shared Now Playing, member list and queue",
+    "Join from an invite link",
+    "Host controls (play, pause, skip, reorder)",
+    "Clear 'not synced' state when the connection drops"
+   ],
+   "security": [
+    "Only the host or a co-host changes playback state",
+    "INVITE_ONLY rooms require membership",
+    "state_version rejects stale updates (optimistic concurrency)",
+    "Each member's own play is recorded in their own history only if they are not in a private session"
+   ],
+   "tests": {
+    "proposed": [
+     "non-member cannot read or join an invite-only room (403)",
+     "listener cannot change playback state (403)",
+     "stale state_version is rejected (409)",
+     "LIVE room without started_at is rejected by the database",
+     "member in a private session leaves no permanent history"
+    ]
+   },
+   "outstanding": [
+    "A real-time channel (SSE or WebSocket) and its hosting",
+    "Synchronised playback is limited to songs with a permitted audio source; metadata-only songs cannot be played together"
+   ]
+  },
+  {
+   "id": 34,
+   "name": "Collaborative Playlists",
+   "phase": "P5",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Invite editors and viewers to a playlist; see who added what.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "playlist_songs"
+    ],
+    "api": [
+     "GET /playlists/:id",
+     "POST /playlists/:id/songs",
+     "DELETE /playlists/:id/songs/:songId"
+    ],
+    "ui": [
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "playlist_collaborators"
+    ],
+    "columns": [
+     "playlists.visibility",
+     "playlists.version",
+     "playlist_songs.added_by"
+    ],
+    "why": "Membership with a role is a M:N between users and playlists; version enables optimistic locking for concurrent edits; added_by records authorship."
+   },
+   "api": [
+    "POST /playlists/:id/collaborators",
+    "PATCH /playlists/:id/collaborators/:userId",
+    "DELETE /playlists/:id/collaborators/:userId",
+    "POST /playlists/:id/collaborators/accept",
+    "If-Match: version on every playlist write"
+   ],
+   "frontend": [
+    "Share dialog with role selection",
+    "Invitation inbox",
+    "'Added by' on each entry",
+    "Conflict message when the playlist changed meanwhile"
+   ],
+   "security": [
+    "Only the owner manages collaborators",
+    "VIEWERs cannot write",
+    "Existing private-by-default behaviour stays the default (visibility PRIVATE)"
+   ],
+   "tests": {
+    "existing": [
+     "playlists are private to their owner"
+    ],
+    "proposed": [
+     "owner invites an editor; editor adds a song; added_by is recorded",
+     "viewer cannot add songs (403)",
+     "stale version is rejected (409)",
+     "ACCEPTED invitation without accepted_at is rejected by the database"
+    ]
+   }
+  },
+  {
+   "id": 35,
+   "name": "Music Compatibility Match",
+   "phase": "P5",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "A taste-overlap score between two consenting listeners, with what you share.",
+   "reuse": {
+    "tables": [
+     "user_mood_preferences",
+     "user_genre_preferences",
+     "user_artist_preferences",
+     "user_languages",
+     "user_follows"
+    ]
+   },
+   "newDb": {
+    "columns": [
+     "user_profiles.allow_compatibility"
+    ],
+    "why": "Explicit opt-in consent; the score itself is computed on request from the existing preference tables and is not stored."
+   },
+   "api": [
+    "GET /users/:id/compatibility (both users must allow it)"
+   ],
+   "frontend": [
+    "Compatibility card on a profile: score, shared moods, genres, artists",
+    "Consent toggle in settings"
+   ],
+   "security": [
+    "Both users must have allow_compatibility = 1",
+    "Returns only overlap categories, never the other user's history",
+    "Not available in private sessions"
+   ],
+   "tests": {
+    "proposed": [
+     "refused unless both users consent (403)",
+     "score is symmetric for A–B and B–A",
+     "users with no preferences get 'not enough data', not 0 %"
+    ]
+   }
+  },
+  {
+   "id": 36,
+   "name": "Listening Party Scheduler",
+   "phase": "P6",
+   "dependency": "INFRA",
+   "status": "PLANNED",
+   "summary": "Schedule a listening room in advance and invite people.",
+   "reuse": {
+    "tables": [
+     "listening_rooms",
+     "listening_room_members"
+    ]
+   },
+   "newDb": {
+    "why": "No extra table: a SCHEDULED room with scheduled_start_at and INVITED/ACCEPTED/DECLINED members (from feature 33)."
+   },
+   "api": [
+    "POST /rooms (status SCHEDULED)",
+    "POST /rooms/:id/rsvp",
+    "DELETE /rooms/:id (cancel)"
+   ],
+   "frontend": [
+    "Schedule form with date/time and time zone",
+    "RSVP list",
+    "Upcoming parties on Home"
+   ],
+   "security": [
+    "Only the host edits or cancels",
+    "Invitees see only their invitations"
+   ],
+   "tests": {
+    "proposed": [
+     "SCHEDULED room without a start time is rejected by the database",
+     "RSVP updates the member status",
+     "cancelled party cannot be joined"
+    ]
+   },
+   "outstanding": [
+    "Reminders need web push (PLATFORM: not available on every browser) or email (PROVIDER); in-app reminders work without either"
+   ]
+  },
+  {
+   "id": 37,
+   "name": "LOOP Social Profiles",
+   "phase": "P5",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Optional public profile with bio, follows and chosen highlights.",
+   "reuse": {
+    "tables": [
+     "user_profiles",
+     "users"
+    ],
+    "api": [
+     "PATCH /me/settings"
+    ],
+    "ui": [
+     "frontend/src/pages/Profile.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "user_follows"
+    ],
+    "columns": [
+     "user_profiles.bio",
+     "user_profiles.profile_visibility"
+    ],
+    "why": "Following is a M:N relationship of users with themselves; visibility is a property of the profile."
+   },
+   "api": [
+    "GET /users/:id/profile",
+    "POST /users/:id/follow",
+    "DELETE /users/:id/follow",
+    "GET /me/followers",
+    "GET /me/following"
+   ],
+   "frontend": [
+    "Public profile page",
+    "Follow button",
+    "Visibility setting (Private default)"
+   ],
+   "security": [
+    "Profiles are PRIVATE by default",
+    "Listening history is never public",
+    "Self-follow refused by a database trigger"
+   ],
+   "tests": {
+    "proposed": [
+     "private profile returns 404 to others",
+     "self-follow is rejected by the database",
+     "follow twice is a duplicate"
+    ]
+   }
+  },
+  {
+   "id": 38,
+   "name": "Playlist Notes and Reactions",
+   "phase": "P5",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Short notes and one emoji reaction per person on playlist entries.",
+   "reuse": {
+    "tables": [
+     "playlist_songs",
+     "playlists"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "playlist_notes",
+     "playlist_reactions"
+    ],
+    "why": "Many people can annotate one playlist entry; both reference the entry through the composite key of playlist_songs, so removing a song removes its notes and reactions."
+   },
+   "api": [
+    "GET /playlists/:id/notes",
+    "POST /playlists/:id/notes",
+    "PATCH /notes/:id",
+    "DELETE /notes/:id",
+    "PUT /playlists/:id/songs/:songId/reaction",
+    "DELETE /playlists/:id/songs/:songId/reaction"
+   ],
+   "frontend": [
+    "Notes drawer per entry",
+    "Reaction picker",
+    "Counts per reaction"
+   ],
+   "security": [
+    "Only people who can view the playlist can read notes",
+    "Only the author edits a note; the owner may remove any note",
+    "Notes are plain text (rendered escaped)"
+   ],
+   "tests": {
+    "proposed": [
+     "second reaction by the same user is a duplicate",
+     "reaction on a song not in the playlist is rejected by the database",
+     "removing a song cascades its notes and reactions",
+     "empty note is rejected by the database"
+    ]
+   }
+  },
+  {
+   "id": 39,
+   "name": "MUSE Editorial Studio",
+   "phase": "P5",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Curators build, schedule and publish editorial playlists from the catalogue.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "playlist_songs",
+     "audit_logs"
+    ],
+    "api": [
+     "POST /admin/songs",
+     "PUT /admin/songs/:id/moods/:moodId"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/CatalogAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "columns": [
+     "playlists.kind",
+     "playlists.published_at"
+    ],
+    "why": "Editorial lists are playlists with kind EDITORIAL (one more subclass in the EER specialization) and a publication time."
+   },
+   "api": [
+    "POST /admin/editorial",
+    "PATCH /admin/editorial/:id",
+    "POST /admin/editorial/:id/publish",
+    "GET /editorial"
+   ],
+   "frontend": [
+    "Editorial Studio in Admin (draft, preview, publish)",
+    "Editorial shelf on Home"
+   ],
+   "security": [
+    "Requires catalog.write (Curator, Administrator), enforced on the backend",
+    "Publishing is audited"
+   ],
+   "tests": {
+    "existing": [
+     "a curator adds a song: provenance recorded, analysed, mood-tagged, audited"
+    ],
+    "proposed": [
+     "listener cannot create editorial lists (403)",
+     "unpublished list is invisible to listeners",
+     "published_at on a PRIVATE list is rejected by the database"
+    ]
+   },
+   "gaps": [
+    "Curator catalogue tools exist; editorial playlists do not."
+   ]
+  },
+  {
+   "id": 40,
+   "name": "Community Metadata Contributions",
+   "phase": "P5",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Listeners suggest corrections; staff accept or reject them.",
+   "reuse": {
+    "tables": [
+     "song_mood_curations",
+     "review_queue",
+     "audit_logs"
+    ],
+    "api": [
+     "GET /admin/reviews",
+     "POST /admin/reviews/:id/decision"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "metadata_suggestions"
+    ],
+    "why": "A suggestion has a contributor, a field and a decision; review_queue is tied to import records and jobs, so mixing them would break its meaning."
+   },
+   "api": [
+    "POST /songs/:id/suggestions",
+    "GET /me/suggestions",
+    "DELETE /me/suggestions/:id (withdraw)",
+    "GET /admin/suggestions",
+    "POST /admin/suggestions/:id/decision"
+   ],
+   "frontend": [
+    "'Suggest a correction' on the song page",
+    "My suggestions list",
+    "Review screen for staff"
+   ],
+   "security": [
+    "Rate-limited per user",
+    "Accepting a suggestion goes through the same validated catalogue update as staff edits, with an audit record",
+    "One open suggestion per user, song and field (database unique key)"
+   ],
+   "tests": {
+    "existing": [
+     "ingestion is idempotent and review decisions are enforced and audited"
+    ],
+    "proposed": [
+     "second open suggestion for the same field is a duplicate",
+     "listener cannot decide suggestions (403)",
+     "accepted suggestion updates the song and writes an audit record"
+    ]
+   },
+   "gaps": [
+    "Staff curation and review decisions exist; listener suggestions do not."
+   ]
+  },
+  {
+   "id": 41,
+   "name": "Music Data Provenance",
+   "phase": "P4",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "Show where every song's metadata came from: source, licence, match method, rights, verification.",
+   "reuse": {
+    "tables": [
+     "source_records",
+     "music_sources",
+     "pipeline_jobs",
+     "audit_logs"
+    ],
+    "api": [
+     "GET /songs/:id",
+     "GET /admin/jobs/:id"
+    ],
+    "ui": [
+     "frontend/src/pages/Catalog.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None needed."
+   },
+   "security": [
+    "YouTube metadata records are excluded from provenance (shown as video links instead)",
+    "Raw payloads are not exposed to listeners"
+   ],
+   "tests": {
+    "existing": [
+     "41 provenance: each source record of a song is returned with source, licence, match method and rights",
+     "a curator adds a song: provenance recorded, analysed, mood-tagged, audited"
+    ]
+   },
+   "gaps": [
+    "Next: link each provenance row to its import job in the song page."
+   ]
+  },
+  {
+   "id": 42,
+   "name": "Smart Duplicate Song Detection",
+   "phase": "P4",
+   "dependency": "CORE",
+   "status": "IMPLEMENTED-UNVERIFIED",
+   "summary": "Detect duplicates on import (ISRC, normalised title + artist + duration, fuzzy match) and merge safely.",
+   "reuse": {
+    "tables": [
+     "songs",
+     "review_queue",
+     "source_records"
+    ],
+    "routines": [
+     "sp_merge_songs"
+    ],
+    "api": [
+     "POST /admin/songs/merge",
+     "POST /admin/reviews/:id/decision"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/CatalogAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None needed: songs.normalized_title (generated), unique key uq_songs_identity and review_type POSSIBLE_DUPLICATE already exist."
+   },
+   "tests": {
+    "existing": [
+     "duplicate songs merge into the canonical record without losing history",
+     "merging duplicate songs carries mood ratings to the canonical song"
+    ],
+    "proposed": [
+     "an incoming record with an existing ISRC links to the song instead of creating one",
+     "a near-identical title by the same artist opens a POSSIBLE_DUPLICATE review"
+    ]
+   },
+   "gaps": [
+    "Merging is verified; the ISRC/exact/fuzzy detection path in ingestService.js has no dedicated test yet.",
+    "Audio-based duplicate detection depends on feature 46."
+   ]
+  },
+  {
+   "id": 43,
+   "name": "Lyrics Intelligence and Search",
+   "phase": "P7",
+   "dependency": "PROVIDER",
+   "status": "BLOCKED",
+   "summary": "Search by lyric lines and analyse lyric themes.",
+   "reuse": {
+    "tables": [
+     "music_sources",
+     "source_records",
+     "languages"
+    ]
+   },
+   "newDb": {
+    "why": "Deferred. Design: song_lyrics (song_id, source_id, external_ref, rights_status, language_id, fetched_at, expires_at, lyrics_text only when the licence allows storage) with a FULLTEXT ngram index. Not created until a licence decides what may be stored."
+   },
+   "security": [
+    "Store or display lyrics only as the provider licence allows; MUSE currently stores no lyrics",
+    "Show attribution required by the provider"
+   ],
+   "tests": {
+    "proposed": [
+     "with the provider disabled the feature reports 'not available', never empty results",
+     "provider errors are reported clearly (same pattern as existing provider tests)"
+    ]
+   },
+   "outstanding": [
+    "A licensed lyrics provider and its terms (PROVIDER)"
+   ]
+  },
+  {
+   "id": 44,
+   "name": "Time-Synchronized Lyrics",
+   "phase": "P7",
+   "dependency": "PROVIDER",
+   "status": "BLOCKED",
+   "summary": "Lyrics highlighted line by line during playback.",
+   "newDb": {
+    "why": "Deferred. Design: song_lyric_lines (song_id, line_no, start_ms, end_ms, text) under the same licence rules as 43."
+   },
+   "outstanding": [
+    "A provider that licenses timed lyrics (PROVIDER)",
+    "A permitted, full-length audio source; previews and the demo sketch do not match lyric timing"
+   ]
+  },
+  {
+   "id": 45,
+   "name": "Song Mood Timeline",
+   "phase": "P4",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "How a song's mood changes from section to section.",
+   "reuse": {
+    "tables": [
+     "mood_segments",
+     "moods",
+     "intelligence_models"
+    ],
+    "api": [
+     "GET /songs/:id"
+    ],
+    "ui": [
+     "frontend/src/pages/Catalog.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None needed."
+   },
+   "tests": {
+    "existing": [
+     "45 mood timeline: segments come from the active model, ordered, non-overlapping, inside the song",
+     "45 mood timeline: a song without segment analysis returns an empty timeline, not invented segments",
+     "mood segments must stay inside the song and may not overlap"
+    ]
+   }
+  },
+  {
+   "id": 46,
+   "name": "Audio Fingerprint Intelligence",
+   "phase": "P7",
+   "dependency": "PROVIDER",
+   "status": "BLOCKED",
+   "summary": "Identify recordings and duplicates from the audio itself.",
+   "newDb": {
+    "why": "Deferred. Design: audio_fingerprints (song_id, algorithm, fingerprint VARBINARY, duration_sec, computed_at)."
+   },
+   "outstanding": [
+    "Audio files we are licensed to analyse, or a fingerprint service and its key (PROVIDER)"
+   ]
+  },
+  {
+   "id": 47,
+   "name": "Intelligent Song Transitions",
+   "phase": "P4",
+   "dependency": "PLATFORM",
+   "status": "PLANNED",
+   "summary": "Order songs for smooth tempo, key and energy changes, with optional crossfade.",
+   "reuse": {
+    "tables": [
+     "audio_features"
+    ],
+    "routines": [
+     "fn_tempo_fit",
+     "fn_feature_similarity"
+    ],
+    "ui": [
+     "frontend/src/hooks/usePlayer.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "user_settings"
+    ],
+    "routines": [
+     "fn_harmonic_compat"
+    ],
+    "why": "crossfade_sec follows the account across devices; the transition score uses the harmonic function from feature 48."
+   },
+   "api": [
+    "GET /queue/transition-order?songIds=… (returns the order and the score of each step)",
+    "PATCH /me/settings (crossfadeSec)"
+   ],
+   "frontend": [
+    "Crossfade setting (0–12 s)",
+    "'Smooth order' action on a queue or playlist with the reason for each step"
+   ],
+   "security": [
+    "Read-only scoring; no change to stored playlists unless the user saves"
+   ],
+   "tests": {
+    "proposed": [
+     "crossfade above 12 s is rejected by the database",
+     "transition order never repeats a song",
+     "songs without audio features keep their position and are flagged"
+    ]
+   },
+   "outstanding": [
+    "Crossfade needs two permitted audio sources playing at once (Web Audio API); metadata-only songs cannot crossfade"
+   ]
+  },
+  {
+   "id": 48,
+   "name": "BPM and Harmonic Matching",
+   "phase": "P4",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Find songs that match a song's tempo and musical key.",
+   "reuse": {
+    "tables": [
+     "audio_features"
+    ],
+    "routines": [
+     "fn_tempo_fit"
+    ],
+    "ui": [
+     "frontend/src/pages/Catalog.jsx"
+    ]
+   },
+   "newDb": {
+    "routines": [
+     "fn_harmonic_compat"
+    ],
+    "why": "Key and mode are already stored per analysis; only the Camelot-wheel compatibility function is new."
+   },
+   "api": [
+    "GET /songs/:id/matches?by=bpm|key|both"
+   ],
+   "frontend": [
+    "'Matches' panel on the song page showing BPM, key and compatibility"
+   ],
+   "tests": {
+    "proposed": [
+     "C major is fully compatible with itself and 0.8 with G major and A minor (function tested on a disposable schema)",
+     "results exclude the song itself and inactive songs"
+    ]
+   },
+   "gaps": [
+    "Tempo and key data and tempo fitting exist; harmonic matching and the API do not."
+   ],
+   "security": [
+    "Read-only: uses catalogue analysis data only, no personal data",
+    "Inactive or metadata-only songs are labelled, never presented as playable"
+   ]
+  },
+  {
+   "id": 49,
+   "name": "Time-Budget Playlist Generator",
+   "phase": "P4",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Fill an exact time (e.g. a 40-minute commute) with songs for a mood or context.",
+   "reuse": {
+    "tables": [
+     "songs",
+     "recommendation_batches",
+     "recommendation_items"
+    ],
+    "routines": [
+     "sp_generate_recommendations"
+    ],
+    "api": [
+     "POST /playlists/smart/:type"
+    ]
+   },
+   "newDb": {
+    "columns": [
+     "recommendation_batches.target_duration_sec"
+    ],
+    "why": "Records the requested length so the generated list can be explained and regenerated."
+   },
+   "api": [
+    "POST /recommendations/time-budget { minutes, moodIds | contextCode }"
+   ],
+   "frontend": [
+    "Minutes picker",
+    "Total vs target shown, with the difference"
+   ],
+   "tests": {
+    "proposed": [
+     "total duration is within ±60 s of the target when the catalogue allows",
+     "target below 5 minutes is rejected by the database",
+     "not enough songs returns the best fill and says so"
+    ]
+   },
+   "security": [
+    "The generated list belongs to the requester; saving it uses the existing playlist ownership checks",
+    "Private-session requests leave no permanent batch (existing incognito rules)"
+   ]
+  },
+  {
+   "id": 50,
+   "name": "Music Discovery Missions",
+   "phase": "P6",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Opt-in challenges such as 'finish 5 Bengali songs this month'.",
+   "reuse": {
+    "tables": [
+     "listening_history",
+     "songs",
+     "languages",
+     "genres",
+     "song_moods"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "discovery_missions",
+     "user_missions"
+    ],
+    "views": [
+     "v_user_mission_progress"
+    ],
+    "why": "Missions and enrolment are new facts; progress is computed by a view from real plays so it can never disagree with listening history."
+   },
+   "api": [
+    "GET /missions",
+    "POST /missions/:id/join",
+    "GET /me/missions"
+   ],
+   "frontend": [
+    "Missions list with progress bars",
+    "Completion moment"
+   ],
+   "security": [
+    "Progress only from the user's own completed plays",
+    "Private-session plays never count"
+   ],
+   "tests": {
+    "proposed": [
+     "mission with two criteria is rejected by the database",
+     "view progress equals a direct count of completed plays (passes on a disposable schema)",
+     "plays before joining do not count"
+    ]
+   }
+  },
+  {
+   "id": 51,
+   "name": "Music Discovery Passport",
+   "phase": "P4",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Stamps for every language, genre and region a listener has explored.",
+   "reuse": {
+    "tables": [
+     "listening_history",
+     "songs",
+     "languages",
+     "song_genres",
+     "genres",
+     "artists",
+     "regions"
+    ]
+   },
+   "newDb": {
+    "views": [
+     "v_discovery_passport"
+    ],
+    "why": "No table: every stamp is derived from completed plays."
+   },
+   "api": [
+    "GET /me/passport"
+   ],
+   "frontend": [
+    "Passport page with stamps and first-heard dates"
+   ],
+   "security": [
+    "Own data only"
+   ],
+   "tests": {
+    "proposed": [
+     "view returns language, genre and region stamps from real plays (passes on a disposable schema)",
+     "a new user has an empty passport"
+    ]
+   }
+  },
+  {
+   "id": 52,
+   "name": "Music Time Capsule",
+   "phase": "P6",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Seal songs and a message to reopen on a future date.",
+   "reuse": {
+    "tables": [
+     "songs",
+     "users"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "time_capsules",
+     "time_capsule_songs"
+    ],
+    "why": "A capsule is its own entity with an ordered set of songs."
+   },
+   "api": [
+    "POST /capsules",
+    "GET /me/capsules",
+    "GET /capsules/:id (contents only after unlock_at)",
+    "POST /capsules/:id/open"
+   ],
+   "frontend": [
+    "Create capsule",
+    "Countdown card",
+    "Opening view"
+   ],
+   "security": [
+    "Private to the owner",
+    "Contents withheld by the API until unlock time"
+   ],
+   "tests": {
+    "proposed": [
+     "capsule that unlocks in the past is rejected by the database",
+     "opening before unlock_at is rejected by the database",
+     "another user cannot read a capsule (404)"
+    ]
+   },
+   "outstanding": [
+    "An unlock reminder outside the app needs web push or email; the app shows unlocked capsules on next visit without them"
+   ]
+  },
+  {
+   "id": 53,
+   "name": "Seasonal and Occasion Mixes",
+   "phase": "P6",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Mixes for festivals and seasons (Diwali, Onam, Monsoon …), by region.",
+   "reuse": {
+    "tables": [
+     "moods",
+     "regions",
+     "recommendation_batches"
+    ],
+    "routines": [
+     "sp_generate_recommendations"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "occasions",
+     "occasion_windows",
+     "occasion_moods"
+    ],
+    "why": "Festival dates move every year (lunar calendars), so dates live per year in occasion_windows; contexts are situations, not dated events."
+   },
+   "api": [
+    "GET /occasions/current",
+    "POST /recommendations/occasion/:code"
+   ],
+   "frontend": [
+    "Occasion banner on Home while a window is active"
+   ],
+   "security": [
+    "Occasions and dates maintained by curators (catalog.write)"
+   ],
+   "tests": {
+    "proposed": [
+     "window ending before it starts is rejected by the database",
+     "only occasions active today are returned",
+     "regional occasion only shown for that region"
+    ]
+   },
+   "outstanding": [
+    "Curators must enter real dates per year; no dates are invented"
+   ]
+  },
+  {
+   "id": 54,
+   "name": "Mood-Based Music Alarm",
+   "phase": "P7",
+   "dependency": "PLATFORM",
+   "status": "BLOCKED",
+   "summary": "Wake up to music for a chosen mood.",
+   "newDb": {
+    "why": "Deferred. Design: music_alarms (alarm_id, user_id, local_time, days_mask, timezone, mood_id, enabled)."
+   },
+   "security": [
+    "Alarm definitions are private"
+   ],
+   "outstanding": [
+    "Browsers and installed PWAs cannot reliably wake a device or start audio at a set time when the app is closed (PLATFORM). Needs native packaging (e.g. Capacitor) with OS alarm/notification APIs."
+   ]
+  },
+  {
+   "id": 55,
+   "name": "Personal Listening Profile",
+   "phase": "P4",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "A listener's own moods, genres, artists, sound profile and habits.",
+   "reuse": {
+    "tables": [
+     "user_mood_preferences",
+     "user_genre_preferences",
+     "user_artist_preferences"
+    ],
+    "views": [
+     "v_user_music_profile"
+    ],
+    "api": [
+     "GET /insights/profile",
+     "GET /insights/preferences",
+     "GET /users/:id/analytics"
+    ],
+    "ui": [
+     "frontend/src/pages/Profile.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None needed."
+   },
+   "security": [
+    "Self or users.manage only"
+   ],
+   "tests": {
+    "existing": [
+     "listening insights are computed from the plays",
+     "55 personal listening profile: describes only the caller's own plays"
+    ]
+   }
+  },
+  {
+   "id": 56,
+   "name": "Voice-Controlled LOOP",
+   "phase": "P7",
+   "dependency": "PLATFORM",
+   "status": "PLANNED",
+   "summary": "Spoken commands such as 'play something calm in Telugu'.",
+   "reuse": {
+    "api": [
+     "POST /recommendations/parse",
+     "POST /recommendations/mood",
+     "GET /search"
+    ]
+   },
+   "newDb": {
+    "why": "None: spoken text goes through the existing deterministic mood parser."
+   },
+   "frontend": [
+    "Microphone button only where the Web Speech API is available",
+    "Typed fallback everywhere"
+   ],
+   "security": [
+    "Ask for microphone permission only on tap",
+    "Tell users that some browsers send audio to the browser vendor for recognition",
+    "No audio is stored by LOOP"
+   ],
+   "tests": {
+    "existing": [
+     "text input is parsed deterministically, including negation and activity"
+    ],
+    "proposed": [
+     "button hidden when speech recognition is unavailable",
+     "recognised text is sent to /recommendations/parse unchanged"
+    ]
+   },
+   "outstanding": [
+    "Speech recognition availability varies by browser and OS (PLATFORM)"
+   ],
+   "api": [
+    "No new endpoint: recognised text → POST /recommendations/parse → POST /recommendations/mood or GET /search"
+   ]
+  },
+  {
+   "id": 57,
+   "name": "Accessibility and Inclusive Mode",
+   "phase": "P4",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Reduced motion, high contrast, larger text, captions, full keyboard and screen-reader support.",
+   "reuse": {
+    "ui": [
+     "frontend/src/components/Intro.jsx",
+     "frontend/src/components/ui.jsx",
+     "frontend/src/styles/global.css"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "user_settings"
+    ],
+    "why": "Accessibility choices follow the account across devices; kept apart from the public profile."
+   },
+   "api": [
+    "GET /me/settings",
+    "PATCH /me/settings (reducedMotion, highContrast, textScale, captionsEnabled)"
+   ],
+   "frontend": [
+    "Inclusive Mode panel in Settings",
+    "High-contrast tokens for all three themes",
+    "Text scaling via CSS variables"
+   ],
+   "security": [
+    "Settings are private"
+   ],
+   "tests": {
+    "existing": [
+     "with reduced motion shows one still frame and waits for Continue",
+     "Modal is a labelled dialog that closes on Escape and focuses its first field"
+    ],
+    "proposed": [
+     "text scale 3.0 is rejected by the database",
+     "high contrast meets WCAG AA contrast (axe scan)",
+     "every page usable by keyboard only"
+    ]
+   },
+   "gaps": [
+    "System reduced-motion, labelled dialogs and keyboard escape work and are tested; an axe-core scan script exists (e2e/finalisation.py) but was not re-run in this session; no Inclusive Mode settings yet."
+   ]
+  },
+  {
+   "id": 58,
+   "name": "Smart Queue Autopilot",
+   "phase": "P8",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "When the queue runs out, keep playing songs that fit what was just played, skipping dismissed, 1★ and unplayable songs.",
+   "reuse": {
+    "tables": [
+     "recommendation_batches",
+     "recommendation_items",
+     "song_dismissals",
+     "ratings",
+     "listening_history",
+     "audio_features"
+    ],
+    "api": [
+     "GET /recommendations/similar",
+     "POST /playback/start",
+     "POST /playback/:playId/finish"
+    ],
+    "ui": [
+     "frontend/src/hooks/usePlayer.jsx",
+     "frontend/src/components/Layout.jsx"
+    ]
+   },
+   "newDb": {
+    "columns": [
+     "recommendation_batches.strategy"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "One ENUM value (AUTOPILOT) so autopilot lists are logged and explained like every other recommendation; no new table — the queue itself is client state."
+   },
+   "api": [
+    "POST /recommendations/autopilot {recentSongIds[], limit} → batch of next songs (strategy AUTOPILOT)"
+   ],
+   "frontend": [
+    "\"Autopilot\" toggle in the player",
+    "Autopilot songs marked with their reason",
+    "Stops after N songs without interaction"
+   ],
+   "security": [
+    "Signed-in users only; recentSongIds validated and capped",
+    "Private sessions: generated from session memory only and never logged as a batch",
+    "Never queues a song without a playable licensed source"
+   ],
+   "tests": {
+    "existing": [
+     "behaviour changes recommendations: a 1★ song disappears, a liked song seeds \"Because you liked\""
+    ],
+    "proposed": [
+     "autopilot excludes dismissed, 1★ and already-queued songs",
+     "autopilot in a private session writes no batch",
+     "autopilot stops when the catalogue has nothing playable left"
+    ]
+   },
+   "gaps": [
+    "The player has a queue, \"play next\" and skips unplayable songs, but nothing extends the queue when it ends."
+   ]
+  },
+  {
+   "id": 59,
+   "name": "Personal Radio Station",
+   "phase": "P8",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "An endless station started from one song, artist or mood.",
+   "reuse": {
+    "tables": [
+     "recommendation_batches",
+     "recommendation_items",
+     "audio_features",
+     "song_moods",
+     "song_artists",
+     "artists"
+    ],
+    "api": [
+     "GET /recommendations/similar",
+     "POST /recommendations/mood"
+    ],
+    "ui": [
+     "frontend/src/components/Rec.jsx",
+     "frontend/src/hooks/usePlayer.jsx"
+    ]
+   },
+   "newDb": {
+    "columns": [
+     "recommendation_batches.seed_artist_id",
+     "recommendation_batches.strategy"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "A batch can already be seeded by a song (seed_song_id) or mood; an artist seed needs its own FK column. RADIO is one ENUM value."
+   },
+   "api": [
+    "POST /radio {seedType: SONG|ARTIST|MOOD, seedId} → first batch",
+    "GET /radio/:batchId/more → next batch, excluding songs already played this station"
+   ],
+   "frontend": [
+    "\"Start radio\" on song, artist and mood pages",
+    "Station header showing the seed"
+   ],
+   "security": [
+    "Seed ids validated against the catalogue",
+    "Respects content filter and dismissals",
+    "Private sessions: not logged"
+   ],
+   "tests": {
+    "existing": [
+     "behaviour changes recommendations: a 1★ song disappears, a liked song seeds \"Because you liked\""
+    ],
+    "proposed": [
+     "artist radio contains the seed artist and similar artists, never a dismissed song",
+     "a station never repeats a song within 50 plays",
+     "unknown seed id is 404"
+    ]
+   },
+   "gaps": [
+    "Song-seeded similarity exists (GET /recommendations/similar); artist seeds and an endless station do not."
+   ]
+  },
+  {
+   "id": 60,
+   "name": "Sleep Timer with Audio Fade",
+   "phase": "P8",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Stop playback after N minutes or at the end of the current song, fading the volume out.",
+   "reuse": {
+    "tables": [
+     "playback_events",
+     "listening_history"
+    ],
+    "api": [
+     "POST /playback/:playId/events",
+     "POST /playback/:playId/finish"
+    ],
+    "ui": [
+     "frontend/src/hooks/usePlayer.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. A timer is client state; the stop is recorded as an ordinary PAUSE / finish, so listening history stays correct."
+   },
+   "api": [
+    "No new endpoint"
+   ],
+   "frontend": [
+    "Timer menu (15/30/45/60 min, end of song)",
+    "Gradual volume fade over the last 30 s",
+    "Remaining time in the player"
+   ],
+   "security": [
+    "No data stored",
+    "Fade restores the previous volume on resume"
+   ],
+   "tests": {
+    "proposed": [
+     "timer pauses playback and records listened seconds correctly",
+     "end-of-song timer stops before the next song starts",
+     "cancelling the timer restores volume"
+    ]
+   },
+   "gaps": [
+    "Browsers may throttle timers in background tabs; mobile background playback is a platform limitation."
+   ]
+  },
+  {
+   "id": 61,
+   "name": "Focus Timer + Music",
+   "phase": "P8",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Pomodoro-style focus blocks with FOCUS-context music and quiet breaks.",
+   "reuse": {
+    "tables": [
+     "contexts",
+     "context_moods",
+     "listening_sessions",
+     "listening_history"
+    ],
+    "api": [
+     "GET /recommendations/context/:code",
+     "GET /contexts"
+    ],
+    "ui": [
+     "frontend/src/pages/Mix.jsx",
+     "frontend/src/hooks/usePlayer.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None for the first version: the FOCUS and STUDY contexts already exist and plays are logged with their context. A focus_sessions table is only worth adding if users ask for focus statistics."
+   },
+   "api": [
+    "GET /recommendations/context/FOCUS (existing)"
+   ],
+   "frontend": [
+    "Focus timer with work/break lengths",
+    "Instrumental-first FOCUS mix",
+    "Break chime without music"
+   ],
+   "security": [
+    "No new data stored"
+   ],
+   "tests": {
+    "proposed": [
+     "focus mix uses the FOCUS context targets",
+     "break pauses playback and resumes at the next block"
+    ]
+   }
+  },
+  {
+   "id": 62,
+   "name": "Playback Quality Selector",
+   "phase": "P7",
+   "dependency": "PROVIDER",
+   "status": "BLOCKED",
+   "summary": "Choose streaming quality (data saver / normal / high).",
+   "reuse": {
+    "tables": [
+     "song_media",
+     "music_sources"
+    ],
+    "api": [
+     "GET /media/:id"
+    ],
+    "ui": [
+     "frontend/src/hooks/usePlayer.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None until a source actually offers several renditions; then a rendition column on song_media."
+   },
+   "api": [
+    "GET /media/:id?quality=LOW|NORMAL|HIGH (when available)"
+   ],
+   "frontend": [
+    "Quality menu, hidden while only one rendition exists"
+   ],
+   "security": [
+    "Never transcode or re-encode commercial audio without rights"
+   ],
+   "tests": {
+    "proposed": [
+     "menu hidden when one rendition exists",
+     "unsupported quality falls back to the available one"
+    ]
+   },
+   "outstanding": [
+    "A licensed audio source offering multiple bitrates (local licensed files are single-rendition today)"
+   ]
+  },
+  {
+   "id": 63,
+   "name": "Listening Session Bookmarks",
+   "phase": "P8",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Save a moment in a song (\"the drop at 1:32\") with an optional note and jump back to it.",
+   "reuse": {
+    "tables": [
+     "songs",
+     "users",
+     "incognito_sessions"
+    ],
+    "api": [
+     "GET /songs/:id"
+    ],
+    "ui": [
+     "frontend/src/hooks/usePlayer.jsx",
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "listening_bookmarks"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "A user-chosen moment is not a playback event (those are automatic) — it needs its own row with a position and note."
+   },
+   "api": [
+    "GET /me/bookmarks",
+    "POST /songs/:id/bookmarks {positionSec, note}",
+    "DELETE /me/bookmarks/:id"
+   ],
+   "frontend": [
+    "Bookmark button in the player",
+    "Markers on the seek bar",
+    "Bookmarks list in the Library"
+   ],
+   "security": [
+    "Owner-only",
+    "Refused in the database during a private session (trigger, like listening_history)",
+    "Position must lie inside the song (trigger)"
+   ],
+   "tests": {
+    "proposed": [
+     "bookmark beyond the song end is rejected by the database",
+     "no bookmark is saved during a private session",
+     "another user cannot read or delete my bookmark (404)"
+    ]
+   }
+  },
+  {
+   "id": 64,
+   "name": "Playlist Health Score",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "A 0–100 score with reasons: unplayable or hidden songs, near-duplicates, mood and energy jumps, overly long runs of one artist.",
+   "reuse": {
+    "tables": [
+     "playlist_songs",
+     "songs",
+     "song_media",
+     "audio_features",
+     "song_moods"
+    ],
+    "api": [
+     "GET /playlists/:id"
+    ],
+    "ui": [
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. Computed on request from existing rows; storing it would go stale."
+   },
+   "api": [
+    "GET /playlists/:id/health → {score, issues[]}"
+   ],
+   "frontend": [
+    "Health badge on playlist pages",
+    "Issue list with one-tap fixes"
+   ],
+   "security": [
+    "Same access rule as viewing the playlist"
+   ],
+   "tests": {
+    "proposed": [
+     "a hidden song lowers the score with an explicit issue",
+     "score is reproducible for the same playlist"
+    ]
+   }
+  },
+  {
+   "id": 65,
+   "name": "Duplicate Playlist Cleaner",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Find near-duplicates (same normalised title and artist, merged songs, alternate versions) and remove them in one step.",
+   "reuse": {
+    "tables": [
+     "playlist_songs",
+     "songs",
+     "song_artists"
+    ],
+    "api": [
+     "GET /playlists/:id",
+     "DELETE /playlists/:id/songs/:songId"
+    ],
+    "ui": [
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. The playlist_songs primary key already prevents exact duplicates; near-duplicates are found with songs.normalized_title and merged_into_song_id."
+   },
+   "api": [
+    "GET /playlists/:id/duplicates",
+    "POST /playlists/:id/duplicates/resolve {keepSongIds[]}"
+   ],
+   "frontend": [
+    "Grouped duplicate review dialog"
+   ],
+   "security": [
+    "Owner or EDITOR collaborator only",
+    "Resolve runs in one transaction"
+   ],
+   "tests": {
+    "existing": [
+     "duplicates are rejected: same song twice, same playlist name twice"
+    ],
+    "proposed": [
+     "a merged song and its target are reported as duplicates",
+     "resolve keeps the chosen entry and counters stay correct"
+    ]
+   },
+   "gaps": [
+    "Exact duplicates are already impossible; near-duplicate detection and the cleaner UI are not built."
+   ]
+  },
+  {
+   "id": 66,
+   "name": "Playlist Version History",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "See earlier versions of a playlist and restore one.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "playlist_songs"
+    ],
+    "api": [
+     "GET /playlists/:id",
+     "PATCH /playlists/:id"
+    ],
+    "ui": [
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "playlist_revisions",
+     "playlist_revision_songs"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "A snapshot of name, description and ordered songs per playlists.version (0005). audit_logs is append-only admin evidence, not a restorable store."
+   },
+   "api": [
+    "GET /playlists/:id/revisions",
+    "GET /playlists/:id/revisions/:version",
+    "POST /playlists/:id/revisions/:version/restore"
+   ],
+   "frontend": [
+    "History drawer",
+    "Diff view (added/removed/moved)",
+    "Restore with confirmation"
+   ],
+   "security": [
+    "Viewers of the playlist may read history; only owner/editors restore",
+    "Revisions are insert-only for the application account (grant)",
+    "Restore skips songs that no longer exist and says which"
+   ],
+   "tests": {
+    "proposed": [
+     "each save writes exactly one revision",
+     "restore creates a new version instead of rewriting history",
+     "app account cannot UPDATE playlist_revisions"
+    ]
+   },
+   "dependsOn": [
+    34
+   ]
+  },
+  {
+   "id": 67,
+   "name": "Playlist Conflict Resolver",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "When two collaborators edit at once, show both changes and merge instead of silently overwriting.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "playlist_songs",
+     "playlist_collaborators",
+     "playlist_revisions"
+    ],
+    "ui": [
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None beyond 0005 (playlists.version) and 66 (revisions): a stale write is detected by version and the two sides are compared against the common revision."
+   },
+   "api": [
+    "Writes carry If-Match: version → 409 with {base, mine, theirs}",
+    "POST /playlists/:id/merge {baseVersion, operations[]}"
+   ],
+   "frontend": [
+    "Conflict dialog with a three-way view"
+   ],
+   "security": [
+    "Only collaborators with EDITOR role can merge",
+    "Merge is one transaction and writes a CONFLICT_MERGE revision"
+   ],
+   "tests": {
+    "proposed": [
+     "stale version returns 409 with both sides",
+     "non-overlapping edits merge automatically",
+     "a viewer cannot merge"
+    ]
+   },
+   "dependsOn": [
+    34,
+    66
+   ]
+  },
+  {
+   "id": 68,
+   "name": "Playlist Alternative Finder",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "For an unplayable or disliked entry, suggest the closest playable alternatives.",
+   "reuse": {
+    "tables": [
+     "audio_features",
+     "song_moods",
+     "song_media",
+     "playlist_songs"
+    ],
+    "api": [
+     "GET /recommendations/similar"
+    ],
+    "ui": [
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. Same similarity query as GET /recommendations/similar, restricted to playable songs not already in the playlist."
+   },
+   "api": [
+    "GET /playlists/:id/songs/:songId/alternatives"
+   ],
+   "frontend": [
+    "\"Find alternative\" on unavailable entries",
+    "Swap in one tap"
+   ],
+   "security": [
+    "Playlist access rules apply",
+    "Only songs with a playable licensed source are suggested"
+   ],
+   "tests": {
+    "proposed": [
+     "alternatives exclude songs already in the playlist",
+     "alternatives are all playable"
+    ]
+   }
+  },
+  {
+   "id": 69,
+   "name": "QR Playlist Sharing",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Share a playlist through an expiring, revocable link shown as a QR code.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "playlist_songs"
+    ],
+    "api": [
+     "GET /playlists/:id"
+    ],
+    "ui": [
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "playlist_share_links"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "A share link has its own lifetime and revocation; only a SHA-256 hash of the token is stored, as for auth_sessions."
+   },
+   "api": [
+    "POST /playlists/:id/share-links {days ≤ 90}",
+    "DELETE /playlists/:id/share-links/:linkId",
+    "GET /shared/:token (read-only playlist view)"
+   ],
+   "frontend": [
+    "Share dialog with QR code (generated in the browser)",
+    "Active links with revoke"
+   ],
+   "security": [
+    "Token: 32 random bytes, shown once, stored hashed",
+    "Expiry ≤ 90 days enforced by CHECK",
+    "Shared view exposes titles only — no owner email, no listening data",
+    "Rate-limited lookups; revoked or expired links return 404"
+   ],
+   "tests": {
+    "proposed": [
+     "raw token is never stored (CHECK on hash format)",
+     "revoked link returns 404",
+     "shared view hides the owner's private data"
+    ]
+   },
+   "dependsOn": [
+    34
+   ]
+  },
+  {
+   "id": 70,
+   "name": "New Release Radar",
+   "phase": "P7",
+   "dependency": "PROVIDER",
+   "status": "BLOCKED",
+   "summary": "A weekly list of real new releases from artists you follow or play.",
+   "reuse": {
+    "tables": [
+     "songs",
+     "albums",
+     "artists",
+     "user_artist_preferences"
+    ],
+    "ui": [
+     "frontend/src/pages/Home.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "Uses artist_follows (71). Release dates need provider metadata: albums.release_year is a year only, and songs.created_at is when the curator added the song, not when it was released."
+   },
+   "api": [
+    "GET /recommendations/new-releases (when a release feed exists)"
+   ],
+   "frontend": [
+    "Release radar shelf on Home"
+   ],
+   "security": [
+    "Provider terms and attribution respected",
+    "No scraping"
+   ],
+   "tests": {
+    "proposed": [
+     "only releases inside the last 14 days appear",
+     "without a provider the shelf says it is unavailable"
+    ]
+   },
+   "outstanding": [
+    "A licensed release-metadata feed with release dates (provider adapter, credentials in .env)"
+   ],
+   "gaps": [
+    "A catalogue-only \"recently added from artists you follow\" list is possible through 71 without a provider, but it is not a release radar."
+   ],
+   "dependsOn": [
+    71
+   ]
+  },
+  {
+   "id": 71,
+   "name": "Artist Follow Notifications",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Follow an artist and get an in-app notice when the catalogue adds their songs.",
+   "reuse": {
+    "tables": [
+     "artists",
+     "songs",
+     "song_artists",
+     "pipeline_jobs"
+    ],
+    "api": [
+     "GET /artists/:id"
+    ],
+    "ui": [
+     "frontend/src/pages/Catalog.jsx",
+     "frontend/src/components/Layout.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "artist_follows",
+     "notifications"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "Following is explicit intent; user_artist_preferences is a recomputed score and would lose it. notifications is a shared in-app inbox (also used by 34 invitations and 36 reminders) with a dedupe key so fan-out jobs are idempotent."
+   },
+   "api": [
+    "PUT /artists/:id/follow",
+    "DELETE /artists/:id/follow",
+    "GET /me/notifications",
+    "POST /me/notifications/read"
+   ],
+   "frontend": [
+    "Follow button",
+    "Notification bell with unread count"
+   ],
+   "security": [
+    "In-app only: push and e-mail delivery are platform/provider-dependent and not built",
+    "link_path restricted to in-app paths by CHECK (no external or javascript: links)",
+    "Follows are private"
+   ],
+   "tests": {
+    "proposed": [
+     "catalogue addition notifies followers once even if the job reruns",
+     "external links in notifications are rejected by the database",
+     "notify=0 suppresses notices"
+    ]
+   }
+  },
+  {
+   "id": 72,
+   "name": "Personal Music Radio",
+   "phase": "P8",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "One always-on station built from the listener's whole profile rather than a single seed.",
+   "reuse": {
+    "tables": [
+     "user_mood_preferences",
+     "user_genre_preferences",
+     "user_artist_preferences",
+     "recommendation_batches"
+    ],
+    "api": [
+     "GET /recommendations/daily",
+     "GET /insights/preferences"
+    ],
+    "ui": [
+     "frontend/src/pages/Home.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None beyond 59: it is a RADIO batch seeded by the stored preference profile instead of one song or artist."
+   },
+   "api": [
+    "POST /radio {seedType: PROFILE}"
+   ],
+   "frontend": [
+    "\"My radio\" tile on Home"
+   ],
+   "security": [
+    "Uses only the caller's own preferences",
+    "Not available until onboarding or enough history exists — says so instead of guessing"
+   ],
+   "tests": {
+    "proposed": [
+     "profile radio reflects top preferred moods",
+     "new user without history gets a clear \"not enough listening yet\" response"
+    ]
+   },
+   "gaps": [
+    "Overlaps with 59 and the existing Daily mix; ship after 59 as one more seed type."
+   ],
+   "dependsOn": [
+    59
+   ]
+  },
+  {
+   "id": 73,
+   "name": "Playlist Sharing Cards",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "A downloadable image card for a playlist: cover colours, top songs and the share QR.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "playlist_songs",
+     "albums"
+    ],
+    "api": [
+     "GET /playlists/:id"
+    ],
+    "ui": [
+     "frontend/src/components/Art.jsx",
+     "frontend/src/pages/Library.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. Rendered in the browser from playlist data and a link from 69."
+   },
+   "api": [
+    "No new endpoint"
+   ],
+   "frontend": [
+    "Card preview and PNG download"
+   ],
+   "security": [
+    "Only data visible on the playlist page; no third-party artwork without rights (uses generated cover colours)"
+   ],
+   "tests": {
+    "proposed": [
+     "card shows at most the playlist's first 5 titles",
+     "download works without network access to third parties"
+    ]
+   },
+   "dependsOn": [
+    69
+   ]
+  },
+  {
+   "id": 74,
+   "name": "Curator Leaderboard",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Rank listeners who opted in by saves of their public playlists and accepted metadata contributions.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "metadata_suggestions",
+     "user_profiles"
+    ],
+    "ui": [
+     "frontend/src/pages/Profile.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "playlist_saves"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "Saving someone else's playlist is a many-to-many relationship that does not exist yet; it also powers \"saved playlists\" in the Library."
+   },
+   "api": [
+    "PUT /playlists/:id/save",
+    "DELETE /playlists/:id/save",
+    "GET /leaderboard/curators?period=30d"
+   ],
+   "frontend": [
+    "Leaderboard page",
+    "Save button on public playlists"
+   ],
+   "security": [
+    "Only users with profile_visibility PUBLIC appear (0005)",
+    "Only PUBLIC playlists can be saved",
+    "Self-saves do not count"
+   ],
+   "tests": {
+    "proposed": [
+     "private profiles never appear",
+     "self-saves are excluded from the score",
+     "saving a private playlist is 404"
+    ]
+   },
+   "dependsOn": [
+    37,
+    40
+   ]
+  },
+  {
+   "id": 75,
+   "name": "Community Music Collections",
+   "phase": "P9",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Themed public collections curated by editors, open to song submissions from listeners.",
+   "reuse": {
+    "tables": [
+     "playlists",
+     "playlist_songs",
+     "review_queue",
+     "audit_logs"
+    ],
+    "api": [
+     "GET /playlists/:id"
+    ],
+    "ui": [
+     "frontend/src/pages/Library.jsx",
+     "frontend/src/pages/admin/CatalogAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "collection_submissions"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "A collection is an EDITORIAL playlist (0005); a submission has its own moderation state, one open submission per song per collection."
+   },
+   "api": [
+    "POST /collections/:id/submissions",
+    "GET /admin/collections/:id/submissions",
+    "POST /admin/collections/:id/submissions/:sid/decision"
+   ],
+   "frontend": [
+    "Submit button on collections",
+    "Moderation queue for curators"
+   ],
+   "security": [
+    "Only PUBLIC EDITORIAL playlists accept submissions (trigger)",
+    "Decisions require the curator permission and are audited",
+    "Rate limit per user"
+   ],
+   "tests": {
+    "proposed": [
+     "submitting to a private playlist is refused by the database",
+     "duplicate open submission is refused",
+     "accepting adds the song in one transaction"
+    ]
+   },
+   "dependsOn": [
+    39
+   ]
+  },
+  {
+   "id": 76,
+   "name": "Active Device Manager",
+   "phase": "P10",
+   "dependency": "CORE",
+   "status": "VERIFIED",
+   "summary": "See every signed-in device and sign out one or all.",
+   "reuse": {
+    "tables": [
+     "auth_sessions"
+    ],
+    "api": [
+     "GET /me/sessions",
+     "DELETE /me/sessions/:sessionId",
+     "POST /auth/logout-all"
+    ],
+    "ui": [
+     "frontend/src/pages/Settings.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. Already implemented on auth_sessions."
+   },
+   "security": [
+    "Sessions are listed for the caller only",
+    "Tokens stored as SHA-256 hashes",
+    "Revocation is immediate"
+   ],
+   "tests": {
+    "existing": [
+     "sessions list, revoke one, sign out everywhere",
+     "logout revokes the session on the server: the old cookie stops working"
+    ]
+   },
+   "gaps": [
+    "Devices are shown by raw user-agent text; there is no friendly device name and no frontend test of the Settings panel."
+   ]
+  },
+  {
+   "id": 77,
+   "name": "Login Activity Timeline",
+   "phase": "P10",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "A timeline of sign-ins, failed attempts, lockouts and security changes on the account.",
+   "reuse": {
+    "tables": [
+     "auth_sessions",
+     "audit_logs",
+     "users"
+    ],
+    "api": [
+     "GET /me/sessions"
+    ],
+    "ui": [
+     "frontend/src/pages/Settings.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "login_events"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "auth_sessions keeps only successful sign-ins and is purged 30 days after they end; failed attempts exist only as users.failed_login_count. A timeline needs one row per attempt."
+   },
+   "api": [
+    "GET /me/login-activity?days=90"
+   ],
+   "frontend": [
+    "Timeline in Settings → Security",
+    "\"This wasn't me\" → sign out everywhere and change password"
+   ],
+   "security": [
+    "Only the account owner sees it",
+    "No passwords, no raw IP (hash only, CHECK), attempts on unknown usernames are not stored",
+    "Append-only for the application account"
+   ],
+   "tests": {
+    "existing": [
+     "five wrong passwords lock the account",
+     "sessions list, revoke one, sign out everywhere"
+    ],
+    "proposed": [
+     "a wrong password writes one WRONG_PASSWORD event",
+     "a raw IP is rejected by the database",
+     "another user's activity is never returned"
+    ]
+   },
+   "gaps": [
+    "Active sessions and lockouts exist; a history of attempts does not."
+   ]
+  },
+  {
+   "id": 78,
+   "name": "Consent and API Connection Centre",
+   "phase": "P7",
+   "dependency": "PROVIDER",
+   "status": "BLOCKED",
+   "summary": "Listeners see and revoke every consent and every external account connected to MUSE.",
+   "reuse": {
+    "tables": [
+     "music_sources",
+     "user_profiles"
+    ],
+    "api": [
+     "GET /admin/providers"
+    ],
+    "ui": [
+     "frontend/src/pages/Settings.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None now. Providers are server-level today (no user connects an external account); consent flags from 0005 (allow_compatibility, profile_visibility) are shown in Settings. A user_connections table waits for an OAuth provider."
+   },
+   "api": [
+    "GET /me/consents",
+    "PATCH /me/consents (0005 flags)",
+    "User connections: blocked"
+   ],
+   "frontend": [
+    "Consents panel",
+    "Connected accounts list (blocked)"
+   ],
+   "security": [
+    "OAuth tokens encrypted at rest, never sent to the browser",
+    "Revoking a connection deletes its tokens"
+   ],
+   "tests": {
+    "existing": [
+     "every external provider is disabled by default and the app runs without keys"
+    ],
+    "proposed": [
+     "consent changes are audited",
+     "revoking a connection deletes stored tokens"
+    ]
+   },
+   "outstanding": [
+    "OAuth client registration with at least one provider; provider terms allowing per-user connections"
+   ],
+   "dependsOn": [
+    35,
+    37
+   ]
+  },
+  {
+   "id": 79,
+   "name": "Automatic Data Retention Rules",
+   "phase": "P10",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Old data is deleted on a schedule according to visible rules, and listeners can choose how long history is kept.",
+   "reuse": {
+    "tables": [
+     "auth_sessions",
+     "incognito_sessions",
+     "incognito_events",
+     "pipeline_jobs",
+     "listening_history"
+    ],
+    "api": [
+     "GET /admin/jobs"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/PipelineAdmin.jsx",
+     "frontend/src/pages/Settings.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "retention_policies"
+    ],
+    "columns": [
+     "user_settings.history_retention_days",
+     "pipeline_jobs.job_type"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "Rules become data an admin can see and change; only the rule enforced today (ended sessions, 30 days) starts enabled. A per-user history setting (NULL = keep). DATA_RETENTION job type logs each run."
+   },
+   "api": [
+    "GET /admin/retention",
+    "PATCH /admin/retention/:dataClass",
+    "PATCH /me/settings {historyRetentionDays}"
+   ],
+   "frontend": [
+    "Retention rules panel (admin)",
+    "History retention choice in Settings"
+   ],
+   "security": [
+    "Deletions run as a logged job with row counts",
+    "Minimum 30 days for user history (CHECK)",
+    "Changing a rule is admin-only and audited"
+   ],
+   "tests": {
+    "existing": [
+     "ended sessions are purged by the housekeeping job",
+     "an expired private session stops being private and is purged by the cleanup job"
+    ],
+    "proposed": [
+     "a disabled rule deletes nothing",
+     "history older than the user's setting is deleted, newer kept",
+     "retention job is idempotent"
+    ]
+   },
+   "gaps": [
+    "Purging of ended sessions and private sessions exists with fixed values; configurable rules do not. Purging login_events needs a DELETE path that the append-only grant does not give (see unresolved issues)."
+   ]
+  },
+  {
+   "id": 80,
+   "name": "Personal Data Export",
+   "phase": "P10",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Download everything MUSE stores about you as a JSON file.",
+   "reuse": {
+    "tables": [
+     "users",
+     "user_profiles",
+     "listening_history",
+     "ratings",
+     "user_likes",
+     "playlists",
+     "playlist_songs",
+     "song_mood_ratings",
+     "search_history",
+     "auth_sessions"
+    ],
+    "api": [
+     "GET /insights/profile",
+     "GET /history"
+    ],
+    "ui": [
+     "frontend/src/pages/Settings.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. A synchronous, authenticated, streamed download of the caller's own rows; no export files are stored on the server."
+   },
+   "api": [
+    "POST /me/export {password} → application/json download"
+   ],
+   "frontend": [
+    "\"Download my data\" in Settings"
+   ],
+   "security": [
+    "Requires the current password",
+    "Own rows only; excludes password hash, token hashes and other users' data",
+    "Rate-limited (e.g. once per hour)",
+    "Logged in audit_logs"
+   ],
+   "tests": {
+    "proposed": [
+     "export contains my plays and none of another user's",
+     "export never contains password_hash or token_hash",
+     "wrong password is 401"
+    ]
+   }
+  },
+  {
+   "id": 81,
+   "name": "Account Recovery and Security Centre",
+   "phase": "P10",
+   "dependency": "PROVIDER",
+   "status": "PARTIAL",
+   "summary": "One place for password, sessions, lockouts and account deletion — and recovery when the password is forgotten.",
+   "reuse": {
+    "tables": [
+     "users",
+     "auth_sessions",
+     "audit_logs"
+    ],
+    "api": [
+     "POST /me/password",
+     "DELETE /me",
+     "GET /me/sessions",
+     "POST /auth/logout-all"
+    ],
+    "ui": [
+     "frontend/src/pages/Settings.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None now. Self-service recovery needs a password_reset_tokens table, which is deliberately not added until an e-mail provider exists."
+   },
+   "api": [
+    "Existing account endpoints",
+    "POST /auth/recovery (blocked)",
+    "POST /auth/recovery/confirm (blocked)"
+   ],
+   "frontend": [
+    "Security section in Settings combining password, devices (76) and activity (77)"
+   ],
+   "security": [
+    "Recovery tokens single-use, short-lived, stored hashed",
+    "Responses never reveal whether an e-mail exists",
+    "Every security change writes a SECURITY notification and an audit row"
+   ],
+   "tests": {
+    "existing": [
+     "changing the password signs out every other session and keeps this one",
+     "deleting the account needs the password and confirmation, and removes the user and their data",
+     "five wrong passwords lock the account",
+     "the last admin cannot delete their own account"
+    ],
+    "proposed": [
+     "recovery request for unknown e-mail returns the same response",
+     "recovery token works once"
+    ]
+   },
+   "outstanding": [
+    "A transactional e-mail provider (credentials in .env, never in code) for recovery links"
+   ],
+   "gaps": [
+    "Password change, lockout, session control and deletion are implemented and tested; forgotten-password recovery is blocked on e-mail delivery."
+   ],
+   "dependsOn": [
+    76,
+    77
+   ]
+  },
+  {
+   "id": 82,
+   "name": "Database Backup and Restore Centre",
+   "phase": "P11",
+   "dependency": "INFRA",
+   "status": "PLANNED",
+   "summary": "Scheduled logical backups with verification by restoring into a scratch schema; production restore stays an operator procedure.",
+   "reuse": {
+    "tables": [
+     "pipeline_jobs",
+     "pipeline_job_logs",
+     "schema_migrations"
+    ],
+    "api": [
+     "GET /admin/jobs",
+     "GET /admin/jobs/:id"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/PipelineAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "columns": [
+     "pipeline_jobs.job_type"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "Two ENUM values (DATABASE_BACKUP, BACKUP_VERIFY); the existing job table already records status, timings, retries and logs."
+   },
+   "api": [
+    "POST /admin/backups (start)",
+    "GET /admin/backups",
+    "POST /admin/backups/:jobId/verify"
+   ],
+   "frontend": [
+    "Backup list with size, checksum and verification result"
+   ],
+   "security": [
+    "Backup files outside the web root, encrypted at rest, never downloadable through the API",
+    "Restore over the live database is NOT offered in the UI",
+    "Requires a backup tool and storage on the server (INFRA)"
+   ],
+   "tests": {
+    "proposed": [
+     "verify restores into a scratch schema and compares row counts",
+     "a second backup with the same key is idempotent",
+     "non-admin is 403"
+    ]
+   },
+   "outstanding": [
+    "Server-side mysqldump/xtrabackup and encrypted storage location"
+   ]
+  },
+  {
+   "id": 83,
+   "name": "Migration History Dashboard",
+   "phase": "P11",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Admins see applied and pending migrations with checksums, timings and drift warnings.",
+   "reuse": {
+    "tables": [
+     "schema_migrations"
+    ],
+    "api": [
+     "GET /admin/health"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/SystemAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. schema_migrations already records version, checksum, time and duration."
+   },
+   "api": [
+    "GET /admin/migrations → applied, pending, checksum problems (same logic as migrate.js status)"
+   ],
+   "frontend": [
+    "Migrations table in System admin",
+    "Warning when a file changed after it was applied"
+   ],
+   "security": [
+    "Admin-only, read-only: the dashboard never applies a migration"
+   ],
+   "tests": {
+    "existing": [
+     "the schema is at the latest migration and every view/routine/trigger uses one collation",
+     "liveness does not touch the database; readiness reports schema version and provider states without secrets"
+    ],
+    "proposed": [
+     "dashboard lists 0000–0004 as applied with checksums",
+     "an edited migration file is reported as a checksum problem"
+    ]
+   },
+   "gaps": [
+    "Schema version is reported by readiness and the CLI; there is no admin screen."
+   ]
+  },
+  {
+   "id": 84,
+   "name": "API Health Monitor",
+   "phase": "P11",
+   "dependency": "CORE",
+   "status": "PARTIAL",
+   "summary": "Live view of API latency and error rates per route, database health and provider states.",
+   "reuse": {
+    "tables": [
+     "music_sources"
+    ],
+    "api": [
+     "GET /admin/health",
+     "GET /admin/performance",
+     "GET /admin/providers"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/SystemAdmin.jsx",
+     "frontend/src/pages/admin/ProvidersAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. Per-route latency and error counts are kept in memory over a rolling window; long-term metrics belong in an external monitoring system."
+   },
+   "api": [
+    "GET /admin/metrics → per-route p50/p95, error rate, last 15 min"
+   ],
+   "frontend": [
+    "Route latency table and error-rate sparkline"
+   ],
+   "security": [
+    "Admin-only; no request bodies, tokens or user ids in metrics"
+   ],
+   "tests": {
+    "existing": [
+     "database health checks and the performance lab run",
+     "database outage: requests fail with 503 DATABASE_UNAVAILABLE, readiness is 503, liveness stays 200",
+     "a provider that does not answer times out, is retried a bounded number of times, then fails cleanly"
+    ],
+    "proposed": [
+     "metrics count a 500 as an error for its route",
+     "metrics contain no user identifiers"
+    ]
+   },
+   "gaps": [
+    "Database health, readiness and provider states exist; per-route API metrics do not."
+   ]
+  },
+  {
+   "id": 85,
+   "name": "Recommendation A/B Testing",
+   "phase": "P11",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Compare two recommender versions on real listening outcomes (completion, skips, likes).",
+   "reuse": {
+    "tables": [
+     "intelligence_models",
+     "model_parameters",
+     "recommendation_batches",
+     "recommendation_items",
+     "listening_history"
+    ],
+    "api": [
+     "GET /admin/models",
+     "POST /admin/models/:id/activate"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/SystemAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "experiments",
+     "experiment_arms"
+    ],
+    "columns": [
+     "recommendation_batches.experiment_arm_id"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "An experiment and its arms (each pointing at a model version and a traffic share ≤ 100 %, enforced by trigger). Assignment is a stable hash, so it is not stored; the arm is recorded on each batch for analysis."
+   },
+   "api": [
+    "POST /admin/experiments",
+    "POST /admin/experiments/:id/start",
+    "POST /admin/experiments/:id/stop",
+    "GET /admin/experiments/:id/results"
+   ],
+   "frontend": [
+    "Experiment list and results (with sample sizes and confidence intervals)"
+   ],
+   "security": [
+    "Admin-only",
+    "Private sessions never enter an experiment",
+    "Results are aggregates only"
+   ],
+   "tests": {
+    "proposed": [
+     "the same user always gets the same arm",
+     "arms above 100 % are refused by the database",
+     "private-session requests are not assigned"
+    ]
+   }
+  },
+  {
+   "id": 86,
+   "name": "Feature Flag Manager",
+   "phase": "P11",
+   "dependency": "CORE",
+   "status": "PLANNED",
+   "summary": "Turn features on gradually (percentage rollout, per-user overrides) without redeploying.",
+   "reuse": {
+    "tables": [
+     "users",
+     "audit_logs"
+    ],
+    "api": [
+     "GET /admin/overview"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/SystemAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "tables": [
+     "feature_flags",
+     "feature_flag_overrides"
+    ],
+    "migration": "database/migrations/proposed/0006_roadmap_58_87.sql",
+    "why": "Flags with a rollout share, and an allow/deny list per user (M:N)."
+   },
+   "api": [
+    "GET /me/flags",
+    "GET /admin/flags",
+    "PATCH /admin/flags/:code",
+    "PUT /admin/flags/:code/users/:userId"
+   ],
+   "frontend": [
+    "Flag list with rollout slider",
+    "Client reads /me/flags once per session"
+   ],
+   "security": [
+    "Flags hide UI but every API route still checks permissions",
+    "Changes are admin-only and audited",
+    "Unknown flag = off"
+   ],
+   "tests": {
+    "proposed": [
+     "rollout 10 % enables a stable subset",
+     "a per-user override wins over rollout",
+     "a flag never grants a permission the role lacks"
+    ]
+   }
+  },
+  {
+   "id": 87,
+   "name": "Load and Performance Lab",
+   "phase": "P11",
+   "dependency": "INFRA",
+   "status": "PARTIAL",
+   "summary": "Show how key queries use indexes, and measure the API under concurrent load.",
+   "reuse": {
+    "tables": [
+     "songs",
+     "listening_history",
+     "recommendation_items"
+    ],
+    "api": [
+     "GET /admin/performance"
+    ],
+    "ui": [
+     "frontend/src/pages/admin/SystemAdmin.jsx"
+    ]
+   },
+   "newDb": {
+    "why": "None. EXPLAIN / EXPLAIN ANALYZE comparisons already run; load tests run outside the database against a disposable copy."
+   },
+   "api": [
+    "GET /admin/performance (existing)",
+    "npm run perf:load (planned script, never against production)"
+   ],
+   "frontend": [
+    "Existing index comparison panel",
+    "Load-test report page"
+   ],
+   "security": [
+    "Load tests run only against a disposable environment",
+    "Admin-only"
+   ],
+   "tests": {
+    "existing": [
+     "database health checks and the performance lab run",
+     "concurrent recommendation requests do not deadlock (READ COMMITTED scoring + retry)"
+    ],
+    "proposed": [
+     "load script refuses a production database name",
+     "p95 latency of /songs under 50 concurrent users is reported"
+    ]
+   },
+   "gaps": [
+    "Index comparisons and a concurrency test exist; there is no load-generation tool or report."
+   ]
+  }
+ ]
+}

@@ -1,0 +1,552 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1805" height="1133" viewBox="0 0 1805 1133" font-family="Arial, Helvetica, sans-serif">
+<title>MUSE — Conceptual explanation: how a recommendation is made and learned from</title>
+<rect x="0" y="0" width="1805" height="1133" fill="#FFFFFF"/>
+<text x="40" y="70" font-size="32" font-weight="bold" fill="#1A1A1A">MUSE — Conceptual explanation: how a recommendation is made and learned from</text>
+<text x="40" y="98" font-size="14" fill="#555555">CONCEPTUAL VIEW for the presentation: only the entities in this flow are shown. Grey lines are real foreign keys (crow's foot).</text><text x="40" y="118" font-size="14" fill="#555555">Blue numbered arrows are PROCESS STEPS performed by the API and stored procedures, not relationships. This is not the complete database ERD (see MUSE_ERD_Full_Schema).</text>
+<svg x="40.0" y="150.0" width="1725.4" height="623.2" viewBox="0 0 1725.43 623.21" overflow="visible"><g transform="scale(1 1) rotate(0) translate(21.6 601.61)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-21.6,21.6 -21.6,-601.61 1703.83,-601.61 1703.83,21.6 -21.6,21.6" />
+
+</g></svg>
+<svg x="645.1" y="803.2" width="515.2" height="290.2" viewBox="0 0 515.20 290.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 286.6)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-3.6,3.6 -3.6,-286.6 511.6,-286.6 511.6,3.6 -3.6,3.6" />
+<g xmlns="http://www.w3.org/2000/svg" id="clust1" class="cluster">
+<title>cluster_legend</title>
+<path fill="none" stroke="#999999" d="M20,-8C20,-8 488,-8 488,-8 494,-8 500,-14 500,-20 500,-20 500,-263 500,-263 500,-269 494,-275 488,-275 488,-275 20,-275 20,-275 14,-275 8,-269 8,-263 8,-263 8,-20 8,-20 8,-14 14,-8 20,-8" />
+<text text-anchor="start" x="192.5" y="-262.4" font-family="Arial" font-weight="bold" font-size="12.00">Notation (crow's foot)</text>
+</g>
+
+</g></svg>
+<g fill="none" stroke="#3A3A3A" stroke-width="1.3" stroke-linecap="round"></g>
+<svg x="40.0" y="150.0" width="1725.4" height="623.2" viewBox="0 0 1725.43 623.21" overflow="visible"><g transform="scale(1 1) rotate(0) translate(21.6 601.61)"><g xmlns="http://www.w3.org/2000/svg" id="edge20" class="edge">
+<title>users-&gt;recommendation_batches</title>
+<path fill="none" stroke="#2f6fd0" stroke-width="3" d="M143.83,-384.02C196.14,-386.25 287.74,-386.85 361.04,-385.81" />
+<polygon fill="#2f6fd0" stroke="#2f6fd0" stroke-width="3" points="361.17,-390.01 373.1,-385.62 361.03,-381.61 361.17,-390.01" />
+<polygon fill="#2f6fd0" stroke="transparent" points="235.23,-386.23 235.23,-409.23 258.23,-409.23 258.23,-386.23 235.23,-386.23" />
+<text text-anchor="start" x="240.73" y="-395.13" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff"> 1 </text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge21" class="edge">
+<title>moods-&gt;recommendation_batch_moods</title>
+<path fill="none" stroke="#2f6fd0" stroke-width="3" d="M181.07,-103.18C231.18,-126.81 296.95,-156.39 353.36,-180.77" />
+<polygon fill="#2f6fd0" stroke="#2f6fd0" stroke-width="3" points="351.83,-184.69 364.51,-185.58 355.15,-176.97 351.83,-184.69" />
+<polygon fill="#2f6fd0" stroke="transparent" points="249.54,-145.15 249.54,-168.15 272.54,-168.15 272.54,-145.15 249.54,-145.15" />
+<text text-anchor="start" x="255.04" y="-154.05" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff"> 2 </text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge17" class="edge">
+<title>song_moods-&gt;moods</title>
+<path fill="none" stroke="#555555" d="M370.56,-47.25C322.12,-49.84 264.14,-52.95 214.47,-55.61" />
+<polygon fill="#555555" stroke="#555555" points="378.75,-46.81 388.98,-50.77 383.75,-46.54 388.74,-46.28 388.74,-46.28 388.74,-46.28 383.75,-46.54 388.5,-41.78 378.75,-46.81 378.75,-46.81" />
+<ellipse fill="none" stroke="#555555" cx="374.76" cy="-47.02" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="205.6,-61.09 205.06,-51.11 207.06,-51 207.6,-60.99 205.6,-61.09" />
+<polyline fill="none" stroke="#555555" points="204.33,-56.15 209.33,-55.89 " />
+<polygon fill="#555555" stroke="#555555" points="210.59,-60.83 210.06,-50.84 212.05,-50.73 212.59,-60.72 210.59,-60.83" />
+<polyline fill="none" stroke="#555555" points="209.33,-55.89 214.32,-55.62 " />
+<text text-anchor="start" x="259.42" y="-54.02" font-family="Arial" font-size="9.00" fill="#555555">mood_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge16" class="edge">
+<title>song_moods-&gt;songs</title>
+<path fill="none" stroke="#555555" d="M573.7,-86.77C645.06,-118.64 737.69,-160 793.78,-185.04" />
+<polygon fill="#555555" stroke="#555555" points="566.15,-83.4 558.85,-75.21 561.58,-81.36 557.02,-79.32 557.02,-79.32 557.02,-79.32 561.58,-81.36 555.18,-83.43 566.15,-83.4 566.15,-83.4" />
+<ellipse fill="none" stroke="#555555" cx="569.8" cy="-85.03" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="804.27,-184.25 800.19,-193.38 798.36,-192.56 802.44,-183.43 804.27,-184.25" />
+<polyline fill="none" stroke="#555555" points="803.14,-189.22 798.57,-187.18 " />
+<polygon fill="#555555" stroke="#555555" points="799.7,-182.21 795.62,-191.34 793.8,-190.52 797.87,-181.39 799.7,-182.21" />
+<polyline fill="none" stroke="#555555" points="798.57,-187.18 794.01,-185.14 " />
+<text text-anchor="start" x="645.81" y="-136.95" font-family="Arial" font-size="9.00" fill="#555555">song_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge18" class="edge">
+<title>song_moods-&gt;audio_features</title>
+<path fill="none" stroke="#555555" stroke-dasharray="5,2" d="M575.1,-41.73C631.56,-41.71 700.99,-41.68 755.07,-41.66" />
+<polygon fill="#555555" stroke="#555555" points="566.97,-41.73 556.96,-37.23 561.97,-41.73 556.97,-41.73 556.97,-41.73 556.97,-41.73 561.97,-41.73 556.97,-46.23 566.97,-41.73 566.97,-41.73" />
+<ellipse fill="none" stroke="#555555" cx="570.97" cy="-41.73" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="764.32,-36.65 764.32,-46.65 762.33,-46.66 762.32,-36.66 764.32,-36.65" />
+<polyline fill="none" stroke="#555555" points="765.32,-41.65 760.32,-41.66 " />
+<polygon fill="#555555" stroke="#555555" points="759.32,-36.66 759.33,-46.66 757.33,-46.66 757.32,-36.66 759.32,-36.66" />
+<polyline fill="none" stroke="#555555" points="760.32,-41.66 755.32,-41.66 " />
+<text text-anchor="start" x="618.86" y="-44.49" font-family="Arial" font-size="9.00" fill="#555555">feature_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge19" class="edge">
+<title>audio_features-&gt;songs</title>
+<path fill="none" stroke="#555555" stroke-dasharray="5,2" d="M843.44,-101.44C843.46,-119.11 843.49,-138.29 843.51,-155.41" />
+<polygon fill="#555555" stroke="#555555" points="843.43,-93.42 847.92,-83.42 843.42,-88.42 843.42,-83.42 843.42,-83.42 843.42,-83.42 843.42,-88.42 838.92,-83.43 843.43,-93.42 843.43,-93.42" />
+<ellipse fill="none" stroke="#555555" cx="843.43" cy="-97.42" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="848.52,-164.77 838.52,-164.78 838.52,-162.78 848.52,-162.77 848.52,-164.77" />
+<polyline fill="none" stroke="#555555" points="843.53,-165.78 843.52,-160.78 " />
+<polygon fill="#555555" stroke="#555555" points="848.52,-159.77 838.52,-159.78 838.51,-157.78 848.51,-157.77 848.52,-159.77" />
+<polyline fill="none" stroke="#555555" points="843.52,-160.78 843.51,-155.78 " />
+<text text-anchor="start" x="809.47" y="-127.14" font-family="Arial" font-size="9.00" fill="#555555">song_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>recommendation_batches-&gt;users</title>
+<path fill="none" stroke="#555555" stroke-dasharray="5,2" d="M355.01,-373.22C287.37,-372.35 205.84,-372.84 153.96,-374.69" />
+<polygon fill="#555555" stroke="#555555" points="363.02,-373.34 372.95,-377.99 368.02,-373.41 373.02,-373.49 373.02,-373.49 373.02,-373.49 368.02,-373.41 373.09,-368.99 363.02,-373.34 363.02,-373.34" />
+<ellipse fill="none" stroke="#555555" cx="359.02" cy="-373.28" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="144.87,-380.05 144.48,-370.06 146.48,-369.98 146.87,-379.98 144.87,-380.05" />
+<polyline fill="none" stroke="#555555" points="143.67,-375.1 148.67,-374.9 " />
+<polygon fill="#555555" stroke="#555555" points="149.86,-379.86 149.47,-369.87 151.47,-369.79 151.86,-379.78 149.86,-379.86" />
+<polyline fill="none" stroke="#555555" points="148.67,-374.9 153.67,-374.71 " />
+<text text-anchor="start" x="227.14" y="-375.68" font-family="Arial" font-size="9.00" fill="#555555">user_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge2" class="edge">
+<title>recommendation_batches-&gt;contexts</title>
+<path fill="none" stroke="#555555" stroke-dasharray="5,2" d="M356.12,-331.59C306.18,-311.08 248.51,-287.39 200.74,-267.77" />
+<polygon fill="#555555" stroke="#555555" points="363.77,-334.73 371.31,-342.69 368.39,-336.63 373.02,-338.53 373.02,-338.53 373.02,-338.53 368.39,-336.63 374.73,-334.37 363.77,-334.73 363.77,-334.73" />
+<ellipse fill="none" stroke="#555555" cx="360.07" cy="-333.21" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="187.53,-267.75 191.33,-258.5 193.18,-259.26 189.38,-268.51 187.53,-267.75" />
+<polyline fill="none" stroke="#555555" points="188.5,-262.75 193.13,-264.65 " />
+<ellipse fill="none" stroke="#555555" cx="196.83" cy="-266.16" rx="4" ry="4" />
+<text text-anchor="start" x="237.74" y="-303.43" font-family="Arial" font-size="9.00" fill="#555555">context_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge22" class="edge">
+<title>recommendation_batches-&gt;recommendation_items</title>
+<path fill="none" stroke="#2f6fd0" stroke-width="3" d="M572.79,-385.62C623.34,-386.49 684.76,-386.53 736.34,-385.74" />
+<polygon fill="#2f6fd0" stroke="#2f6fd0" stroke-width="3" points="736.61,-389.94 748.54,-385.54 736.47,-381.54 736.61,-389.94" />
+<polygon fill="#2f6fd0" stroke="transparent" points="637.77,-386.3 637.77,-409.3 660.77,-409.3 660.77,-386.3 637.77,-386.3" />
+<text text-anchor="start" x="643.27" y="-395.2" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff"> 3 </text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge4" class="edge">
+<title>recommendation_batch_moods-&gt;moods</title>
+<path fill="none" stroke="#555555" d="M377.44,-178C327.37,-154.66 265.74,-127.09 213.48,-104.6" />
+<polygon fill="#555555" stroke="#555555" points="384.77,-181.43 391.92,-189.75 389.3,-183.55 393.83,-185.68 393.83,-185.68 393.83,-185.68 389.3,-183.55 395.74,-181.6 384.77,-181.43 384.77,-181.43" />
+<ellipse fill="none" stroke="#555555" cx="381.15" cy="-179.74" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="203.12,-105.6 207.07,-96.41 208.9,-97.2 204.96,-106.39 203.12,-105.6" />
+<polyline fill="none" stroke="#555555" points="204.18,-100.61 208.77,-102.58 " />
+<polygon fill="#555555" stroke="#555555" points="207.72,-107.57 211.66,-98.38 213.5,-99.17 209.56,-108.36 207.72,-107.57" />
+<polyline fill="none" stroke="#555555" points="208.77,-102.58 213.37,-104.55 " />
+<text text-anchor="start" x="262.58" y="-135.26" font-family="Arial" font-size="9.00" fill="#555555">mood_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge3" class="edge">
+<title>recommendation_batch_moods-&gt;recommendation_batches</title>
+<path fill="none" stroke="#555555" d="M472.9,-287.06C472.9,-300.5 472.9,-314.66 472.9,-327.75" />
+<polygon fill="#555555" stroke="#555555" points="472.9,-278.84 477.4,-268.84 472.9,-273.84 472.9,-268.84 472.9,-268.84 472.9,-268.84 472.9,-273.84 468.4,-268.84 472.9,-278.84 472.9,-278.84" />
+<ellipse fill="none" stroke="#555555" cx="472.9" cy="-282.84" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="477.9,-336.98 467.9,-336.98 467.9,-334.98 477.9,-334.98 477.9,-336.98" />
+<polyline fill="none" stroke="#555555" points="472.9,-337.98 472.9,-332.98 " />
+<polygon fill="#555555" stroke="#555555" points="477.9,-331.98 467.9,-331.98 467.9,-329.98 477.9,-329.98 477.9,-331.98" />
+<polyline fill="none" stroke="#555555" points="472.9,-332.98 472.9,-327.98 " />
+<text text-anchor="start" x="436.9" y="-305.83" font-family="Arial" font-size="9.00" fill="#555555">batch_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge6" class="edge">
+<title>recommendation_items-&gt;songs</title>
+<path fill="none" stroke="#555555" d="M843.73,-319.51C843.7,-299.84 843.67,-278.16 843.65,-259.15" />
+<polygon fill="#555555" stroke="#555555" points="843.74,-327.85 839.25,-337.86 843.74,-332.85 843.75,-337.85 843.75,-337.85 843.75,-337.85 843.74,-332.85 848.25,-337.84 843.74,-327.85 843.74,-327.85" />
+<ellipse fill="none" stroke="#555555" cx="843.73" cy="-323.85" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="838.64,-249.9 848.64,-249.89 848.64,-251.89 838.64,-251.9 838.64,-249.9" />
+<polyline fill="none" stroke="#555555" points="843.63,-248.89 843.64,-253.89 " />
+<polygon fill="#555555" stroke="#555555" points="838.64,-254.9 848.64,-254.89 848.65,-256.89 838.65,-256.9 838.64,-254.9" />
+<polyline fill="none" stroke="#555555" points="843.64,-253.89 843.65,-258.89 " />
+<text text-anchor="start" x="809.69" y="-296.21" font-family="Arial" font-size="9.00" fill="#555555">song_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge5" class="edge">
+<title>recommendation_items-&gt;recommendation_batches</title>
+<path fill="none" stroke="#555555" d="M730.61,-373.28C683.62,-372.63 629.3,-372.64 582.68,-373.33" />
+<polygon fill="#555555" stroke="#555555" points="738.77,-373.41 748.7,-378.07 743.77,-373.49 748.77,-373.57 748.77,-373.57 748.77,-373.57 743.77,-373.49 748.84,-369.07 738.77,-373.41 738.77,-373.41" />
+<ellipse fill="none" stroke="#555555" cx="734.77" cy="-373.35" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="573.63,-378.47 573.47,-368.48 575.47,-368.44 575.63,-378.44 573.63,-378.47" />
+<polyline fill="none" stroke="#555555" points="572.55,-373.49 577.55,-373.41 " />
+<polygon fill="#555555" stroke="#555555" points="578.63,-378.39 578.47,-368.4 580.47,-368.36 580.63,-378.36 578.63,-378.39" />
+<polyline fill="none" stroke="#555555" points="577.55,-373.41 582.55,-373.33 " />
+<text text-anchor="start" x="624.66" y="-375.6" font-family="Arial" font-size="9.00" fill="#555555">batch_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge23" class="edge">
+<title>recommendation_items-&gt;listening_history</title>
+<path fill="none" stroke="#2f6fd0" stroke-width="3" d="M939.26,-379.53C982.57,-379.52 1034.52,-379.51 1081.56,-379.5" />
+<polygon fill="#2f6fd0" stroke="#2f6fd0" stroke-width="3" points="1081.72,-383.7 1093.72,-379.5 1081.72,-375.3 1081.72,-383.7" />
+<polygon fill="#2f6fd0" stroke="transparent" points="993.42,-379.51 993.42,-402.51 1016.42,-402.51 1016.42,-379.51 993.42,-379.51" />
+<text text-anchor="start" x="998.92" y="-388.41" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff"> 4 </text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge7" class="edge">
+<title>recommendation_reasons-&gt;recommendation_items</title>
+<path fill="none" stroke="#555555" d="M843.81,-478.71C843.81,-463.18 843.81,-446.58 843.81,-431.49" />
+<polygon fill="#555555" stroke="#555555" points="843.81,-486.75 839.31,-496.75 843.81,-491.75 843.81,-496.75 843.81,-496.75 843.81,-496.75 843.81,-491.75 848.31,-496.75 843.81,-486.75 843.81,-486.75" />
+<ellipse fill="none" stroke="#555555" cx="843.81" cy="-482.75" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="838.81,-422.31 848.81,-422.31 848.81,-424.31 838.81,-424.31 838.81,-422.31" />
+<polyline fill="none" stroke="#555555" points="843.81,-421.31 843.81,-426.31 " />
+<polygon fill="#555555" stroke="#555555" points="838.81,-427.31 848.81,-427.31 848.81,-429.31 838.81,-429.31 838.81,-427.31" />
+<polyline fill="none" stroke="#555555" points="843.81,-426.31 843.81,-431.31 " />
+<text text-anchor="start" x="770.81" y="-461.85" font-family="Arial" font-size="9.00" fill="#555555">batch_id, song_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge8" class="edge">
+<title>listening_sessions-&gt;users</title>
+<path fill="none" stroke="#555555" stroke-dasharray="5,2" d="M1121.07,-521.81C1069.76,-512.92 1004.98,-502.14 947.01,-493.81 691.42,-457.08 625.8,-460.94 370.2,-424.25 294.7,-413.41 207.66,-398.45 153.72,-388.89" />
+<polygon fill="#555555" stroke="#555555" points="1129.13,-523.21 1138.21,-529.36 1134.06,-524.07 1138.98,-524.92 1138.98,-524.92 1138.98,-524.92 1134.06,-524.07 1139.75,-520.49 1129.13,-523.21 1129.13,-523.21" />
+<ellipse fill="none" stroke="#555555" cx="1125.19" cy="-522.52" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="143.83,-392.2 145.58,-382.36 147.55,-382.71 145.8,-392.55 143.83,-392.2" />
+<polyline fill="none" stroke="#555555" points="143.72,-387.11 148.64,-387.98 " />
+<polygon fill="#555555" stroke="#555555" points="148.75,-393.08 150.5,-383.23 152.47,-383.58 150.72,-393.43 148.75,-393.08" />
+<polyline fill="none" stroke="#555555" points="148.64,-387.98 153.57,-388.86 " />
+<text text-anchor="start" x="610.18" y="-460.03" font-family="Arial" font-size="9.00" fill="#555555">user_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge10" class="edge">
+<title>listening_history-&gt;songs</title>
+<path fill="none" stroke="#555555" stroke-dasharray="5,2" d="M1108.07,-330.08C1037.24,-297.19 947.49,-255.52 892.86,-230.16" />
+<polygon fill="#555555" stroke="#555555" points="1115.6,-333.58 1122.78,-341.87 1120.14,-335.68 1124.67,-337.79 1124.67,-337.79 1124.67,-337.79 1120.14,-335.68 1126.57,-333.71 1115.6,-333.58 1115.6,-333.58" />
+<ellipse fill="none" stroke="#555555" cx="1111.97" cy="-331.89" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="882.55,-230.88 886.76,-221.81 888.57,-222.65 884.36,-231.72 882.55,-230.88" />
+<polyline fill="none" stroke="#555555" points="883.74,-225.92 888.28,-228.03 " />
+<polygon fill="#555555" stroke="#555555" points="887.08,-232.99 891.29,-223.92 893.11,-224.76 888.89,-233.83 887.08,-232.99" />
+<polyline fill="none" stroke="#555555" points="888.28,-228.03 892.81,-230.14 " />
+<text text-anchor="start" x="970.26" y="-284.68" font-family="Arial" font-size="9.00" fill="#555555">song_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge11" class="edge">
+<title>listening_history-&gt;recommendation_batches</title>
+<path fill="none" stroke="#555555" stroke-dasharray="5,2" d="M1075.9,-352.32C1033.15,-345.15 985.79,-338.41 942.01,-334.85 855,-327.78 832.61,-327.77 745.61,-334.85 692.6,-339.17 634.37,-348.13 585.38,-356.9" />
+<polygon fill="#555555" stroke="#555555" points="1084.07,-353.72 1093.16,-359.85 1089,-354.57 1093.92,-355.41 1093.92,-355.41 1093.92,-355.41 1089,-354.57 1094.69,-350.98 1084.07,-353.72 1084.07,-353.72" />
+<ellipse fill="none" stroke="#555555" cx="1080.13" cy="-353.04" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="574.35,-363.98 572.57,-354.14 574.53,-353.79 576.32,-363.63 574.35,-363.98" />
+<polyline fill="none" stroke="#555555" points="572.48,-359.24 577.4,-358.35 " />
+<ellipse fill="none" stroke="#555555" cx="581.33" cy="-357.63" rx="4" ry="4" />
+<text text-anchor="start" x="796.87" y="-322.44" font-family="Arial" font-size="9.00" fill="#555555">batch_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge9" class="edge">
+<title>listening_history-&gt;listening_sessions</title>
+<path fill="none" stroke="#555555" stroke-dasharray="5,2" d="M1214.55,-439.37C1214.57,-454.98 1214.6,-471.66 1214.62,-486.8" />
+<polygon fill="#555555" stroke="#555555" points="1214.53,-431.26 1219.02,-421.25 1214.53,-426.26 1214.52,-421.26 1214.52,-421.26 1214.52,-421.26 1214.53,-426.26 1210.02,-421.26 1214.53,-431.26 1214.53,-431.26" />
+<ellipse fill="none" stroke="#555555" cx="1214.54" cy="-435.26" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="1219.64,-496 1209.64,-496.01 1209.64,-494.01 1219.64,-494 1219.64,-496" />
+<polyline fill="none" stroke="#555555" points="1214.64,-497 1214.63,-492 " />
+<polygon fill="#555555" stroke="#555555" points="1219.63,-491 1209.63,-491.01 1209.63,-489.01 1219.63,-489 1219.63,-491" />
+<polyline fill="none" stroke="#555555" points="1214.63,-492 1214.62,-487 " />
+<text text-anchor="start" x="1134.58" y="-461.93" font-family="Arial" font-size="9.00" fill="#555555">session_id, user_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge24" class="edge">
+<title>listening_history-&gt;user_mood_preferences</title>
+<path fill="none" stroke="#2f6fd0" stroke-width="3" d="M1335.15,-379.73C1382.29,-379.82 1435.86,-379.94 1481.51,-380.03" />
+<polygon fill="#2f6fd0" stroke="#2f6fd0" stroke-width="3" points="1481.53,-384.23 1493.54,-380.06 1481.55,-375.83 1481.53,-384.23" />
+<polygon fill="#2f6fd0" stroke="transparent" points="1391.15,-379.89 1391.15,-402.89 1414.15,-402.89 1414.15,-379.89 1391.15,-379.89" />
+<text text-anchor="start" x="1396.65" y="-388.79" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff"> 5 </text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge12" class="edge">
+<title>user_mood_preferences-&gt;users</title>
+<path fill="none" stroke="#555555" d="M1475.84,-404.23C1432.99,-412.27 1383.51,-420.21 1338.15,-424.17 909.58,-461.62 798.94,-459.74 370.2,-424.25 294.19,-417.96 207.28,-401.8 153.51,-390.74" />
+<polygon fill="#555555" stroke="#555555" points="1483.95,-402.67 1494.62,-405.2 1488.86,-401.73 1493.77,-400.78 1493.77,-400.78 1493.77,-400.78 1488.86,-401.73 1492.93,-396.36 1483.95,-402.67 1483.95,-402.67" />
+<ellipse fill="none" stroke="#555555" cx="1480.03" cy="-403.42" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="143.5,-393.77 145.54,-383.98 147.5,-384.38 145.46,-394.18 143.5,-393.77" />
+<polyline fill="none" stroke="#555555" points="143.54,-388.67 148.44,-389.69 " />
+<polygon fill="#555555" stroke="#555555" points="148.4,-394.79 150.43,-384.99 152.39,-385.4 150.36,-395.19 148.4,-394.79" />
+<polyline fill="none" stroke="#555555" points="148.44,-389.69 153.33,-390.7 " />
+<text text-anchor="start" x="786.84" y="-444.08" font-family="Arial" font-size="9.00" fill="#555555">user_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge13" class="edge">
+<title>user_mood_preferences-&gt;moods</title>
+<path fill="none" stroke="#555555" d="M1475.68,-359.15C1432.71,-351.24 1383.2,-342.34 1338.15,-334.77 1099.67,-294.69 1035.32,-309.26 800.38,-251.98 706.6,-229.11 687.29,-209.48 594.6,-182.52 465.11,-144.85 314.25,-108.99 213.94,-86.25" />
+<polygon fill="#555555" stroke="#555555" points="1483.83,-360.66 1492.85,-366.9 1488.75,-361.57 1493.67,-362.48 1493.67,-362.48 1493.67,-362.48 1488.75,-361.57 1494.48,-358.05 1483.83,-360.66 1483.83,-360.66" />
+<ellipse fill="none" stroke="#555555" cx="1479.9" cy="-359.93" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="203.96,-89.12 206.17,-79.37 208.12,-79.81 205.91,-89.56 203.96,-89.12" />
+<polyline fill="none" stroke="#555555" points="204.09,-84.03 208.97,-85.13 " />
+<polygon fill="#555555" stroke="#555555" points="208.84,-90.23 211.04,-80.47 212.99,-80.91 210.79,-90.67 208.84,-90.23" />
+<polyline fill="none" stroke="#555555" points="208.97,-85.13 213.84,-86.23 " />
+<text text-anchor="start" x="763.38" y="-254.77" font-family="Arial" font-size="9.00" fill="#555555">mood_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge25" class="edge">
+<title>user_mood_preferences-&gt;recommendation_items</title>
+<path fill="none" stroke="#2f6fd0" stroke-width="3" d="M1493.77,-400.79C1447.21,-409.93 1389.99,-419.65 1338.15,-424.17 1228.61,-433.73 1200.27,-433.98 1090.75,-424.17 1044.54,-420.03 994.05,-411.61 950.83,-403.2" />
+<polygon fill="#2f6fd0" stroke="#2f6fd0" stroke-width="3" points="951.43,-399.03 938.84,-400.82 949.8,-407.27 951.43,-399.03" />
+<polygon fill="#2f6fd0" stroke="transparent" points="1193.46,-431.43 1193.46,-454.43 1216.46,-454.43 1216.46,-431.43 1193.46,-431.43" />
+<text text-anchor="start" x="1198.96" y="-440.33" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff"> 6 </text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge14" class="edge">
+<title>user_genre_preferences-&gt;users</title>
+<path fill="none" stroke="#555555" d="M1476.76,-217.65C1261.78,-236.01 776.48,-279.96 370.2,-334.85 294.61,-345.07 207.59,-360.19 153.69,-369.97" />
+<polygon fill="#555555" stroke="#555555" points="1484.9,-216.96 1495.24,-220.59 1489.88,-216.53 1494.86,-216.11 1494.86,-216.11 1494.86,-216.11 1489.88,-216.53 1494.48,-211.62 1484.9,-216.96 1484.9,-216.96" />
+<ellipse fill="none" stroke="#555555" cx="1480.91" cy="-217.29" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="145.57,-376.52 143.78,-366.69 145.75,-366.33 147.54,-376.17 145.57,-376.52" />
+<polyline fill="none" stroke="#555555" points="143.69,-371.78 148.61,-370.89 " />
+<polygon fill="#555555" stroke="#555555" points="150.49,-375.63 148.7,-365.79 150.67,-365.43 152.46,-375.27 150.49,-375.63" />
+<polyline fill="none" stroke="#555555" points="148.61,-370.89 153.53,-369.99 " />
+<text text-anchor="start" x="787.03" y="-283.89" font-family="Arial" font-size="9.00" fill="#555555">user_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge15" class="edge">
+<title>user_genre_preferences-&gt;genres</title>
+<path fill="none" stroke="#555555" d="M1588.31,-148.42C1588.18,-130.72 1588.05,-111.5 1587.93,-94.35" />
+<polygon fill="#555555" stroke="#555555" points="1588.37,-156.47 1583.94,-166.5 1588.4,-161.47 1588.44,-166.47 1588.44,-166.47 1588.44,-166.47 1588.4,-161.47 1592.94,-166.44 1588.37,-156.47 1588.37,-156.47" />
+<ellipse fill="none" stroke="#555555" cx="1588.34" cy="-152.47" rx="4" ry="4" />
+<polygon fill="#555555" stroke="#555555" points="1582.86,-85.01 1592.86,-84.94 1592.87,-86.94 1582.87,-87.01 1582.86,-85.01" />
+<polyline fill="none" stroke="#555555" points="1587.85,-83.97 1587.89,-88.97 " />
+<polygon fill="#555555" stroke="#555555" points="1582.9,-90.01 1592.9,-89.93 1592.91,-91.93 1582.91,-92.01 1582.9,-90.01" />
+<polyline fill="none" stroke="#555555" points="1587.89,-88.97 1587.92,-93.97 " />
+<text text-anchor="start" x="1551.15" y="-128.28" font-family="Arial" font-size="9.00" fill="#555555">genre_id</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>users</title>
+<polygon fill="#ffffff" stroke="transparent" points="68.5,-342.05 68.5,-417.05 135.5,-417.05 135.5,-342.05 68.5,-342.05" />
+<polygon fill="#eef3fb" stroke="transparent" points="70,-388.55 70,-415.55 135,-415.55 135,-388.55 70,-388.55" />
+<text text-anchor="start" x="84" y="-399.35" font-family="Arial" font-weight="bold" font-size="14.00">users</text>
+<text text-anchor="start" x="76" y="-373.75" font-family="Arial" font-size="11.00" fill="#333333">the listener</text>
+<text text-anchor="start" x="78.5" y="-351.35" font-family="Arial" font-size="9.00" fill="#666666">PK: user_id</text>
+<polygon fill="none" stroke="#5b7db1" points="68.5,-342.05 68.5,-417.05 135.5,-417.05 135.5,-342.05 68.5,-342.05" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>moods</title>
+<polygon fill="#ffffff" stroke="transparent" points="8,-24.14 8,-99.14 196,-99.14 196,-24.14 8,-24.14" />
+<polygon fill="#f6f0fa" stroke="transparent" points="9,-70.64 9,-97.64 195,-97.64 195,-70.64 9,-70.64" />
+<text text-anchor="start" x="79" y="-81.44" font-family="Arial" font-weight="bold" font-size="14.00">moods</text>
+<text text-anchor="start" x="15" y="-55.84" font-family="Arial" font-size="11.00" fill="#333333">musical moods (Calm, Energetic …)</text>
+<text text-anchor="start" x="75.5" y="-33.44" font-family="Arial" font-size="9.00" fill="#666666">PK: mood_id</text>
+<polygon fill="none" stroke="#7d5ba6" points="8,-24.14 8,-99.14 196,-99.14 196,-24.14 8,-24.14" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node3" class="node">
+<title>contexts</title>
+<polygon fill="#ffffff" stroke="transparent" points="23.5,-189.72 23.5,-264.72 180.5,-264.72 180.5,-189.72 23.5,-189.72" />
+<polygon fill="#f6f0fa" stroke="transparent" points="25,-236.22 25,-263.22 180,-263.22 180,-236.22 25,-236.22" />
+<text text-anchor="start" x="74.5" y="-247.02" font-family="Arial" font-weight="bold" font-size="14.00">contexts</text>
+<text text-anchor="start" x="31" y="-221.42" font-family="Arial" font-size="11.00" fill="#333333">moments (Study, Workout …)</text>
+<text text-anchor="start" x="73" y="-199.02" font-family="Arial" font-size="9.00" fill="#666666">PK: context_id</text>
+<polygon fill="none" stroke="#7d5ba6" points="23.5,-189.72 23.5,-264.72 180.5,-264.72 180.5,-189.72 23.5,-189.72" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node4" class="node">
+<title>songs</title>
+<polygon fill="#ffffff" stroke="transparent" points="811.58,-169.78 811.58,-244.78 875.58,-244.78 875.58,-169.78 811.58,-169.78" />
+<polygon fill="#eef7ef" stroke="transparent" points="812.58,-216.28 812.58,-243.28 874.58,-243.28 874.58,-216.28 812.58,-216.28" />
+<text text-anchor="start" x="823.58" y="-227.08" font-family="Arial" font-weight="bold" font-size="14.00">songs</text>
+<text text-anchor="start" x="820.08" y="-201.48" font-family="Arial" font-size="11.00" fill="#333333">catalogue</text>
+<text text-anchor="start" x="818.58" y="-179.08" font-family="Arial" font-size="9.00" fill="#666666">PK: song_id</text>
+<polygon fill="none" stroke="#4f8a5b" points="811.58,-169.78 811.58,-244.78 875.58,-244.78 875.58,-169.78 811.58,-169.78" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node5" class="node">
+<title>song_moods</title>
+<polygon fill="#ffffff" stroke="transparent" points="396.9,-4.27 396.9,-79.27 548.9,-79.27 548.9,-4.27 396.9,-4.27" />
+<polygon fill="#f6f0fa" stroke="transparent" points="397.9,-50.77 397.9,-77.77 547.9,-77.77 547.9,-50.77 397.9,-50.77" />
+<text text-anchor="start" x="430.4" y="-61.57" font-family="Arial" font-weight="bold" font-size="14.00">song_moods</text>
+<text text-anchor="start" x="403.9" y="-35.97" font-family="Arial" font-size="11.00" fill="#333333">mood tags per song + model</text>
+<text text-anchor="start" x="406.4" y="-13.57" font-family="Arial" font-size="9.00" fill="#666666">PK: song_id, mood_id, model_id</text>
+<polygon fill="none" stroke="#7d5ba6" points="396.9,-4.27 396.9,-79.27 548.9,-79.27 548.9,-4.27 396.9,-4.27" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node6" class="node">
+<title>audio_features</title>
+<polygon fill="#ffffff" stroke="transparent" points="773.36,-4.12 773.36,-79.12 913.36,-79.12 913.36,-4.12 773.36,-4.12" />
+<polygon fill="#f6f0fa" stroke="transparent" points="774.36,-50.62 774.36,-77.62 912.36,-77.62 912.36,-50.62 774.36,-50.62" />
+<text text-anchor="start" x="794.86" y="-61.42" font-family="Arial" font-weight="bold" font-size="14.00">audio_features</text>
+<text text-anchor="start" x="780.36" y="-35.82" font-family="Arial" font-size="11.00" fill="#333333">energy, valence, tempo …</text>
+<text text-anchor="start" x="814.36" y="-13.42" font-family="Arial" font-size="9.00" fill="#666666">PK: feature_id</text>
+<polygon fill="none" stroke="#7d5ba6" points="773.36,-4.12 773.36,-79.12 913.36,-79.12 913.36,-4.12 773.36,-4.12" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node7" class="node">
+<title>recommendation_batches</title>
+<polygon fill="#ffffff" stroke="transparent" points="381.4,-342.05 381.4,-417.05 564.4,-417.05 564.4,-342.05 381.4,-342.05" />
+<polygon fill="#fceeee" stroke="transparent" points="382.9,-388.55 382.9,-415.55 563.9,-415.55 563.9,-388.55 382.9,-388.55" />
+<text text-anchor="start" x="388.9" y="-399.35" font-family="Arial" font-weight="bold" font-size="14.00">recommendation_batches</text>
+<text text-anchor="start" x="406.9" y="-373.75" font-family="Arial" font-size="11.00" fill="#333333">one generated list (request)</text>
+<text text-anchor="start" x="447.4" y="-351.35" font-family="Arial" font-size="9.00" fill="#666666">PK: batch_id</text>
+<polygon fill="none" stroke="#b05454" points="381.4,-342.05 381.4,-417.05 564.4,-417.05 564.4,-342.05 381.4,-342.05" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node8" class="node">
+<title>recommendation_batch_moods</title>
+<polygon fill="#ffffff" stroke="transparent" points="362.4,-189.72 362.4,-264.72 583.4,-264.72 583.4,-189.72 362.4,-189.72" />
+<polygon fill="#fceeee" stroke="transparent" points="363.9,-236.22 363.9,-263.22 582.9,-263.22 582.9,-236.22 363.9,-236.22" />
+<text text-anchor="start" x="369.9" y="-247.02" font-family="Arial" font-weight="bold" font-size="14.00">recommendation_batch_moods</text>
+<text text-anchor="start" x="433.4" y="-221.42" font-family="Arial" font-size="11.00" fill="#333333">moods asked for</text>
+<text text-anchor="start" x="426.9" y="-199.02" font-family="Arial" font-size="9.00" fill="#666666">PK: batch_id, mood_id</text>
+<polygon fill="none" stroke="#b05454" points="362.4,-189.72 362.4,-264.72 583.4,-264.72 583.4,-189.72 362.4,-189.72" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node9" class="node">
+<title>recommendation_items</title>
+<polygon fill="#ffffff" stroke="transparent" points="756.81,-342.05 756.81,-417.05 930.81,-417.05 930.81,-342.05 756.81,-342.05" />
+<polygon fill="#fceeee" stroke="transparent" points="757.81,-388.55 757.81,-415.55 929.81,-415.55 929.81,-388.55 757.81,-388.55" />
+<text text-anchor="start" x="766.81" y="-399.35" font-family="Arial" font-weight="bold" font-size="14.00">recommendation_items</text>
+<text text-anchor="start" x="763.81" y="-373.75" font-family="Arial" font-size="11.00" fill="#333333">ranked songs + score breakdown</text>
+<text text-anchor="start" x="798.81" y="-351.35" font-family="Arial" font-size="9.00" fill="#666666">PK: batch_id, song_id</text>
+<polygon fill="none" stroke="#b05454" points="756.81,-342.05 756.81,-417.05 930.81,-417.05 930.81,-342.05 756.81,-342.05" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node10" class="node">
+<title>recommendation_reasons</title>
+<polygon fill="#ffffff" stroke="transparent" points="751.81,-501.01 751.81,-576.01 935.81,-576.01 935.81,-501.01 751.81,-501.01" />
+<polygon fill="#fceeee" stroke="transparent" points="752.81,-547.51 752.81,-574.51 934.81,-574.51 934.81,-547.51 752.81,-547.51" />
+<text text-anchor="start" x="758.81" y="-558.31" font-family="Arial" font-weight="bold" font-size="14.00">recommendation_reasons</text>
+<text text-anchor="start" x="802.81" y="-532.71" font-family="Arial" font-size="11.00" fill="#333333">"Why this song?"</text>
+<text text-anchor="start" x="769.81" y="-510.31" font-family="Arial" font-size="9.00" fill="#666666">PK: batch_id, song_id, reason_code</text>
+<polygon fill="none" stroke="#b05454" points="751.81,-501.01 751.81,-576.01 935.81,-576.01 935.81,-501.01 751.81,-501.01" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node11" class="node">
+<title>listening_sessions</title>
+<polygon fill="#ffffff" stroke="transparent" points="1147.21,-501.01 1147.21,-576.01 1282.21,-576.01 1282.21,-501.01 1147.21,-501.01" />
+<polygon fill="#fdf4ea" stroke="transparent" points="1148.71,-547.51 1148.71,-574.51 1281.71,-574.51 1281.71,-547.51 1148.71,-547.51" />
+<text text-anchor="start" x="1154.71" y="-558.31" font-family="Arial" font-weight="bold" font-size="14.00">listening_sessions</text>
+<text text-anchor="start" x="1171.21" y="-532.71" font-family="Arial" font-size="11.00" fill="#333333">a listening session</text>
+<text text-anchor="start" x="1184.71" y="-510.31" font-family="Arial" font-size="9.00" fill="#666666">PK: session_id</text>
+<polygon fill="none" stroke="#b07a35" points="1147.21,-501.01 1147.21,-576.01 1282.21,-576.01 1282.21,-501.01 1147.21,-501.01" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node12" class="node">
+<title>listening_history</title>
+<polygon fill="#ffffff" stroke="transparent" points="1101.95,-341.97 1101.95,-416.97 1326.95,-416.97 1326.95,-341.97 1101.95,-341.97" />
+<polygon fill="#fdf4ea" stroke="transparent" points="1103.45,-388.47 1103.45,-415.47 1326.45,-415.47 1326.45,-388.47 1103.45,-388.47" />
+<text text-anchor="start" x="1160.45" y="-399.27" font-family="Arial" font-weight="bold" font-size="14.00">listening_history</text>
+<text text-anchor="start" x="1109.45" y="-373.67" font-family="Arial" font-size="11.00" fill="#333333">each play: listened time, completed, skipped</text>
+<text text-anchor="start" x="1191.45" y="-351.27" font-family="Arial" font-size="9.00" fill="#666666">PK: play_id</text>
+<polygon fill="none" stroke="#b07a35" points="1101.95,-341.97 1101.95,-416.97 1326.95,-416.97 1326.95,-341.97 1101.95,-341.97" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node13" class="node">
+<title>user_mood_preferences</title>
+<polygon fill="#ffffff" stroke="transparent" points="1501.81,-342.76 1501.81,-417.76 1673.81,-417.76 1673.81,-342.76 1501.81,-342.76" />
+<polygon fill="#eaf6f6" stroke="transparent" points="1502.81,-389.26 1502.81,-416.26 1672.81,-416.26 1672.81,-389.26 1502.81,-389.26" />
+<text text-anchor="start" x="1508.81" y="-400.06" font-family="Arial" font-weight="bold" font-size="14.00">user_mood_preferences</text>
+<text text-anchor="start" x="1541.31" y="-374.46" font-family="Arial" font-size="11.00" fill="#333333">learned mood taste</text>
+<text text-anchor="start" x="1543.81" y="-352.06" font-family="Arial" font-size="9.00" fill="#666666">PK: user_id, mood_id</text>
+<polygon fill="none" stroke="#3e8a8a" points="1501.81,-342.76 1501.81,-417.76 1673.81,-417.76 1673.81,-342.76 1501.81,-342.76" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node14" class="node">
+<title>user_genre_preferences</title>
+<polygon fill="#ffffff" stroke="transparent" points="1503.23,-170.85 1503.23,-245.85 1674.23,-245.85 1674.23,-170.85 1503.23,-170.85" />
+<polygon fill="#eaf6f6" stroke="transparent" points="1504.73,-217.35 1504.73,-244.35 1673.73,-244.35 1673.73,-217.35 1504.73,-217.35" />
+<text text-anchor="start" x="1510.73" y="-228.15" font-family="Arial" font-weight="bold" font-size="14.00">user_genre_preferences</text>
+<text text-anchor="start" x="1542.23" y="-202.55" font-family="Arial" font-size="11.00" fill="#333333">learned genre taste</text>
+<text text-anchor="start" x="1544.73" y="-180.15" font-family="Arial" font-size="9.00" fill="#666666">PK: user_id, genre_id</text>
+<polygon fill="none" stroke="#3e8a8a" points="1503.23,-170.85 1503.23,-245.85 1674.23,-245.85 1674.23,-170.85 1503.23,-170.85" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node15" class="node">
+<title>genres</title>
+<polygon fill="#ffffff" stroke="transparent" points="1553.56,-4.89 1553.56,-79.89 1621.56,-79.89 1621.56,-4.89 1553.56,-4.89" />
+<polygon fill="#eef7ef" stroke="transparent" points="1554.56,-51.39 1554.56,-78.39 1620.56,-78.39 1620.56,-51.39 1554.56,-51.39" />
+<text text-anchor="start" x="1565.06" y="-62.19" font-family="Arial" font-weight="bold" font-size="14.00">genres</text>
+<text text-anchor="start" x="1570.56" y="-36.59" font-family="Arial" font-size="11.00" fill="#333333">genres</text>
+<text text-anchor="start" x="1560.56" y="-14.19" font-family="Arial" font-size="9.00" fill="#666666">PK: genre_id</text>
+<polygon fill="none" stroke="#4f8a5b" points="1553.56,-4.89 1553.56,-79.89 1621.56,-79.89 1621.56,-4.89 1553.56,-4.89" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node16" class="node">
+<title>steps</title>
+<polygon fill="#f4f8fe" stroke="transparent" points="971.19,-4 971.19,-170 1451.19,-170 1451.19,-4 971.19,-4" />
+<text text-anchor="start" x="978.19" y="-153.6" font-family="Arial" font-weight="bold" font-size="13.00" fill="#1f4f9a">Process steps (blue arrows)</text>
+<polygon fill="#2f6fd0" stroke="transparent" points="974.19,-122 974.19,-143 989.19,-143 989.19,-122 974.19,-122" />
+<text text-anchor="start" x="978.19" y="-130.4" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff">1</text>
+<text text-anchor="start" x="995.19" y="-129.4" font-family="Arial" font-size="12.00">user picks a mood / context → a batch is stored</text>
+<polygon fill="#2f6fd0" stroke="transparent" points="974.19,-99 974.19,-120 989.19,-120 989.19,-99 974.19,-99" />
+<text text-anchor="start" x="978.19" y="-107.4" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff">2</text>
+<text text-anchor="start" x="995.19" y="-106.4" font-family="Arial" font-size="12.00">chosen moods stored with weights</text>
+<polygon fill="#2f6fd0" stroke="transparent" points="974.19,-76 974.19,-97 989.19,-97 989.19,-76 974.19,-76" />
+<text text-anchor="start" x="978.19" y="-84.4" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff">3</text>
+<text text-anchor="start" x="995.19" y="-83.4" font-family="Arial" font-size="12.00">sp_generate_recommendations ranks songs: mood tags, audio features, preferences</text>
+<polygon fill="#2f6fd0" stroke="transparent" points="974.19,-53 974.19,-74 989.19,-74 989.19,-53 974.19,-53" />
+<text text-anchor="start" x="978.19" y="-61.4" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff">4</text>
+<text text-anchor="start" x="995.19" y="-60.4" font-family="Arial" font-size="12.00">user plays a song (batch_id links play → list)</text>
+<polygon fill="#2f6fd0" stroke="transparent" points="974.19,-30 974.19,-51 989.19,-51 989.19,-30 974.19,-30" />
+<text text-anchor="start" x="978.19" y="-38.4" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff">5</text>
+<text text-anchor="start" x="995.19" y="-37.4" font-family="Arial" font-size="12.00">sp_refresh_user_preferences learns</text>
+<polygon fill="#2f6fd0" stroke="transparent" points="974.19,-7 974.19,-28 989.19,-28 989.19,-7 974.19,-7" />
+<text text-anchor="start" x="978.19" y="-15.4" font-family="Arial" font-weight="bold" font-size="12.00" fill="#ffffff">6</text>
+<text text-anchor="start" x="995.19" y="-14.4" font-family="Arial" font-size="12.00">preferences feed the next ranking</text>
+<polygon fill="none" stroke="#2f6fd0" points="971.19,-4 971.19,-170 1451.19,-170 1451.19,-4 971.19,-4" />
+</g>
+</g></svg>
+<svg x="645.1" y="803.2" width="515.2" height="290.2" viewBox="0 0 515.20 290.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 286.6)"><g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>lg_a1</title>
+<path fill="none" stroke="#666666" d="M163.67,-244C163.67,-244 135.33,-244 135.33,-244 131.67,-244 128,-240.33 128,-236.67 128,-236.67 128,-229.33 128,-229.33 128,-225.67 131.67,-222 135.33,-222 135.33,-222 163.67,-222 163.67,-222 167.33,-222 171,-225.67 171,-229.33 171,-229.33 171,-236.67 171,-236.67 171,-240.33 167.33,-244 163.67,-244" />
+<text text-anchor="middle" x="149.5" y="-230.8" font-family="Arial" font-size="9.00">child</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>lg_b1</title>
+<path fill="none" stroke="#666666" d="M482.67,-244C482.67,-244 454.33,-244 454.33,-244 450.67,-244 447,-240.33 447,-236.67 447,-236.67 447,-229.33 447,-229.33 447,-225.67 450.67,-222 454.33,-222 454.33,-222 482.67,-222 482.67,-222 486.33,-222 490,-225.67 490,-229.33 490,-229.33 490,-236.67 490,-236.67 490,-240.33 486.33,-244 482.67,-244" />
+<text text-anchor="middle" x="468.5" y="-230.8" font-family="Arial" font-size="9.00">parent</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>lg_a1-&gt;lg_b1</title>
+<path fill="none" stroke="#444444" d="M189.56,-233C253.34,-233 378.55,-233 436.6,-233" />
+<polygon fill="#444444" stroke="#444444" points="181.3,-233 171.3,-228.5 176.3,-233 171.3,-233 171.3,-233 171.3,-233 176.3,-233 171.3,-237.5 181.3,-233 181.3,-233" />
+<ellipse fill="none" stroke="#444444" cx="185.3" cy="-233" rx="4" ry="4" />
+<polygon fill="#444444" stroke="#444444" points="445.62,-228 445.62,-238 443.62,-238 443.62,-228 445.62,-228" />
+<polyline fill="none" stroke="#444444" points="446.62,-233 441.62,-233 " />
+<polygon fill="#444444" stroke="#444444" points="440.62,-228 440.62,-238 438.62,-238 438.62,-228 440.62,-228" />
+<polyline fill="none" stroke="#444444" points="441.62,-233 436.62,-233 " />
+<text text-anchor="start" x="299" y="-235.8" font-family="Arial" font-size="9.00">0..* → exactly 1 (FK NOT NULL)</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node3" class="node">
+<title>lg_a2</title>
+<path fill="none" stroke="#666666" d="M163.67,-204C163.67,-204 135.33,-204 135.33,-204 131.67,-204 128,-200.33 128,-196.67 128,-196.67 128,-189.33 128,-189.33 128,-185.67 131.67,-182 135.33,-182 135.33,-182 163.67,-182 163.67,-182 167.33,-182 171,-185.67 171,-189.33 171,-189.33 171,-196.67 171,-196.67 171,-200.33 167.33,-204 163.67,-204" />
+<text text-anchor="middle" x="149.5" y="-190.8" font-family="Arial" font-size="9.00">child</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node4" class="node">
+<title>lg_b2</title>
+<path fill="none" stroke="#666666" d="M482.67,-204C482.67,-204 454.33,-204 454.33,-204 450.67,-204 447,-200.33 447,-196.67 447,-196.67 447,-189.33 447,-189.33 447,-185.67 450.67,-182 454.33,-182 454.33,-182 482.67,-182 482.67,-182 486.33,-182 490,-185.67 490,-189.33 490,-189.33 490,-196.67 490,-196.67 490,-200.33 486.33,-204 482.67,-204" />
+<text text-anchor="middle" x="468.5" y="-190.8" font-family="Arial" font-size="9.00">parent</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge2" class="edge">
+<title>lg_a2-&gt;lg_b2</title>
+<path fill="none" stroke="#444444" stroke-dasharray="5,2" d="M189.56,-193C252.15,-193 373.9,-193 433.28,-193" />
+<polygon fill="#444444" stroke="#444444" points="181.3,-193 171.3,-188.5 176.3,-193 171.3,-193 171.3,-193 171.3,-193 176.3,-193 171.3,-197.5 181.3,-193 181.3,-193" />
+<ellipse fill="none" stroke="#444444" cx="185.3" cy="-193" rx="4" ry="4" />
+<polygon fill="#444444" stroke="#444444" points="445.62,-188 445.62,-198 443.62,-198 443.62,-188 445.62,-188" />
+<polyline fill="none" stroke="#444444" points="446.62,-193 441.62,-193 " />
+<ellipse fill="none" stroke="#444444" cx="437.62" cy="-193" rx="4" ry="4" />
+<text text-anchor="start" x="315.5" y="-195.8" font-family="Arial" font-size="9.00">0..* → 0..1 (FK nullable)</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node5" class="node">
+<title>lg_a3</title>
+<path fill="none" stroke="#666666" d="M163.67,-164C163.67,-164 135.33,-164 135.33,-164 131.67,-164 128,-160.33 128,-156.67 128,-156.67 128,-149.33 128,-149.33 128,-145.67 131.67,-142 135.33,-142 135.33,-142 163.67,-142 163.67,-142 167.33,-142 171,-145.67 171,-149.33 171,-149.33 171,-156.67 171,-156.67 171,-160.33 167.33,-164 163.67,-164" />
+<text text-anchor="middle" x="149.5" y="-150.8" font-family="Arial" font-size="9.00">child</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node6" class="node">
+<title>lg_b3</title>
+<path fill="none" stroke="#666666" d="M482.67,-164C482.67,-164 454.33,-164 454.33,-164 450.67,-164 447,-160.33 447,-156.67 447,-156.67 447,-149.33 447,-149.33 447,-145.67 450.67,-142 454.33,-142 454.33,-142 482.67,-142 482.67,-142 486.33,-142 490,-145.67 490,-149.33 490,-149.33 490,-156.67 490,-156.67 490,-160.33 486.33,-164 482.67,-164" />
+<text text-anchor="middle" x="468.5" y="-150.8" font-family="Arial" font-size="9.00">parent</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge3" class="edge">
+<title>lg_a3-&gt;lg_b3</title>
+<path fill="none" stroke="#444444" d="M184.46,-153C246.33,-153 376.55,-153 436.32,-153" />
+<polygon fill="#444444" stroke="#444444" points="172.3,-158 172.3,-148 174.3,-148 174.3,-158 172.3,-158" />
+<polyline fill="none" stroke="#444444" points="171.3,-153 176.3,-153 " />
+<ellipse fill="none" stroke="#444444" cx="180.3" cy="-153" rx="4" ry="4" />
+<polygon fill="#444444" stroke="#444444" points="445.62,-148 445.62,-158 443.62,-158 443.62,-148 445.62,-148" />
+<polyline fill="none" stroke="#444444" points="446.62,-153 441.62,-153 " />
+<polygon fill="#444444" stroke="#444444" points="440.62,-148 440.62,-158 438.62,-158 438.62,-148 440.62,-148" />
+<polyline fill="none" stroke="#444444" points="441.62,-153 436.62,-153 " />
+<text text-anchor="start" x="300.5" y="-155.8" font-family="Arial" font-size="9.00">1 : 0..1 (FK is the PK or unique)</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node7" class="node">
+<title>lg_notes</title>
+<text text-anchor="start" x="28.5" y="-110.8" font-family="Arial" font-size="9.00">Crow's foot = many · bar = one · circle = zero (optional)</text>
+<text text-anchor="start" x="28.5" y="-96.8" font-family="Arial" font-size="9.00">Solid line: identifying (FK is part of the child's PK)</text>
+<text text-anchor="start" x="28.5" y="-82.8" font-family="Arial" font-size="9.00">Dashed line: non-identifying relationship</text>
+<text text-anchor="start" x="28.5" y="-68.8" font-family="Arial" font-size="9.00">PK primary key · FK foreign key</text>
+<text text-anchor="start" x="28.5" y="-54.8" font-family="Arial" font-size="9.00">UK, U1, U2: unique key (same tag = one composite key)</text>
+<text text-anchor="start" x="28.5" y="-40.8" font-family="Arial" font-size="9.00">"gen" generated column · "null" nullable</text>
+<text text-anchor="start" x="28.5" y="-26.8" font-family="Arial" font-size="9.00">Blue numbered arrows: PROCESS STEPS, not foreign keys</text>
+</g>
+</g></svg>
+<g stroke="#3A3A3A" stroke-width="1.3" fill="none"></g>
+<g font-size="11" fill="#222222" stroke="#FFFFFF" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round"></g>
+</svg>

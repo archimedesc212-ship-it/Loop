@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MUSE Query Studio</title>
+<meta name="author" content="Vaishnav Sai">
+<link rel="stylesheet" href="static/style.css">
+<!--SNAPSHOT-->
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div><h1>MUSE</h1><p>Music Mood Intelligence &amp;<br>Recommendation Database System</p></div>
+    </div>
+    <div id="status" class="status">Connecting…</div>
+    <input id="qsearch" class="qsearch" type="search" placeholder="Search queries…" aria-label="Search queries">
+    <ul id="qlist" class="qlist"></ul>
+    <div class="credit" id="credit">Developed by Vaishnav Sai</div>
+  </aside>
+
+  <main>
+    <div class="top">
+      <div><h2>MUSE Query Studio</h2><p>Run the Phase 3 SQL queries on the MUSE database and see the results as tables and charts.</p></div>
+    </div>
+    <div id="snapbanner" class="banner" hidden></div>
+
+    <nav class="tabs" role="tablist">
+      <button class="active" data-tab="dash">📊 Dashboard</button>
+      <button data-tab="lib">📚 Query library</button>
+      <button data-tab="mood">🌈 Mood explorer</button>
+      <button data-tab="play">⌨️ SQL playground</button>
+    </nav>
+
+    <section id="tab-dash" class="tab active">
+      <div id="kpis" class="kpis"></div>
+      <div class="sub" id="kpinote" style="color:var(--muted);font-size:12.5px;margin-top:6px"></div>
+      <div class="grid2">
+        <div class="card"><h3>When people listen</h3><div class="sub">Q13 · plays per hour of the day</div><div id="c-hours" class="chart"></div></div>
+        <div class="card"><h3>Mood map of the catalogue</h3><div class="sub">Q07 · songs per mood (active mood model)</div><div id="c-moods" class="chart"></div></div>
+        <div class="card"><h3>Listening by context</h3><div class="sub">Q11 · hours per listening context</div><div id="c-context" class="chart"></div></div>
+        <div class="card"><h3>Favourite mood of each listener</h3><div class="sub">Q16 · window function ROW_NUMBER() per listener</div><div id="t-fav"></div></div>
+      </div>
+    </section>
+
+    <section id="tab-lib" class="tab">
+      <p id="q-question" class="question"></p>
+      <div id="q-chips" class="chips"></div>
+      <pre id="q-sql" class="sql"></pre>
+      <div class="meta"><button id="q-run" class="btn">▶ Run query</button><span id="q-meta"></span>
+        <button id="q-csv" class="btn ghost" hidden>Download CSV</button></div>
+      <div id="q-out"></div>
+    </section>
+
+    <section id="tab-mood" class="tab">
+      <div class="controls">
+        <label class="f">Mood <select id="m-mood"></select></label>
+        <label class="f">Minimum confidence: <b id="m-confv">0.60</b><input id="m-conf" type="range" min="0" max="1" step="0.05" value="0.6"></label>
+        <label class="f">Language <select id="m-lang"></select></label>
+      </div>
+      <pre id="m-sql" class="sql"></pre>
+      <div class="meta" id="m-meta"></div>
+      <div id="m-out"></div>
+      <div class="card" style="margin-top:16px"><h3>Where these songs sit</h3><div class="sub">energy (→) × valence / positivity (↑)</div><div id="m-scatter" class="chart"></div></div>
+    </section>
+
+    <section id="tab-play" class="tab">
+      <p>Write your own <b>SELECT</b> query. It runs inside a read-only transaction, so nothing can be changed.</p>
+      <textarea id="p-sql" spellcheck="false">SELECT g.name AS genre, COUNT(*) AS songs
+FROM song_genres sg
+JOIN genres g ON g.genre_id = sg.genre_id
+GROUP BY g.name
+ORDER BY songs DESC;</textarea>
+      <div class="meta"><button id="p-run" class="btn">▶ Run query</button><span id="p-meta"></span></div>
+      <div id="p-out"></div>
+    </section>
+  </main>
+</div>
+<script src="static/app.js"></script>
+</body>
+</html>

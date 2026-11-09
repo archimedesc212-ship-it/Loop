@@ -1,0 +1,221 @@
+%% MUSE — ER diagram, 16 core entities (simplified view of the 64-table schema)
+%% Generated from the live MySQL schema (baseline 01–06 + migrations 0001, 0002, 0003, 0004) by backend/scripts/erd/build_erd.py
+erDiagram
+  users {
+    int user_id PK
+    varchar(30) username UK
+    varchar(120) email UK
+    char(60) password_hash
+    datetime password_changed_at "nullable"
+    tinyint role_id FK
+    tinyint(1) is_active
+    tinyint failed_login_count
+    datetime locked_until "nullable"
+    datetime created_at
+    datetime last_login_at "nullable"
+  }
+  user_profiles {
+    int user_id PK, FK
+    varchar(60) display_name
+    varchar(6) region_code FK "nullable"
+    enum content_filter
+    enum listening_habit "nullable"
+    datetime onboarding_completed_at "nullable"
+    datetime updated_at
+  }
+  artists {
+    int artist_id PK
+    varchar(100) name
+    varchar(100) normalized_name UK "nullable, generated"
+    varchar(80) disambiguation UK
+    enum artist_type
+    char(2) country_code
+    varchar(6) region_code FK "nullable"
+    smallint primary_language_id FK "nullable"
+    smallint formed_year "nullable"
+    varchar(400) bio "nullable"
+    datetime created_at
+  }
+  albums {
+    int album_id PK
+    varchar(150) title
+    varchar(150) normalized_title "nullable, generated"
+    enum album_type
+    int film_id FK "nullable"
+    smallint release_year
+    smallint language_id FK "nullable"
+    char(7) cover_color_1
+    char(7) cover_color_2
+  }
+  songs {
+    int song_id PK
+    varchar(150) title
+    varchar(150) normalized_title UK "nullable, generated"
+    varchar(40) version_label UK
+    int primary_artist_id FK, UK
+    int album_id FK "nullable"
+    tinyint track_number "nullable"
+    smallint duration_sec
+    smallint release_year
+    smallint language_id FK "nullable"
+    char(12) isrc UK "nullable"
+    tinyint(1) explicit
+    enum content_rating
+    tinyint popularity
+    enum status
+    int merged_into_song_id FK "nullable"
+    datetime created_at
+    datetime updated_at
+  }
+  genres {
+    smallint genre_id PK
+    varchar(40) name UK
+    smallint parent_genre_id FK "nullable"
+    char(7) color_hex
+    varchar(200) description "nullable"
+  }
+  song_genres {
+    int song_id PK, FK
+    smallint genre_id PK, FK
+    tinyint(1) is_primary
+    int primary_song_key UK "nullable, generated"
+  }
+  moods {
+    smallint mood_id PK
+    tinyint category_id FK
+    varchar(30) name UK
+    varchar(8) emoji
+    char(7) color_hex
+    varchar(200) description
+    dec(4_3) target_energy
+    dec(4_3) target_valence
+    dec(4_3) target_danceability
+    dec(4_3) target_acousticness
+    dec(4_3) target_instrumentalness
+    dec(5_1) tempo_min
+    dec(5_1) tempo_max
+  }
+  song_moods {
+    int song_id PK, FK
+    smallint mood_id PK, FK
+    smallint model_id PK, FK
+    dec(4_3) confidence
+    int feature_id FK
+    datetime analyzed_at
+  }
+  song_mood_ratings {
+    int user_id PK, FK
+    int song_id PK, FK
+    smallint mood_id PK, FK
+    dec(5_2) match_percentage
+    varchar(280) review_text "nullable"
+    datetime created_at
+    datetime updated_at
+  }
+  listening_sessions {
+    bigint session_id PK, UK
+    int user_id FK, UK
+    tinyint context_id FK "nullable"
+    varchar(30) device
+    datetime started_at
+    datetime last_activity_at
+    datetime ended_at "nullable"
+    enum status
+    smallint plays
+    int listen_sec
+  }
+  listening_history {
+    bigint play_id PK
+    bigint session_id FK
+    int user_id FK
+    int song_id FK
+    bigint batch_id FK "nullable"
+    enum origin
+    datetime started_at
+    datetime ended_at "nullable"
+    smallint listened_sec
+    dec(5_2) completion_pct
+    tinyint(1) completed
+    tinyint(1) skipped
+    tinyint(1) is_replay
+  }
+  recommendation_batches {
+    bigint batch_id PK
+    int user_id FK
+    bigint incognito_id FK "nullable"
+    smallint model_id FK
+    enum strategy
+    varchar(120) label "nullable"
+    varchar(280) input_text "nullable"
+    tinyint context_id FK "nullable"
+    int seed_song_id FK "nullable"
+    smallint language_id FK "nullable"
+    dec(4_3) target_energy
+    dec(4_3) target_valence
+    dec(4_3) target_danceability
+    dec(4_3) target_acousticness
+    dec(4_3) target_instrumentalness
+    dec(5_1) tempo_min
+    dec(5_1) tempo_max
+    dec(4_3) max_speechiness
+    tinyint(1) discovery_only
+    datetime created_at
+  }
+  recommendation_items {
+    bigint batch_id PK, FK, UK
+    int song_id PK, FK
+    smallint rank_position UK
+    dec(6_4) final_score
+    dec(6_4) mood_score "nullable"
+    dec(6_4) audio_score
+    dec(6_4) preference_score
+    dec(6_4) recency_score "nullable"
+    dec(6_4) trend_score
+    dec(6_4) context_score "nullable"
+    dec(6_4) regional_score "nullable"
+    dec(6_4) exploration_score
+    dec(6_4) repetition_penalty
+  }
+  playlists {
+    int playlist_id PK
+    int user_id FK, UK
+    varchar(80) name UK
+    varchar(255) description "nullable"
+    enum kind
+    varchar(30) smart_type "nullable"
+    bigint source_batch_id FK "nullable"
+    smallint song_count
+    int total_duration_sec
+    datetime created_at
+    datetime updated_at
+  }
+  playlist_songs {
+    int playlist_id PK, FK
+    int song_id PK, FK
+    smallint position
+    datetime added_at
+  }
+  genres |o..o{ genres : "sub-genre of"
+  recommendation_batches |o..o{ listening_history : "came from list"
+  listening_sessions ||..o{ listening_history : "contains plays"
+  songs ||..o{ listening_history : "played"
+  users ||..o{ listening_sessions : "opens"
+  playlists ||--o{ playlist_songs : "includes"
+  songs ||--o{ playlist_songs : "listed in"
+  recommendation_batches |o..o{ playlists : "saved from list"
+  users ||..o{ playlists : "owns"
+  songs |o..o{ recommendation_batches : "seeded by"
+  users ||..o{ recommendation_batches : "receives"
+  recommendation_batches ||--o{ recommendation_items : "ranks"
+  songs ||--o{ recommendation_items : "recommends"
+  genres ||--o{ song_genres : "genre of"
+  songs ||--o{ song_genres : "classified as"
+  moods ||--o{ song_mood_ratings : "rated mood"
+  songs ||--o{ song_mood_ratings : "mood-rated as"
+  users ||--o{ song_mood_ratings : "rates mood fit"
+  moods ||--o{ song_moods : "mood of"
+  songs ||--o{ song_moods : "tagged with"
+  albums |o..o{ songs : "contains"
+  artists ||..o{ songs : "performs"
+  songs |o..o{ songs : "merged into"
+  users ||--o| user_profiles : "has profile (1:1)"

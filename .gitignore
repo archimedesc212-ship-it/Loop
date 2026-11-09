@@ -1,0 +1,14 @@
+node_modules/
+.env
+frontend/dist/
+*.log
+.DS_Store
+e2e/screenshots/
+media/*
+!media/README.md
+.env.*
+!.env.example
+docs/erd/.build/
+docs/phase2/.build/
+docs/phase3/.build/
+__pycache__/
