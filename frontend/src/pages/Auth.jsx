@@ -59,6 +59,11 @@ export function Login() {
           <Field label="Username or email"><input className="input" autoComplete="username" value={form.login} onChange={(e) => setForm({ ...form, login: e.target.value })} required /></Field>
           <Field label="Password"><input className="input" type="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required /></Field>
           <button className="btn primary" disabled={busy || !form.login || !form.password}>{busy ? 'Signing in…' : 'Sign in'}</button>
+          <div className="empty" role="note" style={{ padding: 14 }}>
+            <p className="small" style={{ fontWeight: 700, marginBottom: 6 }}>Demo account</p>
+            <p className="small soft">Username: <strong>Varsha</strong></p>
+            <p className="small soft">Password: <strong>Varsha@27</strong></p>
+          </div>
           <p className="small soft">New to LOOP? <Link to="/register" className="link">Create an account</Link></p>
         </form>
       </div>
