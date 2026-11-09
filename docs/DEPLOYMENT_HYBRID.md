@@ -2,74 +2,99 @@
 
 ## Architecture
 
-- **Vercel** builds and serves the React/Vite frontend from `frontend/dist`.
+- **Vercel** builds and serves the React/Vite frontend from **frontend/dist**.
 - **Render** runs the long-lived Express API as one Node.js web service.
 - **Managed MySQL 8** stores application data.
-- Vercel rewrites browser requests from `/api/*` to the Render API. The browser continues to use the Vercel origin, so the existing `muse_session` and `muse_csrf` cookies remain first-party and `SameSite=Strict` is preserved.
+- Vercel rewrites browser requests from **/api/** to the Render API. The browser continues to use the Vercel origin, so the existing **muse_session** and **muse_csrf** cookies remain first-party and **SameSite=Strict** is preserved.
 - The scheduler remains inside the persistent Render process. Keep exactly one Render instance until scheduler leadership/locking is implemented independently.
+- The Phase 3 Streamlit Query Studio is a separate teaching tool using the legacy **muse_db** schema. It is not the production API and is not part of this hybrid deployment.
 
 ## 1. Deploy the API on Render first
 
-Create a Render Blueprint from this repository using `render.yaml`.
+Create a Render Blueprint from this repository using **render.yaml**.
 
 Provision a new managed MySQL 8.0.19+ database and configure the Render service's unsynced values:
 
-- `DB_HOST`: database hostname only
-- `DB_NAME`: new, dedicated database/schema name
-- `DB_APP_USER`: least-privilege runtime user
-- `DB_APP_PASSWORD`: runtime user's password
-- `CORS_ORIGIN`: exact Vercel production origin, e.g. `https://your-loop-project.vercel.app`
+- **DB_HOST**: database hostname only
+- **DB_NAME**: new, dedicated database/schema name
+- **DB_APP_USER**: least-privilege runtime user
+- **DB_APP_PASSWORD**: runtime user's password
+- **CORS_ORIGIN**: exact Vercel production origin, e.g. **https://your-loop-project.vercel.app**
 
-Keep the generated `SESSION_SECRET`; it must remain stable across restarts and be at least 32 characters. Do not set `JOBS_ENABLED=false`. Do not scale the service above one instance while the in-process scheduler is enabled.
+Keep the generated **SESSION_SECRET**; it must remain stable across restarts and be at least 32 characters. Do not set **JOBS_ENABLED=false**. Do not scale the service above one instance while the in-process scheduler is enabled.
 
 After the database has been initialized, verify:
 
-- `https://<render-service-host>/api/health` returns process liveness.
-- `https://<render-service-host>/api/ready` returns HTTP 200 and `status: ready`.
+- **https://<render-service-host>/api/health** returns process liveness.
+- **https://<render-service-host>/api/ready** returns HTTP 200 and **status: ready**.
 
 ### Database safety
 
-Never run `npm run db:setup` against an existing or valuable database: the current setup script drops and recreates the database. For a first install, use only a newly provisioned empty database after reviewing the setup SQL and target. For subsequent releases, back up first, inspect `npm run db:status`, then apply reviewed migrations with an owner account from a trusted environment. Do not put owner credentials in the running service.
+Never run **npm run db:setup** against an existing or valuable database: the current setup script drops and recreates the database. For a first install, use only a newly provisioned empty database after reviewing the setup SQL and target. For subsequent releases, back up first, inspect **npm run db:status**, then apply reviewed migrations with an owner account from a trusted environment. Do not put owner credentials in the running service.
 
 ## 2. Deploy the frontend on Vercel
 
 Import this same repository as a Vercel project with:
 
-- Root Directory: repository root (`.`), not `frontend`
-- Framework: Other (the checked-in `vercel.ts` owns build and routing)
-- Install Command: `npm ci`
-- Build Command: `npm run build`
-- Output Directory: `frontend/dist`
+- Root Directory: repository root (**.**), not **frontend**
+- Framework: Other (the checked-in **vercel.ts** owns build and routing)
+- Install Command: **npm ci**
+- Build Command: **npm run build**
+- Output Directory: **frontend/dist**
+- Node.js version: **22.x** (the version used by the documented verification run)
 
-Set `LOOP_API_ORIGIN` in Vercel Project Settings for Production (and Preview only if preview origins are also explicitly allowed by the backend). Value must be the bare HTTPS origin of the Render service, for example `https://loop-muse-api.onrender.com` — no trailing path, no `/api`, no credentials.
+Set **LOOP_API_ORIGIN** in Vercel Project Settings. It is required at build time for every deployment that uses **vercel.ts**, including Preview deployments. Use the bare HTTPS origin of the relevant Render API service, for example **https://loop-muse-api.onrender.com** — no trailing path, no **/api**, no credentials, query string or fragment.
 
-The `vercel.ts` configuration validates that this value is a bare HTTPS origin, sends `/api/*` to Render, and sends other routes to the SPA entry point. It does not expose the Render hostname to browser JavaScript.
+For Production, point the Production variable at the production Render API. For Preview, either:
+
+1. configure a separate Render preview service and isolated MySQL database, then set the Preview value to that service; or
+2. deliberately point Preview to the production API only after accepting that preview builds will access production data and adding the exact preview origin(s) to the backend's **CORS_ORIGIN** allowlist.
+
+Do not expose production data to untrusted pull-request previews. If there is no approved Preview API origin, disable Preview deployments until one is configured; a missing **LOOP_API_ORIGIN** intentionally fails the build rather than silently shipping a frontend with a broken API proxy.
+
+The **vercel.ts** configuration validates that this value is a bare HTTPS origin, sends **/api/** to Render, and sends other routes to the SPA entry point. It does not expose the Render hostname to browser JavaScript.
+
+For local development, use **npm run dev**: Vite proxies **/api** to the local Express process on port 4000. Do not point local browser code directly at the production Render hostname.
 
 ## 3. Authentication and origin security
 
-The browser calls relative `/api` URLs with `credentials: 'same-origin'`. Keep that behavior. Do not change the API client to call the Render hostname directly.
+The browser calls relative **/api** URLs with **credentials: same-origin**. Keep that behavior. Do not change the API client to call the Render hostname directly.
 
-Set Render `CORS_ORIGIN` to the exact public Vercel origin. The Express origin guard accepts that configured origin; requests are still same-site from the browser's perspective because Vercel proxies the API path. If adding a custom domain, update `CORS_ORIGIN` to include that exact HTTPS origin and redeploy the API.
+Set Render **CORS_ORIGIN** to the exact public Vercel origin. The Express origin guard accepts that configured origin; requests are proxied through the Vercel origin. If adding a custom domain, add that exact HTTPS origin to **CORS_ORIGIN** and redeploy the API.
 
-Do not broadly allow `*`, do not disable CSRF, and do not change cookie SameSite settings to make cross-origin calls work. Preview deployments should not be used for authenticated production data unless their exact origin is explicitly added to the backend allowlist.
+Do not use wildcard CORS origins, disable CSRF, or change cookie SameSite settings to make cross-origin calls work. Preview deployments should use an isolated backend and database unless access to production data has been explicitly approved.
 
 ## 4. Scheduler and operational constraints
 
-The Render API is a persistent process; its in-process scheduler remains enabled. Keep one instance. Do not run the same scheduler on Vercel Functions, and do not add Vercel Cron triggers for these same jobs, or tasks could execute twice.
+The Render API is a persistent process; its in-process scheduler remains enabled. Keep one instance. Do not run the same scheduler on Vercel Functions or add Vercel Cron triggers for these same jobs, or tasks could execute twice. The scheduler performs minutely cleanup and hourly maintenance/trend/weekly-intelligence work while the API process is running.
 
 Configure backups and restore testing for MySQL. Local media files on Render's ephemeral filesystem are not durable; use object storage or a durable media origin before depending on local uploads in production.
 
 ## 5. Verification checklist
 
+Run the static deployment contract check from the repository root:
+
+    npm ci
+    npm run deploy:check
+    npm run lint
+    npm run test:web
+    npm run build
+
+For a production-origin check, set **LOOP_API_ORIGIN** in the shell and run **npm run deploy:check -- --production**. The preflight does not connect to Render, Vercel, or MySQL and does not replace the full database-backed suite.
+
 After both providers are configured:
 
 1. Confirm Render health and readiness.
 2. Confirm Vercel deployment builds and serves the SPA.
-3. From the Vercel origin, check `/api/health` and `/api/ready`.
+3. From the Vercel origin, check **/api/health** and **/api/ready**.
 4. Register/sign in, refresh the page, and confirm the session survives.
 5. Verify an unsafe authenticated request succeeds with the CSRF header and fails without it.
-6. Verify logout, session revocation, and rate limiting.
+6. Verify logout, session revocation, account lockout and rate limiting.
 7. Verify scheduler logs show startup and scheduled work on Render.
-8. Run the repository's full CI and database-backed tests before public launch.
+8. Run the full repository checks, including database-backed tests, before public launch.
 
-This branch contains deployment configuration and instructions only. It does not provision providers, create databases, configure secrets, or claim a successful production deployment.
+## 6. Release boundaries
+
+This repository configuration prepares the hybrid deployment; it does not create cloud databases, set provider credentials, or certify a production release. Render's **autoDeploy: false** is intentional: enable or trigger deployment only after the database target, migrations, environment values and health checks have been reviewed.
+
+Never add database owner credentials, session secrets, API keys or live environment files to GitHub. Never attach **npm run db:setup** to a deployment build/start hook. The first schema bootstrap is a separately reviewed operation on a new, empty database only.
