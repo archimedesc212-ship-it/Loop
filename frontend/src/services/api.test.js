@@ -64,7 +64,13 @@ describe('request()', () => {
 
   it('a non-JSON error body still gives a readable error', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('<html>bad gateway</html>', { status: 502 })));
-    await expect(request('GET', '/songs')).rejects.toMatchObject({ code: 'HTTP_502', message: 'Something went wrong.' });
+    await expect(request('GET', '/songs')).rejects.toMatchObject({ code: 'HTTP_502', message: 'LOOP is temporarily unavailable. Please try again shortly.' });
+  });
+
+  it('turns an aborted request into a bounded timeout error', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.reject(Object.assign(new Error('aborted'), { name: 'AbortError' })));
+    await expect(request('POST', '/auth/login', { login: 'varsha', password: 'test' }))
+      .rejects.toMatchObject({ code: 'TIMEOUT', status: 0 });
   });
 
   it('builds the new endpoints correctly', async () => {
