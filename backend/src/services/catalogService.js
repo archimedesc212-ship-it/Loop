@@ -65,7 +65,7 @@ async function songDetail(user, songId) {
   };
 }
 
-async function artistArtwork(user, artistId) {
+async function artistArtwork(artistId) {
   const row = await one(
     `SELECT a.name, ms.is_enabled AS source_enabled
        FROM artists a LEFT JOIN music_sources ms ON ms.code = 'THEAUDIODB'
@@ -81,7 +81,7 @@ async function artistArtwork(user, artistId) {
   }
 }
 
-async function albumArtwork(user, albumId) {
+async function albumArtwork(albumId) {
   const row = await one(
     `SELECT al.title,
             (SELECT ar.name FROM album_artists aa JOIN artists ar ON ar.artist_id = aa.artist_id
