@@ -19,6 +19,10 @@ any change**. Invalid numeric values stop the API with a clear message.
 | `DB_APP_PASSWORD` | yes | empty | its password (set it; empty is accepted only for local experiments) |
 | `DB_APP_HOST` | no | `localhost` | host part of the app account (`'muse_app'@'localhost'`) |
 | `DB_TIMEZONE` | no | `+00:00` | session time zone for `NOW()`, "today", week boundaries. India: `+05:30` |
+| `DB_SSL` | no | `false` | enable TLS for managed MySQL providers that require it; keep certificate verification enabled |
+| `DB_SSL_CA` | no | — | optional PEM CA certificate supplied by the database provider |
+| `DB_CONNECT_TIMEOUT_MS` | no | `10000` | connection timeout in milliseconds |
+| `DB_POOL_MAX` | no | `3` on Vercel, `12` elsewhere | maximum pool connections per process/function instance |
 
 ## API and sessions
 
