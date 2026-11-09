@@ -1,11 +1,20 @@
 # LOOP Vercel-only deployment refactor
 
-Status: **Vercel routing/code migration started; database provisioning and production verification remain blocked.**
+Status: **Vercel routing/code migration committed; frontend verification passes. MySQL provisioning/configuration and production API verification remain blocked.**
+
+## Verification snapshot
+
+- Frontend production build: passed.
+- ESLint: passed.
+- Frontend tests: 35/35 passed.
+- Local serverless-handler smoke test: `GET /api?__loop_path=health` returned 200; guest session correctly returned 503 with `DATABASE_NOT_CONFIGURED` when DB variables were absent.
+- Production Vercel deployment: the last successfully deployed commit predates the final API rewrite. The Vercel deployment API then returned `402 payment_required` with `api-deployments-free-per-day` (100/day). The final API rewrite is committed to GitHub but is not yet live.
+- Backend/MySQL integration tests were not run because no MySQL host or credentials are configured in the connected Vercel project.
 
 ## Implemented on `main`
 
-- Added `api/[...path].js`, which exports the existing Express app as a Vercel Node Function.
-- Removed the Render hostname rewrite from `vercel.json`; browser requests continue using same-origin `/api/*`.
+- Added `api/index.js`, which exports the existing Express app as a Vercel Node Function. A same-origin rewrite sends `/api/*` to this function while preserving the original API suffix.
+- Removed the Render hostname rewrite from `vercel.json`; browser requests continue using same-origin `/api/*`. The Vercel Function is pinned to the Mumbai region (`bom1`).
 - Made environment validation callable rather than terminating Node during module import.
 - Kept strict validation on persistent-server startup, and made unconfigured serverless API requests return an explicit HTTP 503 instead of leaving the frontend waiting.
 - Reduced the default MySQL pool from 12 connections to 3 per Vercel instance, added bounded idle reuse and connection timeout, and added optional provider TLS/CA settings.
