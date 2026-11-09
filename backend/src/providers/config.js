@@ -34,6 +34,13 @@ module.exports = {
     apiKey: e.EXTERNAL_PREVIEW_API_KEY || '',
     minIntervalMs: 0,
   },
+  theAudioDb: {
+    // TheAudioDB publishes 123 as its shared free/test key; premium users may override it.
+    enabled: on(e.THEAUDIODB_ENABLED, true),
+    apiKey: e.THEAUDIODB_API_KEY || '123',
+    baseUrl: e.THEAUDIODB_BASE_URL || 'https://www.theaudiodb.com/api/v1/json',
+    minIntervalMs: 2200, // stays below the documented 30 requests/minute free limit
+  },
   localMedia: {
     enabled: e.LOCAL_MEDIA_ENABLED === undefined || e.LOCAL_MEDIA_ENABLED === '' ? true : on(e.LOCAL_MEDIA_ENABLED),
     dir: e.LOCAL_MEDIA_DIR || '',        // resolved in localMedia.js (default: <repo>/media)
