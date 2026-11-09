@@ -155,7 +155,7 @@ test('TheAudioDB: maps exact artist metadata, permits artwork hosts, and does no
   }] }));
   const artist = await providers.theAudioDb.artistArtwork({ name: 'Coldplay' });
   assert.equal(hits().length, 1);
-  assert.match(hits()[0].url, /^\\/api\\/v1\\/json\\/123\\/search\\.php\\?s=Coldplay$/);
+  assert.equal(hits()[0].url, '/api/v1/json/123/search.php?s=Coldplay');
   assert.equal(artist.name, 'Coldplay');
   assert.equal(artist.banner, 'https://r2.theaudiodb.com/images/media/artist/banner/banner.jpg');
   assert.equal(artist.fanart, null, 'external untrusted image hosts are not returned');
