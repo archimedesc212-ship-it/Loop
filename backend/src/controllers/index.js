@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 // Controllers: translate HTTP (req.valid, req.user) into service calls and
 // shape the response. No SQL lives here; it is all in services/ and the database.
 const auth = require('../services/authService');
@@ -49,7 +50,29 @@ exports.auth = {
   register: async (req, res) => sendSession(req, res, 201, await auth.register(b(req), client(req))),
   login: async (req, res) => sendSession(req, res, 200, await auth.login(b(req), client(req))),
   me: async (req, res) => res.json(await meBody(req)),
-  session: async (req, res) => res.json(req.user ? { authenticated: true, ...(await meBody(req)) } : { authenticated: false }),
+  session: async (req, res) => {
+    if (req.user) return res.json({ authenticated: true, ...(await meBody(req)) });
+    const suffix = crypto.randomBytes(12).toString('hex');
+    const created = await auth.register({
+      username: `guest_${suffix}`,
+      email: `guest+${suffix}@guest.loop.invalid`,
+      password: `${crypto.randomBytes(32).toString('base64url')}A1`,
+      displayName: 'Guest',
+    }, client(req));
+    const choices = await onboarding.options();
+    const language = choices.languages.find((item) => /telugu/i.test(item.name)) || choices.languages[0];
+    if (!language) throw new ApiError(503, 'CATALOG_NOT_READY', 'LOOP is still preparing its music catalogue. Please try again shortly.');
+    await onboarding.save(created.user.id, {
+      languageIds: [language.id], genreIds: [], artistIds: [], composerIds: [],
+      moodIds: [], contextCodes: [], listeningHabit: 'MIXED', contentFilter: 'OFF',
+    });
+    const user = await auth.profile(created.user.id);
+    setSessionCookies(res, created.session);
+    return res.status(201).json({
+      authenticated: true, ...user,
+      session: { id: created.session.sessionId, expiresAt: created.session.expiresAt, csrfToken: created.session.csrfToken },
+    });
+  },
   logout: async (req, res) => {
     // fold the open listening session into the profile (no-op in a private session)
     const closed = req.user.incognitoId ? 0 : await playback.closeOpenSessions(req.user.id);
