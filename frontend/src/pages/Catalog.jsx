@@ -127,11 +127,32 @@ export function SongPage() {
 export function ArtistPage() {
   const { id } = useParams();
   const { data: a, error, loading, reload } = useApi(() => api.artist(id), [id]);
+  const { data: artwork } = useApi(() => api.artistArtwork(id), [id]);
   const player = usePlayer();
   if (loading) return <Loading />;
   if (error) return <div className="page"><ErrorState error={error} onRetry={reload} /></div>;
   return (
     <div className="page stack" style={{ '--gap': '24px' }}>
+      {(artwork?.banner || artwork?.fanart || artwork?.thumbnail) && (
+        <div
+          className="artist-artwork-banner"
+          role="img"
+          aria-label={`${a.name} artist artwork`}
+          style={{
+            minHeight: 176,
+            borderRadius: 18,
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'flex-end',
+            padding: 22,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundImage: `linear-gradient(90deg, rgba(10,12,18,.82), rgba(10,12,18,.12)), url("${artwork.banner || artwork.fanart || artwork.thumbnail}")`,
+          }}
+        >
+          {artwork.logo && <img src={artwork.logo} alt={`${a.name} logo`} style={{ maxWidth: 'min(360px, 80%)', maxHeight: 90, objectFit: 'contain' }} />}
+        </div>
+      )}
       <div className="stack" style={{ '--gap': '8px' }}>
         <div className="soft small">{a.type.toLowerCase()} · {[a.language, a.region].filter(Boolean).join(' · ')}{a.formedYear ? ` · since ${a.formedYear}` : ''}</div>
         <h1 className="display">{a.name}</h1>
@@ -143,6 +164,7 @@ export function ArtistPage() {
         </div>
       </div>
       <TrackList songs={a.songs} origin="LIBRARY" />
+      {artwork?.attribution && <a className="tiny muted" href={artwork.sourceUrl || 'https://www.theaudiodb.com/'} target="_blank" rel="noopener noreferrer">{artwork.attribution}</a>}
     </div>
   );
 }
@@ -150,13 +172,16 @@ export function ArtistPage() {
 export function AlbumPage() {
   const { id } = useParams();
   const { data: a, error, loading, reload } = useApi(() => api.album(id), [id]);
+  const { data: artwork } = useApi(() => api.albumArtwork(id), [id]);
   const player = usePlayer();
   if (loading) return <Loading />;
   if (error) return <div className="page"><ErrorState error={error} onRetry={reload} /></div>;
   return (
     <div className="page stack" style={{ '--gap': '24px' }}>
       <div className="row wrap" style={{ '--gap': '24px', alignItems: 'flex-end' }}>
-        <Cover colors={a.cover} seed={a.id * 31 + (a.songs[0] ? a.songs[0].id : 0)} size={200} />
+        {artwork?.thumbnail
+          ? <img src={artwork.thumbnail} alt={`${a.title} album cover`} loading="lazy" style={{ width: 200, height: 200, objectFit: 'cover', borderRadius: 18 }} />
+          : <Cover colors={a.cover} seed={a.id * 31 + (a.songs[0] ? a.songs[0].id : 0)} size={200} />}
         <div className="stack" style={{ '--gap': '8px' }}>
           <div className="soft small">{a.type.toLowerCase()}{a.film ? <> · soundtrack of <Link className="link" to={`/film/${a.filmId}`}>{a.film}</Link></> : ''} · {a.releaseYear}{a.language ? ` · ${a.language}` : ''}</div>
           <h1 className="display">{a.title}</h1>
@@ -165,6 +190,7 @@ export function AlbumPage() {
         </div>
       </div>
       <TrackList songs={a.songs.map((s) => ({ ...s, rank: s.trackNumber }))} origin="LIBRARY" />
+      {artwork?.attribution && <a className="tiny muted" href={artwork.sourceUrl || 'https://www.theaudiodb.com/'} target="_blank" rel="noopener noreferrer">{artwork.attribution}</a>}
     </div>
   );
 }
