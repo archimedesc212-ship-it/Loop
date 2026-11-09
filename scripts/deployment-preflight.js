@@ -46,6 +46,7 @@ const scheduler = read('backend/src/services/scheduler.js');
 const auth = read('backend/src/middleware/auth.js');
 const apiClient = read('frontend/src/services/api.js');
 const appEntry = read('frontend/src/App.jsx');
+const authHook = read('frontend/src/hooks/useAuth.jsx');
 const apiFunction = read('api/index.js');
 const gitignore = read('.gitignore');
 const hybridDocs = read('docs/DEPLOYMENT_HYBRID.md');
@@ -80,7 +81,7 @@ try {
 }
 requireCheck(validApiRewrite
   && /__loop_path/.test(apiFunction)
-  && /app\\(req, res\\)/.test(apiFunction),
+  && apiFunction.includes('return app(req, res);'),
   'Vercel forwards same-origin /api/* requests to the API function and restores the Express route.');
 requireCheck(rewrites.some((rule) => rule && rule.source === '/(.*)' && rule.destination === '/index.html'),
   'Vercel routes client-side pages to the SPA entry point.');
@@ -140,12 +141,13 @@ requireCheck(/Never run.*db:reset:unsafe/.test(hybridDocs)
   && /JOBS_ENABLED/.test(hybridDocs)
   && /vercel\.json/.test(hybridDocs),
   'The hybrid runbook documents database safety, scheduler and the Vercel JSON config.');
-requireCheck(/path="\\/login"\\s+element={<Navigate to="\\/" replace \/>}/.test(appEntry)
-  && /useAuth/.test(appEntry)
-  && !/Varsha@27|Admin@123|Quick access|Demo account/.test(appEntry),
-  'The current app entry handles legacy auth routes and does not expose shared test credentials.');
+requireCheck(appEntry.includes('path="/login"')
+  && authHook.includes('api.session()')
+  && authHook.includes('api.createGuestSession()')
+  && !/Varsha@27|Admin@123|Quick access|Demo account/.test(appEntry + authHook),
+  'The current app entry and session hook handle legacy routes and bootstrap guests without exposing shared test credentials.');
 
-passes.push('The HTTPS API rewrite is validated from vercel.json; no API-origin secret is required.');
+passes.push('The same-origin API rewrite is validated from vercel.json; no API-origin secret is required.');
 
 console.log('\nLOOP hybrid deployment preflight');
 console.log('--------------------------------');
