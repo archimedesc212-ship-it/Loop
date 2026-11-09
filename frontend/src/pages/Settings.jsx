@@ -11,7 +11,7 @@ import { replayIntro } from '../components/Intro';
 import { Logout } from '../components/Icons';
 
 export default function Settings() {
-  const { user, setUser, signOut } = useAuth();
+  const { user, setUser } = useAuth();
   const toast = useToast();
   const player = usePlayer();
   const nav = useNavigate();
@@ -35,7 +35,7 @@ export default function Settings() {
   };
   return (
     <div className="page" style={{ maxWidth: 760 }}>
-      <PageHead title="Settings" actions={<button className="btn ghost" onClick={async () => { await player.reset(); await signOut(); nav('/login'); }}><Logout />Sign out</button>} />
+      <PageHead title="Settings" />
       {opts.error && <ErrorState error={opts.error} onRetry={opts.reload} />}
       <form className="stack" style={{ '--gap': '18px' }} onSubmit={save}>
         <Field label="Display name"><input className="input" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} maxLength={60} /></Field>
@@ -63,7 +63,7 @@ export default function Settings() {
           <Link className="btn ghost" to="/welcome">Redo onboarding</Link></div>
       </form>
       <HiddenSongs />
-      <AccountSecurity />
+
       <div className="card stack section" style={{ '--gap': '6px' }} id="credits">
         <h3>About and credits</h3>
         <p className="small soft">LOOP’s demo catalogue is fictional and written for this project. Playback of demo songs is a sound sketch synthesised in your browser — not a recording.</p>
