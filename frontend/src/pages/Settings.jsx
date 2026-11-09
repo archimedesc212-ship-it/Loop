@@ -13,8 +13,7 @@ import { Logout } from '../components/Icons';
 export default function Settings() {
   const { user, setUser } = useAuth();
   const toast = useToast();
-  const player = usePlayer();
-  const nav = useNavigate();
+    const nav = useNavigate();
   const opts = useApi(() => api.onboardingOptions(), []);
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -60,7 +59,7 @@ export default function Settings() {
           </Field>
         </div>
         <div className="row"><button className="btn primary" disabled={busy}>{busy ? 'Saving…' : 'Save settings'}</button>
-          <Link className="btn ghost" to="/welcome">Redo onboarding</Link></div>
+          </div>
       </form>
       <HiddenSongs />
 
