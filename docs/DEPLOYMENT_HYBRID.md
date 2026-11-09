@@ -30,7 +30,7 @@ After the database has been initialized, verify:
 
 ### Database safety
 
-Never run **npm run db:setup** against an existing or valuable database: the current setup script drops and recreates the database. For a first install, use only a newly provisioned empty database after reviewing the setup SQL and target. For subsequent releases, back up first, inspect **npm run db:status**, then apply reviewed migrations with an owner account from a trusted environment. Do not put owner credentials in the running service.
+Never run **npm run db:reset:unsafe** against an existing or valuable database: it drops and recreates the database. The normal **npm run setup** path is migration-only and does not reset existing data. For a first install, use only a newly provisioned empty database after reviewing the setup SQL and target. For subsequent releases, back up first, inspect **npm run db:status**, then apply reviewed migrations with an owner account from a trusted environment. Do not put owner credentials in the running service.
 
 ## 2. Deploy the frontend on Vercel
 
@@ -90,4 +90,4 @@ After both providers are configured:
 
 This repository configuration prepares the hybrid deployment; it does not create cloud databases, set provider credentials, or certify a production release. Render's **autoDeploy: false** is intentional: enable or trigger deployment only after the database target, migrations, environment values and health checks have been reviewed.
 
-Never add database owner credentials, session secrets, API keys or live environment files to GitHub. Never attach **npm run db:setup** to a deployment build/start hook. The first schema bootstrap is a separately reviewed operation on a new, empty database only.
+Never add database owner credentials, session secrets, API keys or live environment files to GitHub. Never attach **npm run db:setup** or **npm run db:reset:unsafe** to a deployment build/start hook. The first schema bootstrap is a separately reviewed operation on a new, empty database only.

@@ -31,9 +31,9 @@ Do not point a first-time bootstrap at an existing or valuable database.
 The current `backend/scripts/setup-db.js` explicitly runs
 `DROP DATABASE IF EXISTS <DB_NAME>` before recreating the schema. Therefore:
 
-- Never attach `npm run db:setup` to Render's build or start command.
-- Never run it against an existing or valuable database.
-- Only use it for the first install on a newly created, verified-empty LOOP database,
+- Never attach `npm run db:setup` or `npm run db:reset:unsafe` to Render's build or start command.
+- Never run the destructive reset against an existing or valuable database.
+- Only use `npm run db:reset:unsafe` for the first install on a newly created, verified-empty LOOP database,
   after reviewing the SQL and confirming the target database name.
 - The setup script needs a database owner account. Use that account only from a trusted,
   temporary setup environment; do not store owner credentials in the running Render service.

@@ -1,14 +1,14 @@
 {
-  "name": "muse",
+  "name": "loop",
   "version": "1.0.0",
   "private": true,
-  "description": "MUSE — Music Mood Intelligence & Recommendation Database System (BTech CSE DBMS project)",
+  "description": "LOOP — mood-aware music discovery and listening platform",
   "workspaces": [
     "backend",
     "frontend"
   ],
   "scripts": {
-    "setup": "npm run db:seed:generate && node backend/scripts/setup-db.js --allow-destructive && npm run build",
+    "setup": "npm run db:seed:generate && npm run db:migrate && npm run build",
     "db:setup": "node backend/scripts/setup-db.js",
     "db:migrate": "npm run db:migrate --workspace backend",
     "db:status": "npm run db:status --workspace backend",
@@ -37,7 +37,8 @@
     "roadmap:mutation": "node backend/scripts/roadmap/mutation-check.js",
     "roadmap:features": "node backend/scripts/roadmap/features-58-87.js",
     "deploy:check": "node scripts/deployment-preflight.js",
-    "dataset:import": "node backend/scripts/import-kaggle-features.js"
+    "dataset:import": "node backend/scripts/import-kaggle-features.js",
+    "db:reset:unsafe": "npm run db:seed:generate && node backend/scripts/setup-db.js --allow-destructive"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

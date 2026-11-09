@@ -6,18 +6,18 @@
 
 ## Executive finding
 
-The repository named `Loop` currently contains **MUSE**, a BTech music-mood recommendation/database project. It is not yet a Spotify-style commercial music streaming platform.
+The repository is being converted from the MUSE academic music-mood recommendation project into **LOOP**. The current implementation remains a recommendation/listening foundation, not yet a Spotify-style commercial music streaming platform.
 
 Evidence from the current default branch:
-- Root `package.json` identifies the package as `muse` and describes a Music Mood Intelligence & Recommendation Database System.
+- The root and workspace package identities are being renamed to `loop`; the MySQL database identifier remains `muse` for data-preserving compatibility.
 - `README.md` describes 64 normalized tables and a fictional CC0 catalogue; it explicitly says no copyrighted audio, lyrics or artwork are bundled.
 - The frontend is React 18 + Vite 7.
 - The API is Express 4 / Node.js and uses MySQL 8 through `mysql2`.
 - Existing authentication uses server-side sessions, httpOnly SameSite=Strict cookies and CSRF checks.
 - Playback currently supports licensed local files, a labelled browser-generated demo sketch, and a vendor-neutral licensed-preview adapter. Full commercial-track streaming is explicitly not implemented.
-- Existing `vercel.ts` proxies API requests to Render via `LOOP_API_ORIGIN`; `render.yaml` provisions a persistent API service. The in-process scheduler starts from `backend/src/server.js`.
+- Existing `vercel.json` statically proxies API requests to the configured Render service; `render.yaml` provisions a persistent API service. The in-process scheduler starts from `backend/src/server.js`.
 
-**Do not present the current repository as a released Spotify competitor.** First decide whether this repo is being converted from the MUSE academic project into the LOOP product, or whether the MUSE project must be preserved separately.
+**Do not present the current repository as a released Spotify competitor.** LOOP product identity and hybrid deployment configuration can be updated independently; artist uploads, durable media delivery, rights workflows and production certification remain separate implementation gates.
 
 ## Spotify API key: what it can and cannot do
 
@@ -76,7 +76,7 @@ This is a **free-tier prototype target, not a promise of unlimited free producti
 
 ## Existing code that must be addressed before Vercel-only deployment
 
-1. `vercel.ts` currently requires `LOOP_API_ORIGIN` and rewrites `/api/*` to a Render API. It is not a standalone Vercel backend.
+1. `vercel.json` statically rewrites `/api/*` to the configured Render API. It is not a standalone Vercel backend.
 2. `backend/src/server.js` starts an Express listener and an in-process scheduler. This cannot be deployed unchanged as a normal Vercel Function.
 3. `JOBS_ENABLED` controls scheduled maintenance, cleanup, trend snapshots and weekly intelligence. Refactor each job into an idempotent callable task and invoke it through a protected Cron endpoint or a separate worker.
 4. Database connection handling must be made serverless-safe: bounded pools, connection reuse, timeouts, and no connection storm on cold starts.
@@ -169,4 +169,4 @@ Use separate Production and Preview credentials/buckets/databases. Do not put se
 
 ## Current status
 
-This document is an audit and implementation plan only. It intentionally does not rename MUSE, remove Render files, alter database schema, or claim the product is deployed. Those changes require the product-conversion decision and a code-level implementation with tests.
+This document remains an audit and implementation plan. Product branding and safe deployment setup are being updated, while the existing MySQL database identity and data are preserved. It does not claim artist self-service uploads, durable object storage, full rights management or a production release.

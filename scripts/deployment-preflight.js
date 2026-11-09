@@ -45,6 +45,7 @@ const server = read('backend/src/server.js');
 const scheduler = read('backend/src/services/scheduler.js');
 const auth = read('backend/src/middleware/auth.js');
 const apiClient = read('frontend/src/services/api.js');
+const loginPage = read('frontend/src/pages/Auth.jsx');
 const gitignore = read('.gitignore');
 const hybridDocs = read('docs/DEPLOYMENT_HYBRID.md');
 
@@ -54,6 +55,9 @@ requireCheck(pkg.scripts && pkg.scripts.start === 'npm run start --workspace bac
   'The root start script runs the persistent Express backend workspace.');
 requireCheck(pkg.scripts && pkg.scripts['deploy:check'] === 'node scripts/deployment-preflight.js',
   'The root package exposes npm run deploy:check.');
+requireCheck(pkg.scripts && pkg.scripts.setup === 'npm run db:seed:generate && npm run db:migrate && npm run build'
+  && pkg.scripts['db:reset:unsafe'] && pkg.scripts['db:reset:unsafe'].includes('--allow-destructive'),
+  'Normal setup is migration-only; destructive reset is explicitly isolated.');
 
 requireCheck(vercel.installCommand === 'npm ci',
   'Vercel installs the npm workspace from the repository root.');
@@ -128,10 +132,12 @@ requireCheck(/^\s*\.env\s*$/m.test(gitignore)
   && /^\s*\.env\.\*\s*$/m.test(gitignore)
   && /^\s*!\.env\.example\s*$/m.test(gitignore),
   'Live environment files are ignored while .env.example stays tracked.');
-requireCheck(/Never run.*db:setup/.test(hybridDocs)
+requireCheck(/Never run.*db:reset:unsafe/.test(hybridDocs)
   && /JOBS_ENABLED/.test(hybridDocs)
   && /vercel\.json/.test(hybridDocs),
   'The hybrid runbook documents database safety, scheduler and the Vercel JSON config.');
+requireCheck(!/Varsha@27|Quick access|Demo account/.test(loginPage),
+  'The public sign-in page does not display shared test credentials.');
 
 passes.push('The HTTPS API rewrite is validated from vercel.json; no API-origin secret is required.');
 

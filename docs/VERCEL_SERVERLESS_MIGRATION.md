@@ -4,7 +4,7 @@ Status: target design and migration checklist. Current repository is not yet Ver
 
 ## Current blockers confirmed in repository
 
-- Root `vercel.ts` requires `LOOP_API_ORIGIN` and forwards API calls to a persistent Render service.
+- Root `vercel.json` statically rewrites API calls to the configured persistent Render service.
 - `backend/src/server.js` starts an Express listener and an in-process scheduler.
 - `backend/src/config/env.js` currently calls process.exit when DB config is absent; this is unsuitable for import-time initialization in a serverless function.
 - The application uses MySQL-specific SQL, stored routines, triggers, views and a least-privilege MySQL user. Do not silently replace it with Firebase Firestore or PostgreSQL.
@@ -24,7 +24,7 @@ Status: target design and migration checklist. Current repository is not yet Ver
 
 1. Extract configuration parsing from process boot. Validation should be callable and should not terminate the process merely because a module is imported.
 2. Export the Express app without listening. Add a Vercel Node entrypoint that adapts the request/response to the existing Express app using a supported adapter; test body parsing, cookies, streaming responses and route paths.
-3. Replace `vercel.ts` Render rewrite with explicit Vercel routing to the frontend build and API function. Remove `LOOP_API_ORIGIN` only after preview tests pass.
+3. Replace the `vercel.json` Render rewrite with explicit Vercel routing to the frontend build and API function. Remove `LOOP_API_ORIGIN` only after preview tests pass.
 4. Make DB pool serverless-safe: small max connections, connection timeout, idle timeout, TLS, no per-request pool creation, no unbounded concurrency. Confirm the selected MySQL host permits Vercel egress/connection strategy.
 5. Convert each scheduler operation into an exported idempotent job function. Add a protected cron route with constant-time secret comparison, job allowlist, bounded execution and run log. Do not expose a generic arbitrary job runner.
 6. Configure Vercel Cron only for supported cadence/plan. For jobs needing longer than a function execution window, use a separate worker/queue.
