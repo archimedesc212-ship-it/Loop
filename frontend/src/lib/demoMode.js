@@ -32,7 +32,7 @@ export const demoContexts = [
   {code:'TRAVEL',name:'Road trip',emoji:'↗'},
 ];
 const read=(k,d)=>{try{return JSON.parse(localStorage.getItem('loop.demo.'+k))??d}catch{return d}};
-const write=(k,v)=>{try{localStorage.setItem('loop.demo.'+k,JSON.stringify(v))}catch{}};
+const write=(k,v)=>{try{localStorage.setItem('loop.demo.'+k,JSON.stringify(v))}catch{/* demo persistence is optional */}};
 let playId=1;
 const all=()=>demoSongs.map(s=>({...s,liked:read('likes',[]).includes(s.id)}));
 const result=(songs=all())=>({songs,batchId:1,title:'Made for this moment',subtitle:'A little mix, just for you'});
