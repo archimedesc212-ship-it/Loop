@@ -1,3 +1,5 @@
+> **Architecture note:** This file is the single-origin Render-only alternative. For the current Vercel frontend + Render API setup, follow [DEPLOYMENT_HYBRID.md](DEPLOYMENT_HYBRID.md). Do not combine the two runbooks because they use different frontend origins and cookie/CORS settings.
+
 # Render deployment (primary MUSE app)
 
 This deployment keeps the React app and Express API on **one origin and one
