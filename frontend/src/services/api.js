@@ -47,7 +47,7 @@ export function buildHeaders(method, hasBody, cookieSource) {
   return headers;
 }
 
-const QUIET_401 = new Set(['/auth/me', '/auth/login', '/auth/register']);
+const QUIET_401 = new Set(['/auth/me']);
 
 export async function request(method, path, body) {
   let res;
@@ -93,8 +93,6 @@ const qs = (o = {}) => {
 
 export const api = {
   // auth & profile
-  login: (login, password) => request('POST', '/auth/login', { login, password }),
-  register: (b) => request('POST', '/auth/register', b),
   me: () => request('GET', '/auth/me'),
   session: () => request('GET', '/auth/session'),
   logout: () => request('POST', '/auth/logout', {}),
