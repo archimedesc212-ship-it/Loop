@@ -8,6 +8,7 @@ import { PlayerProvider } from './hooks/usePlayer';
 import '@fontsource-variable/fraunces/opsz.css';
 import '@fontsource-variable/hanken-grotesk';
 import './styles/global.css';
+import './styles/rewear-inspired.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
