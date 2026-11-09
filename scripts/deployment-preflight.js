@@ -24,23 +24,6 @@ function requireCheck(condition, message) {
   else failures.push(message);
 }
 
-function checkBareHttpsOrigin(value) {
-  let parsed;
-  try {
-    parsed = new URL(value);
-  } catch {
-    return false;
-  }
-
-  return parsed.protocol === 'https:'
-    && parsed.pathname === '/'
-    && parsed.search === ''
-    && parsed.hash === ''
-    && parsed.username === ''
-    && parsed.password === ''
-    && parsed.origin === value.replace(/\/$/, '');
-}
-
 const packageSource = read('package.json');
 let pkg = {};
 try {
@@ -93,7 +76,7 @@ requireCheck(validApiRewrite,
   'Vercel proxies /api/* to a valid HTTPS API origin.');
 requireCheck(rewrites.some((rule) => rule && rule.source === '/(.*)' && rule.destination === '/index.html'),
   'Vercel routes client-side pages to the SPA entry point.');
-requireCheck(!/\\bcrons\\s*:/.test(JSON.stringify(vercel)),
+requireCheck(!Object.prototype.hasOwnProperty.call(vercel, 'crons'),
   'Vercel does not define duplicate scheduled jobs.');
 requireCheck(fs.existsSync(path.join(root, 'vercel.json'))
   && !['vercel.ts', 'vercel.yaml', 'vercel.yml'].some((file) => fs.existsSync(path.join(root, file))),
@@ -138,6 +121,9 @@ requireCheck(/fetch\(/.test(apiClient)
   && /credentials:\s*'same-origin'/.test(apiClient)
   && /X-CSRF-Token/.test(apiClient),
   'The browser uses same-origin API calls and sends the CSRF header.');
+requireCheck(/AbortController/.test(apiClient)
+  && /TIMEOUT/.test(apiClient),
+  'Browser API requests have a finite timeout and a useful timeout error.');
 requireCheck(/^\s*\.env\s*$/m.test(gitignore)
   && /^\s*\.env\.\*\s*$/m.test(gitignore)
   && /^\s*!\.env\.example\s*$/m.test(gitignore),
@@ -147,16 +133,7 @@ requireCheck(/Never run.*db:setup/.test(hybridDocs)
   && /vercel\.json/.test(hybridDocs),
   'The hybrid runbook documents database safety, scheduler and the Vercel JSON config.');
 
-const suppliedOrigin = process.env.LOOP_API_ORIGIN;
-const productionMode = process.argv.includes('--production');
-if (suppliedOrigin) {
-  requireCheck(checkBareHttpsOrigin(suppliedOrigin),
-    'Provided LOOP_API_ORIGIN is a bare HTTPS origin.');
-} else if (productionMode) {
-  failures.push('Production preflight requires LOOP_API_ORIGIN to be set.');
-} else {
-  passes.push('No live API origin supplied; production-only origin check was skipped.');
-}
+passes.push('The HTTPS API rewrite is validated from vercel.json; no API-origin secret is required.');
 
 console.log('\nLOOP hybrid deployment preflight');
 console.log('--------------------------------');
