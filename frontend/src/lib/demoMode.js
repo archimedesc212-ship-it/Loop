@@ -38,7 +38,7 @@ const all=()=>demoSongs.map(s=>({...s,liked:read('likes',[]).includes(s.id)}));
 const result=(songs=all())=>({songs,batchId:1,title:'Made for this moment',subtitle:'A little mix, just for you'});
 export function demoRequest(method,path,body){
   const p=path.split('?')[0], q=new URLSearchParams(path.split('?')[1]||'');
-  const user={id:1,username:'demo',displayName:'Demo Listener',email:'demo@loop.local',roleName:'Listener',role:'LISTENER',permissions:[],incognito:false,regionCode:'IN'};
+  const user={id:1,username:'demo',displayName:'Demo Listener',email:'demo@loop.local',roleName:'Listener',role:'LISTENER',onboarded:true,permissions:[],incognito:false,regionCode:'IN'};
   if(p==='/auth/session'||p==='/auth/me')return Promise.resolve({authenticated:true,...user,session:{id:'demo-session',expiresAt:null}});
   if(p==='/auth/logout'||p==='/auth/logout-all')return Promise.resolve({ok:true});
   if(p==='/moods')return Promise.resolve(demoMoods);
