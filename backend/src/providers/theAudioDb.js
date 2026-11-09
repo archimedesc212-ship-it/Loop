@@ -23,7 +23,15 @@ function check() {
   const c = cfg.theAudioDb;
   if (!c.enabled) return { state: 'disabled' };
   if (!c.apiKey) return { state: 'missing_credentials', missing: ['THEAUDIODB_API_KEY'] };
-  if (!/^https:\/\//.test(c.baseUrl)) return { state: 'invalid_config', message: 'THEAUDIODB_BASE_URL must use HTTPS.' };
+  try {
+    const u = new URL(c.baseUrl || '');
+    const isLocal = ['localhost', '127.0.0.1', '::1', '[::1]'].includes(u.hostname) || u.hostname.endsWith('.localhost');
+    if (u.protocol !== 'https:' && !(u.protocol === 'http:' && isLocal)) {
+      return { state: 'invalid_config', message: 'THEAUDIODB_BASE_URL must use HTTPS, or be a loopback URL during local testing.' };
+    }
+  } catch {
+    return { state: 'invalid_config', message: 'THEAUDIODB_BASE_URL must be a valid URL.' };
+  }
   return { state: 'ready' };
 }
 
@@ -35,7 +43,9 @@ function assertReady() {
 
 function endpoint(name, params = {}) {
   const c = cfg.theAudioDb;
-  const url = new URL(`${c.baseUrl.replace(/\/$/, '')}/${encodeURIComponent(c.apiKey)}/${name}.php`);
+  const base = String(c.baseUrl || '').replace(/\/$/, '');
+  const apiBase = /\/api\/v1\/json(?:\/)?$/i.test(base) ? base : `${base}/api/v1/json`;
+  const url = new URL(`${apiBase}/${encodeURIComponent(c.apiKey)}/${name}.php`);
   Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
   return url.toString();
 }
