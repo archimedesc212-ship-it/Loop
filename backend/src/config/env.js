@@ -34,7 +34,7 @@ function validateEnvironment() {
 }
 
 const timezone = process.env.DB_TIMEZONE || '+00:00';
-if (!/^[+-](0\\d|1[0-4]):[0-5]\\d$/.test(timezone)) {
+if (!/^[+-](0[0-9]|1[0-4]):[0-5][0-9]$/.test(timezone)) {
   throw new Error('DB_TIMEZONE must look like +00:00 or +05:30');
 }
 
