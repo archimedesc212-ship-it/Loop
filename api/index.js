@@ -1,4 +1,4 @@
-/* global module, require */
+/* global module, require, URL */
 // Stable Vercel Function entrypoint for all /api/* traffic.
 // vercel.json forwards the original API suffix in __loop_path; restore the
 // exact Express URL before handing the request to the existing application.
