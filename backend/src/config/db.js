@@ -2,7 +2,7 @@
 // Every statement uses placeholders (?) — user input is never concatenated
 // into SQL. multipleStatements is OFF as a second line of defence.
 const mysql = require('mysql2/promise');
-const { db } = require('./env');
+const { db, isServerless } = require('./env');
 
 const pool = mysql.createPool({
   host: db.host,
@@ -11,7 +11,12 @@ const pool = mysql.createPool({
   password: db.appPassword,
   database: db.database,
   waitForConnections: true,
-  connectionLimit: 12,
+  connectionLimit: db.poolMax,
+  maxIdle: Math.min(db.poolMax, isServerless ? 2 : 8),
+  idleTimeout: 30000,
+  connectTimeout: db.connectTimeoutMs,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
   multipleStatements: false,
   decimalNumbers: true,
   // DATE columns stay 'YYYY-MM-DD' (calendar days). DATETIMEs become real instants in the
@@ -22,6 +27,7 @@ const pool = mysql.createPool({
   supportBigNumbers: true,
   bigNumberStrings: false,
   charset: 'utf8mb4',
+  ...(db.ssl ? { ssl: { minVersion: 'TLSv1.2', ...(db.sslCa ? { ca: db.sslCa } : {}) } } : {}),
 });
 
 // every pooled connection works in the same, explicit time zone
