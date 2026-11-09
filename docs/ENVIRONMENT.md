@@ -58,6 +58,9 @@ any change**. Invalid numeric values stop the API with a clear message.
 | `YOUTUBE_ENABLED` | `false` | turn the YouTube Data API adapter on |
 | `YOUTUBE_API_KEY` | — | Google Cloud API key with YouTube Data API v3 enabled |
 | `YOUTUBE_BASE_URL` | `https://www.googleapis.com/youtube/v3` | override |
+| `THEAUDIODB_ENABLED` | `false` | enable TheAudioDB artist/album artwork metadata (development/testing only with the shared free key) |
+| `THEAUDIODB_API_KEY` | `123` | shared public test key; use a paid/approved key for a permitted production deployment |
+| `THEAUDIODB_BASE_URL` | `https://www.theaudiodb.com/api/v1/json` | TheAudioDB v1 API base URL |
 | `EXTERNAL_PREVIEW_ENABLED` | `false` | turn the licensed-preview adapter on |
 | `EXTERNAL_PREVIEW_BASE_URL` | — | base URL implementing `GET /previews?isrc=` |
 | `EXTERNAL_PREVIEW_API_KEY` | — | bearer key for that service |
