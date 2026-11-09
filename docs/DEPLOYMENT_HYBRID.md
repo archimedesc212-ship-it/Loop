@@ -62,7 +62,7 @@ The browser calls relative **/api** URLs with **credentials: same-origin**. Keep
 
 Set Render **CORS_ORIGIN** to the exact public Vercel origin. The Express origin guard accepts that configured origin; requests are proxied through the Vercel origin. If adding a custom domain, add that exact HTTPS origin to **CORS_ORIGIN** and redeploy the API.
 
-Do not broadly allow **\***, do not disable CSRF, and do not change cookie SameSite settings to make cross-origin calls work. Preview deployments should use an isolated backend and database unless access to production data has been explicitly approved.
+Do not use wildcard CORS origins, disable CSRF, or change cookie SameSite settings to make cross-origin calls work. Preview deployments should use an isolated backend and database unless access to production data has been explicitly approved.
 
 ## 4. Scheduler and operational constraints
 
