@@ -35,7 +35,8 @@
     "roadmap:results": "node backend/scripts/roadmap/collect-test-results.js",
     "roadmap:verify": "node backend/scripts/roadmap/collect-test-results.js && node backend/scripts/roadmap/check-registry.js --results docs/roadmap/.build/test-results.json",
     "roadmap:mutation": "node backend/scripts/roadmap/mutation-check.js",
-    "roadmap:features": "node backend/scripts/roadmap/features-58-87.js"
+    "roadmap:features": "node backend/scripts/roadmap/features-58-87.js",
+    "deploy:check": "node scripts/deployment-preflight.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
