@@ -41,14 +41,16 @@ class AppErrorBoundary extends React.Component {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <ToastProvider>
-        <AuthProvider>
-          <PlayerProvider>
-            <App />
-          </PlayerProvider>
-        </AuthProvider>
-      </ToastProvider>
-    </BrowserRouter>
+    <AppErrorBoundary>
+      <BrowserRouter>
+        <ToastProvider>
+          <AuthProvider>
+            <PlayerProvider>
+              <App />
+            </PlayerProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </BrowserRouter>
+    </AppErrorBoundary>
   </React.StrictMode>,
 );
