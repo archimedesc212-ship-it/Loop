@@ -1,10 +1,8 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import Layout from './components/Layout';
 import { Thinking } from './components/ui';
-import { Login, Register } from './pages/Auth';
-import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
 import MoodPage from './pages/Mood';
 import Mix from './pages/Mix';
@@ -18,14 +16,6 @@ import PrivateSession from './pages/Private';
 
 const Admin = lazy(() => import('./pages/admin/Admin'));
 
-function RequireAuth({ children }) {
-  const { user, ready } = useAuth();
-  const loc = useLocation();
-  if (!ready) return <div style={{ padding: 40 }}><Thinking label="Loading LOOP" /></div>;
-  if (!user) return <Navigate to="/login" replace state={{ from: loc.pathname + loc.search }} />;
-  return children;
-}
-
 function NotFound() {
   return (
     <div className="page empty" style={{ maxWidth: 520 }}>
@@ -37,15 +27,24 @@ function NotFound() {
 }
 
 export default function App() {
+  const { user, ready, sessionNote } = useAuth();
+  if (!ready) return <div style={{ padding: 40 }}><Thinking label="Opening LOOP" /></div>;
+  if (!user) return (
+    <div className="page empty" style={{ maxWidth: 520 }}>
+      <h3>LOOP couldn’t start</h3>
+      <p className="small">{sessionNote || 'We couldn’t create your guest session. Please try again.'}</p>
+      <button className="btn primary sm" onClick={() => window.location.reload()}>Try again</button>
+    </div>
+  );
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/signup" element={<Navigate to="/register" replace />} />
-      <Route path="/create-account" element={<Navigate to="/register" replace />} />
-      <Route path="/onboarding" element={<Navigate to="/welcome" replace />} />
-      <Route path="/welcome" element={<RequireAuth><Onboarding /></RequireAuth>} />
-      <Route element={<RequireAuth><Layout /></RequireAuth>}>
+      <Route path="/login" element={<Navigate to="/" replace />} />
+      <Route path="/register" element={<Navigate to="/" replace />} />
+      <Route path="/signup" element={<Navigate to="/" replace />} />
+      <Route path="/create-account" element={<Navigate to="/" replace />} />
+      <Route path="/welcome" element={<Navigate to="/" replace />} />
+      <Route path="/onboarding" element={<Navigate to="/" replace />} />
+      <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="mood" element={<MoodPage />} />
         <Route path="mix/:kind" element={<Mix />} />
