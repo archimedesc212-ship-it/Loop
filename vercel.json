@@ -7,10 +7,10 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://loop-muse-api.onrender.com/api/:path*"
+      "destination": "https://loop-41r7.onrender.com/api/:path*"
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
