@@ -39,7 +39,7 @@ before(async () => {
   mock = await startMock();
   admin = await h.login('admin', 'Admin@123');
 });
-beforeEach(() => { restoreConfig(); cfg.retries = 2; cfg.timeoutMs = 400; _reset(); });
+beforeEach(() => { restoreConfig(); cfg.retries = 2; cfg.timeoutMs = 400; _reset(); providers.theAudioDb._resetCache(); });
 after(async () => {
   restoreConfig();
   for (const id of created.media) await h.query('DELETE FROM song_media WHERE media_id = ?', [id]);
@@ -53,7 +53,7 @@ after(async () => {
 
 test('every external provider is disabled by default and the app runs without keys', async () => {
   const st = Object.fromEntries(providers.status().map((p) => [p.code, p.state]));
-  assert.deepEqual(st, { MUSICBRAINZ: 'disabled', TMDB: 'disabled', YOUTUBE_DATA: 'disabled', EXTERNAL_PREVIEW: 'disabled', LOCAL_MEDIA: 'ready', AI: 'disabled' });
+  assert.deepEqual(st, { MUSICBRAINZ: 'disabled', TMDB: 'disabled', YOUTUBE_DATA: 'disabled', EXTERNAL_PREVIEW: 'disabled', THEAUDIODB: 'disabled', LOCAL_MEDIA: 'ready', AI: 'disabled' });
   await assert.rejects(providers.tmdb.searchMovie({ title: 'x' }), (e) => e instanceof ProviderError && e.code === 'DISABLED');
   const r = await h.api('POST', '/admin/providers/TMDB/test', { token: admin });
   assert.equal(r.status, 409);
@@ -142,6 +142,29 @@ test('MusicBrainz: sends the identifying User-Agent and maps recordings to metad
   assert.equal(r.records[0].payload.isrc, 'INABC2600001');
   reply((req, res) => json(res, 200, { nope: true }));
   await assert.rejects(providers.musicbrainz.discover({ query: 'x' }), (e) => e.code === 'BAD_RESPONSE');
+});
+
+test('TheAudioDB: maps exact artist metadata, permits artwork hosts, and does not return unsafe image URLs', async () => {
+  Object.assign(cfg.theAudioDb, { enabled: true, apiKey: '123', baseUrl: mock.url, minIntervalMs: 0 });
+  reply((req, res) => json(res, 200, { artists: [{
+    idArtist: '111', strArtist: 'Coldplay',
+    strArtistBanner: 'https://r2.theaudiodb.com/images/media/artist/banner/banner.jpg',
+    strArtistFanart: 'https://evil.example/fanart.jpg',
+    strArtistThumb: 'https://www.theaudiodb.com/images/media/artist/thumb/thumb.jpg',
+    strBiographyEN: 'Biography',
+  }] }));
+  const artist = await providers.theAudioDb.artistArtwork({ name: 'Coldplay' });
+  assert.equal(hits().length, 1);
+  assert.match(hits()[0].url, /^\\/api\\/v1\\/json\\/123\\/search\\.php\\?s=Coldplay$/);
+  assert.equal(artist.name, 'Coldplay');
+  assert.equal(artist.banner, 'https://r2.theaudiodb.com/images/media/artist/banner/banner.jpg');
+  assert.equal(artist.fanart, null, 'external untrusted image hosts are not returned');
+  assert.equal(artist.source, 'TheAudioDB');
+
+  // The API key is in the URL path for this provider; errors must still redact it.
+  reply((req, res) => json(res, 401, { error: 'bad key' }));
+  await assert.rejects(requestJson('THEAUDIODB', `${mock.url}/api/v1/json/SECRET_PATH/search.php?s=Coldplay`, { retries: 0 }),
+    (error) => error.code === 'HTTP_ERROR' && !error.message.includes('SECRET_PATH'));
 });
 
 test('TMDB film enrichment: confident match is stored once (idempotent) with attribution; ambiguous results store nothing', async () => {
