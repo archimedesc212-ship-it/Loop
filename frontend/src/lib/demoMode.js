@@ -61,6 +61,7 @@ export function demoRequest(method,path,body){
   if(p==='/likes')return Promise.resolve(all().filter(s=>s.liked));
   if(p==='/me/dismissals'||p==='/me/sessions')return Promise.resolve([]);
   if(p==='/me/onboarding')return Promise.resolve({languages:[{id:1,name:'Telugu'}],genres:demoGenres,moods:demoMoods});
+  if(p==='/playlists'&&method==='POST'){const lists=read('playlists',[]),item={id:Date.now(),name:body.name,songCount:0,kind:'MANUAL',covers:[],songs:[],totalDurationSec:0};write('playlists',[item,...lists]);return Promise.resolve(item);}
   if(p==='/playlists')return Promise.resolve(read('playlists',[]));
   if(p==='/playlists/smart')return Promise.resolve(['ENERGY_BOOST','CALM_MIX','LATE_NIGHT','STUDY','ROAD_TRIP','MOST_REPLAYED','DISCOVERY','REGIONAL'].map(type=>({type,name:type.replaceAll('_',' ').toLowerCase(),blurb:'A demo mix built around your listening'})));
   if(p.startsWith('/playlists/smart/'))return Promise.resolve(result(all().slice(0,6)));
@@ -76,7 +77,6 @@ export function demoRequest(method,path,body){
   if(/^\/songs\/\d+\/(like|rating)$/.test(p)){
     const id=Number(p.split('/')[2]);if(p.endsWith('/like'))write('likes',body?.liked?[...new Set([...read('likes',[]),id])]:read('likes',[]).filter(x=>x!==id));return Promise.resolve({ok:true});
   }
-  if(p==='/playlists'&&method==='POST'){const lists=read('playlists',[]),item={id:Date.now(),name:body.name,songCount:0,kind:'MANUAL',covers:[],songs:[]};write('playlists',[item,...lists]);return Promise.resolve(item);}
   if(/^\/playlists\/\d+$/.test(p)){const id=Number(p.split('/')[2]);const item=read('playlists',[]).find(x=>x.id===id);return Promise.resolve(item||{id,name:'Demo playlist',kind:'MANUAL',songCount:0,songs:[],totalDurationSec:0});}
   if(/^\/playlists\/\d+\/songs$/.test(p))return Promise.resolve({ok:true});
   if(p==='/worlds/current/regenerate'||p==='/worlds/current/rollback')return Promise.resolve({ok:true,world:{id:1,title:'Your quiet corner',theme:'calm',description:'Your demo world'}});
