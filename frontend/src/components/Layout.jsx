@@ -20,9 +20,7 @@ const NAV = [
 ];
 
 function Sidebar() {
-  const { user, can, signOut } = useAuth();
-  const player = usePlayer();
-  const nav = useNavigate();
+  const { user, can } = useAuth();
   const admin = can('health.view') || can('catalog.write');
   return (
     <aside className="sidebar" aria-label="Main">
@@ -46,7 +44,6 @@ function Sidebar() {
         </div>
         <div className="row" style={{ '--gap': '4px' }}>
           <Link to="/settings" className="btn ghost sm grow"><Icon.Settings />Settings</Link>
-          <button className="btn ghost sm" onClick={async () => { await player.reset(); await signOut(); nav('/login'); }} aria-label="Sign out"><Icon.Logout /></button>
         </div>
       </div>
     </aside>
