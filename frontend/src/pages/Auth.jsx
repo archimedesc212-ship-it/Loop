@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Intro, { introSeen } from '../components/Intro';
+import Intro from '../components/Intro';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { WorldArt } from '../components/Art';
@@ -24,7 +24,7 @@ function Art() {
 function useIntro() {
   const loc = useLocation();
   const forced = new URLSearchParams(loc.search).get('intro') === '1';
-  const [show, setShow] = useState(() => forced || !introSeen());
+  const [show, setShow] = useState(() => forced);
   return [show, () => setShow(false)];
 }
 
