@@ -132,7 +132,7 @@ test('the per-provider minimum interval spaces requests out (MusicBrainz: 1 requ
 // ---------------------------------------------------------------- adapters
 
 test('MusicBrainz: sends the identifying User-Agent and maps recordings to metadata-only records', async () => {
-  Object.assign(cfg.musicbrainz, { enabled: true, userAgent: 'MUSE/1.0 (student@example.com)', baseUrl: `${mock.url}/api/v1/json`, minIntervalMs: 0 });
+  Object.assign(cfg.musicbrainz, { enabled: true, userAgent: 'MUSE/1.0 (student@example.com)', baseUrl: mock.url, minIntervalMs: 0 });
   reply((req, res) => json(res, 200, { recordings: [{ id: 'mbid-1', title: 'Song', length: 201000, isrcs: ['INABC2600001'],
     'artist-credit': [{ name: 'Artist' }], releases: [{ title: 'Album', date: '2024-03-01' }] }] }));
   const r = await providers.musicbrainz.discover({ query: 'x', limit: 1 });
@@ -145,7 +145,7 @@ test('MusicBrainz: sends the identifying User-Agent and maps recordings to metad
 });
 
 test('TheAudioDB: maps exact artist metadata, permits artwork hosts, and does not return unsafe image URLs', async () => {
-  Object.assign(cfg.theAudioDb, { enabled: true, apiKey: '123', baseUrl: mock.url, minIntervalMs: 0 });
+  Object.assign(cfg.theAudioDb, { enabled: true, apiKey: '123', baseUrl: `${mock.url}/api/v1/json`, minIntervalMs: 0 });
   reply((req, res) => json(res, 200, { artists: [{
     idArtist: '111', strArtist: 'Coldplay',
     strArtistBanner: 'https://r2.theaudiodb.com/images/media/artist/banner/banner.jpg',
