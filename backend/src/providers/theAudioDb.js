@@ -23,14 +23,23 @@ function check() {
   const c = cfg.theAudioDb;
   if (!c.enabled) return { state: 'disabled' };
   if (!c.apiKey) return { state: 'missing_credentials', missing: ['THEAUDIODB_API_KEY'] };
+
+  let baseUrl;
   try {
-    const u = new URL(c.baseUrl || '');
-    const isLocal = ['localhost', '127.0.0.1', '::1', '[::1]'].includes(u.hostname) || u.hostname.endsWith('.localhost');
-    if (u.protocol !== 'https:' && !(u.protocol === 'http:' && isLocal)) {
-      return { state: 'invalid_config', message: 'THEAUDIODB_BASE_URL must use HTTPS, or be a loopback URL during local testing.' };
-    }
+    baseUrl = new URL(c.baseUrl || '');
   } catch {
     return { state: 'invalid_config', message: 'THEAUDIODB_BASE_URL must be a valid URL.' };
+  }
+
+  // Plain HTTP is accepted only for loopback test mocks, never in deployed environments.
+  const localTestMock = process.env.NODE_ENV === 'test'
+    && baseUrl.protocol === 'http:'
+    && ['localhost', '127.0.0.1', '::1', '[::1]'].includes(baseUrl.hostname);
+  if (baseUrl.protocol !== 'https:' && !localTestMock) {
+    return {
+      state: 'invalid_config',
+      message: 'THEAUDIODB_BASE_URL must use HTTPS (HTTP is allowed only for loopback test mocks).',
+    };
   }
   return { state: 'ready' };
 }
@@ -44,6 +53,7 @@ function assertReady() {
 function endpoint(name, params = {}) {
   const c = cfg.theAudioDb;
   const base = String(c.baseUrl || '').replace(/\/$/, '');
+  // Accept either the host root or an already-versioned API base without duplicating the path.
   const apiBase = /\/api\/v1\/json(?:\/)?$/i.test(base) ? base : `${base}/api/v1/json`;
   const url = new URL(`${apiBase}/${encodeURIComponent(c.apiKey)}/${name}.php`);
   Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v); });
