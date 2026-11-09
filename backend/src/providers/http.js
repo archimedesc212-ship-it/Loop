@@ -27,7 +27,13 @@ async function throttle(provider, minIntervalMs) {
   if (wait > 0) await sleep(wait);
 }
 
-const safeUrl = (u) => { try { const x = new URL(u); return `${x.origin}${x.pathname}`; } catch { return '[invalid url]'; } };
+const safeUrl = (u) => {
+  try {
+    const x = new URL(u);
+    const pathname = x.pathname.replace(/(\\/api\\/v1\\/json\\/)[^/]+(?=\\/)/, '$1[redacted]');
+    return `${x.origin}${pathname}`;
+  } catch { return '[invalid url]'; }
+};
 
 /**
  * request(provider, url, { method, headers, body, timeoutMs, retries, minIntervalMs, fetchImpl })
