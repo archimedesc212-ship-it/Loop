@@ -80,6 +80,8 @@ const listQ = {
 router.get('/songs', v(listQ, 'query'), h(c.catalog.songs));
 router.get('/songs/:id', id, h(c.catalog.song));
 router.get('/artists/:id', id, h(c.catalog.artist));
+router.get('/artists/:id/artwork', id, h(c.catalog.artistArtwork));
+router.get('/albums/:id/artwork', id, h(c.catalog.albumArtwork));
 router.get('/albums/:id', id, h(c.catalog.album));
 router.get('/genres', h(c.catalog.genres));
 router.get('/moods', h(c.catalog.moods));
@@ -280,7 +282,7 @@ A.post('/pipeline/ingest', can('pipeline.run'), v({
 A.post('/pipeline/weekly', can('pipeline.run'), v({ force: opt(r.bool(), false) }), h(c.admin.weekly));
 A.post('/pipeline/trends', can('pipeline.run'), h(c.admin.trends));
 // providers and media
-const PCODE = v({ code: r.oneOf(['MUSICBRAINZ', 'TMDB', 'YOUTUBE_DATA', 'EXTERNAL_PREVIEW', 'LOCAL_MEDIA', 'AI']) }, 'params');
+const PCODE = v({ code: r.oneOf(['MUSICBRAINZ', 'TMDB', 'YOUTUBE_DATA', 'EXTERNAL_PREVIEW', 'THEAUDIODB', 'LOCAL_MEDIA', 'AI']) }, 'params');
 A.get('/providers', can('pipeline.view'), h(c.admin.providers));
 A.post('/providers/:code/test', can('pipeline.run'), PCODE, h(c.admin.testProvider));
 A.get('/films', can('catalog.write'), h(c.admin.films));
