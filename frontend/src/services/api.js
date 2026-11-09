@@ -47,7 +47,7 @@ export function buildHeaders(method, hasBody, cookieSource) {
   return headers;
 }
 
-const QUIET_401 = new Set(['/auth/me']);
+const QUIET_401 = new Set(['/auth/me', '/auth/login', '/auth/register']);
 
 export async function request(method, path, body) {
   let res;
