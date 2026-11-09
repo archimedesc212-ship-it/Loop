@@ -4,6 +4,7 @@ const musicbrainz = require('./musicbrainz');
 const tmdb = require('./tmdb');
 const youtube = require('./youtube');
 const externalPreview = require('./externalPreview');
+const theAudioDb = require('./theAudioDb');
 const localMedia = require('./localMedia');
 const ai = require('./ai');
 
@@ -20,6 +21,9 @@ const PROVIDERS = [
   { adapter: externalPreview, name: 'External preview provider', purpose: 'Licensed short audio previews by ISRC (vendor-neutral contract)', kind: 'PLAYBACK',
     env: ['EXTERNAL_PREVIEW_ENABLED', 'EXTERNAL_PREVIEW_BASE_URL', 'EXTERNAL_PREVIEW_API_KEY', 'EXTERNAL_PREVIEW_MEDIA_ORIGIN'], credential: 'Depends on the licensed provider you contract',
     signup: null, terms: 'Only use a provider whose licence covers streaming previews to your users.' },
+  { adapter: theAudioDb, name: 'TheAudioDB', purpose: 'Artist biographies, banners, fan art and album artwork (metadata only)', kind: 'METADATA',
+    env: ['THEAUDIODB_ENABLED', 'THEAUDIODB_API_KEY'], credential: 'Shared free/test key 123 (premium key optional)',
+    signup: 'https://www.theaudiodb.com/free_music_api', terms: 'Free API is rate-limited to 30 requests/minute; credit TheAudioDB and follow its artwork terms. Never used as an audio source.' },
   { adapter: localMedia, name: 'Local media', purpose: 'Audio files you own or are licensed to use, streamed from LOCAL_MEDIA_DIR', kind: 'PLAYBACK',
     env: ['LOCAL_MEDIA_ENABLED', 'LOCAL_MEDIA_DIR'], credential: 'None', signup: null, terms: 'You are responsible for the rights to every file you add.' },
   { adapter: ai, name: 'AI (Anthropic Messages API)', purpose: 'Optional fallback for free-text mood input the local parser cannot read', kind: 'AI',
@@ -32,4 +36,4 @@ function status() {
     signup: p.signup, terms: p.terms, ...p.adapter.check() }));
 }
 
-module.exports = { status, musicbrainz, tmdb, youtube, externalPreview, localMedia, ai };
+module.exports = { status, musicbrainz, tmdb, youtube, externalPreview, theAudioDb, localMedia, ai };
