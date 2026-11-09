@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterAll, beforeEach, describe, it, expect, vi } from 'vitest';
 import { api, buildHeaders, readCookie, request, setUnauthorizedHandler, setNetworkHandler, ApiError } from './api';
 
 const respond = (status, body) => Promise.resolve(new Response(body === undefined ? '' : JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }));
@@ -26,7 +26,13 @@ describe('cookies and CSRF headers', () => {
 });
 
 describe('request()', () => {
-  beforeEach(() => { setUnauthorizedHandler(() => {}); setNetworkHandler(() => {}); });
+  beforeEach(() => {
+  // API transport tests must exercise fetch, not the intentional static-site demo adapter.
+  vi.stubEnv('VITE_DEMO_MODE', 'false');
+  setUnauthorizedHandler(() => {});
+  setNetworkHandler(() => {});
+});
+afterAll(() => vi.unstubAllEnvs());
 
   it('uses same-origin credentials and returns parsed JSON', async () => {
     const f = vi.spyOn(globalThis, 'fetch').mockImplementation(() => respond(200, { ok: 1 }));
