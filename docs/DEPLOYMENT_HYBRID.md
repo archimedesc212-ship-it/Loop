@@ -41,7 +41,7 @@ Import this same repository as a Vercel project with:
 - Install Command: **npm ci**
 - Build Command: **npm run build**
 - Output Directory: **frontend/dist**
-- Node.js version: **22.x** (the version used by the documented verification run)
+- Node.js version: **26.x** (the current Vercel project setting; the package engine permits Node **20.19+**)
 
 The checked-in **vercel.json** sends **/api/** to the Render API at **https://loop-41r7.onrender.com/api/** and sends other paths to **/index.html** for client-side routing. If the Render hostname changes, update the API rewrite destination in **vercel.json** and run **npm run deploy:check** before deploying.
 
