@@ -31,6 +31,26 @@ jobs:
 
       - name: Check deployment contracts
         run: npm run deploy:check
+      - name: Report dependency advisories
+        run: |
+          npm audit --json > "$RUNNER_TEMP/npm-audit.json" || true
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/npm-audit.json', 'utf8'));
+          const issues = Object.entries(report.vulnerabilities || {});
+          if (!issues.length) {
+            console.log('npm audit: no dependency advisories found.');
+          } else {
+            for (const [name, issue] of issues) {
+              console.log(`[${issue.severity}] ${name} | direct=${issue.isDirect} | range=${issue.range}`);
+              for (const item of issue.via || []) {
+                if (typeof item === 'object') console.log(`  - ${item.title} (${item.url || 'no advisory URL'})`);
+              }
+              console.log(`  fixAvailable=${JSON.stringify(issue.fixAvailable)}`);
+            }
+          }
+          console.log(`npm audit totals: ${JSON.stringify(report.metadata?.vulnerabilities || {})}`);
+          NODE
 
       - name: Lint
         run: npm run lint
