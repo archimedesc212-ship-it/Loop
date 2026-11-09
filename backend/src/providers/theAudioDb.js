@@ -23,7 +23,14 @@ function check() {
   const c = cfg.theAudioDb;
   if (!c.enabled) return { state: 'disabled' };
   if (!c.apiKey) return { state: 'missing_credentials', missing: ['THEAUDIODB_API_KEY'] };
-  if (!/^https:\/\//.test(c.baseUrl)) return { state: 'invalid_config', message: 'THEAUDIODB_BASE_URL must use HTTPS.' };
+  let baseUrl;
+  try { baseUrl = new URL(c.baseUrl); } catch { return { state: 'invalid_config', message: 'THEAUDIODB_BASE_URL must be a valid HTTPS URL.' }; }
+  const localTestMock = process.env.NODE_ENV === 'test'
+    && baseUrl.protocol === 'http:'
+    && ['127.0.0.1', 'localhost', '::1'].includes(baseUrl.hostname);
+  if (baseUrl.protocol !== 'https:' && !localTestMock) {
+    return { state: 'invalid_config', message: 'THEAUDIODB_BASE_URL must use HTTPS.' };
+  }
   return { state: 'ready' };
 }
 
