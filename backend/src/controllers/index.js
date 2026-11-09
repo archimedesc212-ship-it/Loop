@@ -68,7 +68,7 @@ exports.auth = {
     });
     const user = await auth.profile(created.user.id);
     setSessionCookies(res, created.session);
-    return res.status(201).json({
+    return res.status(200).json({
       authenticated: true, ...user,
       session: { id: created.session.sessionId, expiresAt: created.session.expiresAt, csrfToken: created.session.csrfToken },
     });
