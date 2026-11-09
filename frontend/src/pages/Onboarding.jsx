@@ -44,7 +44,7 @@ export default function Onboarding() {
   const steps = [
     { title: 'Which languages do you listen in?', hint: 'Pick up to five, favourite first. You can change this any time.', ok: a.languageIds.length > 0,
       body: data && <Picks items={languages} selected={a.languageIds} onChange={set('languageIds')} max={5} render={(l) => <>{l.name} <span className="muted">{l.nativeName}</span></>} /> },
-    { title: 'Genres you enjoy', hint: 'Up to six. MUSE uses these only until your listening says more.', ok: true,
+    { title: 'Genres you enjoy', hint: 'Up to six. LOOP uses these only until your listening says more.', ok: true,
       body: data && <Picks items={data.genres} selected={a.genreIds} onChange={set('genreIds')} max={6} /> },
     { title: 'Artists you already like', hint: 'Optional — up to eight.', ok: true,
       body: data && (data.artists.length === 0 ? <p className="small soft">No artists in the catalogue yet — skip this step.</p> : <Picks items={data.artists} selected={a.artistIds} onChange={set('artistIds')} max={8} render={(x) => <>{x.name}{x.language && <span className="muted"> · {x.language}</span>}</>} />) },

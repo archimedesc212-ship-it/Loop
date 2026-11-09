@@ -13,7 +13,7 @@ import { registerMoodColors, LikeButton } from './Songs';
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
   { to: '/mood', label: 'Mood', short: 'Mood', icon: Icon.Mood },
-  { to: '/world', label: 'MUSE World', short: 'World', icon: Icon.Globe },
+  { to: '/world', label: 'LOOP World', short: 'World', icon: Icon.Globe },
   { to: '/search', label: 'Search', short: 'Search', icon: Icon.Search },
   { to: '/library', label: 'Library', short: 'Library', icon: Icon.Library },
   { to: '/profile', label: 'Listening profile', short: 'Profile', icon: Icon.Chart },
@@ -26,7 +26,7 @@ function Sidebar() {
   const admin = can('health.view') || can('catalog.write');
   return (
     <aside className="sidebar" aria-label="Main">
-      <Link to="/" className="brand"><Icon.BrandMark className="brand-mark" />MUSE</Link>
+      <Link to="/" className="brand"><Icon.BrandMark className="brand-mark" />LOOP</Link>
       {NAV.map(({ to, label, icon: Ico, end }) => (
         <NavLink key={to} to={to} end={end} className="nav-link"><Ico />{label}</NavLink>
       ))}
@@ -78,7 +78,7 @@ function PrivateToggle() {
         toast.success(`Private session ended — ${r.purged.events} plays and ${r.purged.lists} mixes deleted`);
       } else {
         await api.startIncognito();
-        toast.info('Private session on. MUSE still uses your taste, but nothing you do now is saved to your profile.');
+        toast.info('Private session on. LOOP still uses your taste, but nothing you do now is saved to your profile.');
       }
       await refresh();
     } catch (e) { toast.error(e); } finally { setBusy(false); }
@@ -227,7 +227,7 @@ export function OfflineBanner() {
   return (
     <div className="offline-banner" role="status" aria-live="polite">
       <Icon.Wifi width={18} height={18} />
-      <span>{browserOnline ? 'MUSE can’t reach its server right now. What you see may be out of date; actions will fail until it is back.' : 'You’re offline. Reconnect to keep listening and saving.'}</span>
+      <span>{browserOnline ? 'LOOP can’t reach its server right now. What you see may be out of date; actions will fail until it is back.' : 'You’re offline. Reconnect to keep listening and saving.'}</span>
     </div>
   );
 }

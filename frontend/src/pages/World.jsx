@@ -1,4 +1,4 @@
-// MUSE World: this week's generated musical world, its evidence, songs and versions.
+// LOOP World: this week's generated musical world, its evidence, songs and versions.
 import { useState } from 'react';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
@@ -30,7 +30,7 @@ export default function World() {
     try {
       await api.worldFeedback(data.world.id, next);
       setData({ ...data, world: { ...data.world, feedback: next } });
-      toast.success(next === 'LOVE' ? 'Noted — future worlds lean this way.' : next === 'NOT_FOR_ME' ? 'Noted — MUSE will steer away from this kind of world.' : 'Feedback removed.');
+      toast.success(next === 'LOVE' ? 'Noted — future worlds lean this way.' : next === 'NOT_FOR_ME' ? 'Noted — LOOP will steer away from this kind of world.' : 'Feedback removed.');
     } catch (e) { toast.error(e); } finally { setBusy(null); }
   };
   if (loading) return <div className="page stack"><Skeleton h={340} r={28} /><Thinking label="Building your world" /></div>;

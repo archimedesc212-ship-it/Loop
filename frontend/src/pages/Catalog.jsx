@@ -48,7 +48,7 @@ export function SongPage() {
 
       {s.stats && (
         <div className="grid-4">
-          <Stat label="Plays on MUSE" value={n(s.stats.plays)} foot={`${n(s.stats.listeners)} listeners`} />
+          <Stat label="Plays on LOOP" value={n(s.stats.plays)} foot={`${n(s.stats.listeners)} listeners`} />
           <Stat label="Completion" value={s.stats.plays ? `${Math.round((s.stats.completes / s.stats.plays) * 100)}%` : '–'} foot={`${n(s.stats.skips)} skips · ${n(s.stats.replays)} replays`} />
           <Stat label="Average rating" value={s.stats.avgRating ? `${s.stats.avgRating}★` : '–'} foot={`${n(s.stats.ratingCount)} ratings`} />
           <Stat label="Likes" value={n(s.stats.likes)} foot={`Popularity ${s.popularity}/100`} />
@@ -105,8 +105,8 @@ export function SongPage() {
           ))}
           {s.mergedDuplicates.length > 0 && <p className="small soft">Merged duplicates: {s.mergedDuplicates.map((d) => d.title).join(', ')}</p>}
           <p className="tiny muted">
-            {!isPlayable(s) ? 'This song has metadata only: no permitted audio source is configured, so MUSE does not play it.'
-              : s.playback && s.playback.demo ? 'Playback is a demo sketch synthesised in your browser from the analysis — not the recording. MUSE stores no recordings or lyrics.'
+            {!isPlayable(s) ? 'This song has metadata only: no permitted audio source is configured, so LOOP does not play it.'
+              : s.playback && s.playback.demo ? 'Playback is a demo sketch synthesised in your browser from the analysis — not the recording. LOOP stores no recordings or lyrics.'
                 : 'Playback comes from a licensed source; see the attribution in the player.'}
           </p>
           {s.videoLinks && s.videoLinks.length > 0 && (
@@ -115,7 +115,7 @@ export function SongPage() {
               {s.videoLinks.map((v) => (
                 <a key={v.videoId} className="link small" href={v.url} target="_blank" rel="noopener noreferrer">{v.title || 'Video'} (opens YouTube)</a>
               ))}
-              <p className="tiny muted">Links found with the YouTube Data API. MUSE links out and never downloads video or audio.</p>
+              <p className="tiny muted">Links found with the YouTube Data API. LOOP links out and never downloads video or audio.</p>
             </div>
           )}
         </div>
@@ -160,7 +160,7 @@ export function ArtistPage() {
         {a.aliases.length > 0 && <p className="small muted">Also written as {a.aliases.map((x) => x.alias).join(', ')}</p>}
         <div className="row wrap">
           {a.songs.some(isPlayable) && <button className="btn primary" onClick={() => player.play(a.songs.find(isPlayable), { queue: a.songs, origin: 'LIBRARY' })}><Play />Play</button>}
-          <span className="small soft">{n(a.popularity.plays30d)} plays · {n(a.popularity.listeners30d)} listeners in 30 days{a.popularity.rank ? ` · #${a.popularity.rank} on MUSE` : ''}</span>
+          <span className="small soft">{n(a.popularity.plays30d)} plays · {n(a.popularity.listeners30d)} listeners in 30 days{a.popularity.rank ? ` · #${a.popularity.rank} on LOOP` : ''}</span>
         </div>
       </div>
       <TrackList songs={a.songs} origin="LIBRARY" />
@@ -211,7 +211,7 @@ export function FilmPage() {
         {f.external && f.external.overview && <p className="lead" style={{ maxWidth: 720 }}>{f.external.overview}</p>}
         <div className="row wrap">
           {first && <button className="btn primary" onClick={() => player.play(first, { queue: f.songs, origin: 'LIBRARY' })}><Play />Play soundtrack</button>}
-          <span className="small soft">{f.songs.length} song{f.songs.length === 1 ? '' : 's'} on MUSE</span>
+          <span className="small soft">{f.songs.length} song{f.songs.length === 1 ? '' : 's'} on LOOP</span>
         </div>
         {f.external && <p className="tiny muted">Film details from <a className="link" href={f.external.url} target="_blank" rel="noopener noreferrer">TMDB</a>. {f.external.attribution}</p>}
       </div>

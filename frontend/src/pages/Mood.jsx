@@ -42,7 +42,7 @@ export default function MoodPage() {
       <div className="stack" style={{ '--gap': '20px', maxWidth: 980 }}>
         <div className="stack" style={{ '--gap': '8px' }}>
           <h1 className="display">How are you feeling?</h1>
-          <p className="lead">Pick up to four moods, describe it in your own words, or both. MUSE turns it into a target sound and scores every song in the catalogue against it and your taste.</p>
+          <p className="lead">Pick up to four moods, describe it in your own words, or both. LOOP turns it into a target sound and scores every song in the catalogue against it and your taste.</p>
         </div>
         <FeelInput value={text} onChange={setText} onSubmit={() => run()} busy={busy} />
         <div className="row wrap" style={{ '--gap': '6px' }}>

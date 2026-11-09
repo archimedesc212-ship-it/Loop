@@ -124,7 +124,7 @@ export function PlaylistPage() {
   };
   return (
     <div className="page stack" style={{ '--gap': '22px' }}>
-      <PageHead kicker={p.kind === 'MANUAL' ? 'Playlist' : p.kind === 'SMART' ? 'Smart playlist' : p.kind === 'WORLD' ? 'Saved MUSE World' : 'Saved mix'} title={p.name}
+      <PageHead kicker={p.kind === 'MANUAL' ? 'Playlist' : p.kind === 'SMART' ? 'Smart playlist' : p.kind === 'WORLD' ? 'Saved LOOP World' : 'Saved mix'} title={p.name}
         actions={<>
           {p.songs.length > 0 && <button className="btn primary" onClick={() => player.play(p.songs[0], { queue: p.songs, origin: 'PLAYLIST' })}><Play />Play</button>}
           {p.sourceBatchId && <Link className="btn" to={`/mix/batch/${p.sourceBatchId}`}>Original mix</Link>}

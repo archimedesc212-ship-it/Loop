@@ -21,7 +21,7 @@ const Admin = lazy(() => import('./pages/admin/Admin'));
 function RequireAuth({ children }) {
   const { user, ready } = useAuth();
   const loc = useLocation();
-  if (!ready) return <div style={{ padding: 40 }}><Thinking label="Loading MUSE" /></div>;
+  if (!ready) return <div style={{ padding: 40 }}><Thinking label="Loading LOOP" /></div>;
   if (!user) return <Navigate to="/login" replace state={{ from: loc.pathname + loc.search }} />;
   return children;
 }
@@ -41,6 +41,9 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/signup" element={<Navigate to="/register" replace />} />
+      <Route path="/create-account" element={<Navigate to="/register" replace />} />
+      <Route path="/onboarding" element={<Navigate to="/welcome" replace />} />
       <Route path="/welcome" element={<RequireAuth><Onboarding /></RequireAuth>} />
       <Route element={<RequireAuth><Layout /></RequireAuth>}>
         <Route index element={<Home />} />

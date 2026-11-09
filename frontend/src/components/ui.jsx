@@ -42,7 +42,7 @@ export function ErrorState({ error, onRetry }) {
   const offline = error && (error.code === 'NETWORK' || error.code === 'DATABASE_UNAVAILABLE');
   return (
     <div className="empty error-state" role="alert">
-      <h3>{offline ? 'MUSE can’t reach its database' : 'This didn’t load'}</h3>
+      <h3>{offline ? 'LOOP can’t reach its database' : 'This didn’t load'}</h3>
       <p className="small">{error ? error.message : 'Unknown error.'}</p>
       {onRetry && <button className="btn sm" onClick={onRetry}>Try again</button>}
     </div>

@@ -13,7 +13,7 @@ function Art() {
     <div className="auth-art">
       <WorldArt theme={THEME} className="motif" />
       <div style={{ position: 'relative' }}>
-        <div className="row" style={{ marginBottom: 18 }}><BrandMark width={40} height={40} /><span className="display" style={{ fontSize: '1.8rem' }}>MUSE</span></div>
+        <div className="row" style={{ marginBottom: 18 }}><BrandMark width={40} height={40} /><span className="display" style={{ fontSize: '1.8rem' }}>LOOP</span></div>
         <h1 className="display" style={{ fontSize: 'clamp(2rem, 4vw, 3.4rem)', maxWidth: '14ch' }}>Tell it how you feel. It finds the music.</h1>
         <p className="lead" style={{ marginTop: 14 }}>Mood-aware recommendations across Telugu, Tamil, Hindi and nine more languages — every pick explained.</p>
       </div>
@@ -60,7 +60,7 @@ export function Login() {
           <Field label="Username or email"><input className="input" autoComplete="username" value={form.login} onChange={(e) => setForm({ ...form, login: e.target.value })} required /></Field>
           <Field label="Password"><input className="input" type="password" autoComplete="current-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required /></Field>
           <button className="btn primary" disabled={busy || !form.login || !form.password}>{busy ? 'Signing in…' : 'Sign in'}</button>
-          <p className="small soft">New to MUSE? <Link to="/register" className="link">Create an account</Link></p>
+          <p className="small soft">New to LOOP? <Link to="/register" className="link">Create an account</Link></p>
           <div className="card stack" style={{ '--gap': '8px', padding: 14 }}>
             <span className="tiny muted">Demo accounts (seed data)</span>
             <div className="row wrap" style={{ '--gap': '6px' }}>

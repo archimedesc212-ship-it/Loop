@@ -42,7 +42,8 @@ export const Arrow = (p) => <I {...p}><path d="M5 12h14M13 6l6 6-6 6" /></I>;
 
 export const BrandMark = (p) => (
   <svg viewBox="0 0 64 64" aria-hidden="true" {...p}>
-    <rect width="64" height="64" rx="16" fill="#1E2439" />
-    <path d="M14 44V22l9 12 9-12 9 12 9-12v22" fill="none" stroke="#F2B544" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+    <rect width="64" height="64" rx="18" fill="#171C2E" />
+    <path d="M9 32c0-12 13-19 23-8l0 0c10 11 23 4 23-8M9 32c0 12 13 19 23 8l0 0c10-11 23-4 23 8"
+      fill="none" stroke="#F2B544" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );

@@ -75,7 +75,7 @@ export function SaveListButton({ list, defaultName }) {
   );
 }
 
-/** "How MUSE read that": parsed phrases, chosen moods and the target sound. */
+/** "How LOOP read that": parsed phrases, chosen moods and the target sound. */
 export function Interpretation({ list }) {
   const it = list.interpretation;
   if (!it) return null;
@@ -83,7 +83,7 @@ export function Interpretation({ list }) {
   return (
     <div className="grid-2" style={{ alignItems: 'start' }}>
       <div className="card stack" style={{ '--gap': '12px' }}>
-        <h3>How MUSE read that</h3>
+        <h3>How LOOP read that</h3>
         {parse && parse.matches.length > 0 ? (
           <div className="stack" style={{ '--gap': '8px' }}>
             {parse.matches.map((m, i) => (
@@ -97,7 +97,7 @@ export function Interpretation({ list }) {
             ))}
           </div>
         ) : parse && parse.source === 'AI'
-          ? <p className="small soft">MUSE’s own word list didn’t recognise that, so the optional AI helper suggested these moods. Only moods that exist in MUSE are accepted.</p>
+          ? <p className="small soft">LOOP’s own word list didn’t recognise that, so the optional AI helper suggested these moods. Only moods that exist in LOOP are accepted.</p>
           : <p className="small soft">You picked these moods directly{list.context ? ` for ${list.context.name.toLowerCase()}` : ''}.</p>}
         <div className="row wrap" style={{ '--gap': '6px' }}>
           {it.moods.map((m) => <MoodChip key={m.id} name={m.name} emoji={m.emoji} color={m.color} weight={m.weight} />)}

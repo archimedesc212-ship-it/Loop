@@ -66,13 +66,13 @@ export default function Settings() {
       <AccountSecurity />
       <div className="card stack section" style={{ '--gap': '6px' }} id="credits">
         <h3>About and credits</h3>
-        <p className="small soft">MUSE’s demo catalogue is fictional and written for this project. Playback of demo songs is a sound sketch synthesised in your browser — not a recording.</p>
+        <p className="small soft">LOOP’s demo catalogue is fictional and written for this project. Playback of demo songs is a sound sketch synthesised in your browser — not a recording.</p>
         <p className="small soft">When film details are shown, they come from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
         <p className="small soft">Imported recording metadata comes from MusicBrainz; video links come from the YouTube Data API and open on YouTube. Each source is shown on the song or film page it was used for.</p>
       </div>
       <div className="card stack section" style={{ '--gap': '6px' }}>
         <h3>Introduction</h3>
-        <p className="small soft">Watch the short MUSE introduction again.</p>
+        <p className="small soft">Watch the short LOOP introduction again.</p>
         <div><button className="btn sm" onClick={() => { replayIntro(); nav('/login?intro=1'); }}>Replay introduction</button></div>
       </div>
     </div>
@@ -215,7 +215,7 @@ function DeleteAccount({ onClose }) {
   return (
     <Modal title="Delete your account" onClose={onClose}>
       <form className="stack" onSubmit={submit}>
-        <p className="small">This permanently removes your account and everything MUSE learned from your listening.</p>
+        <p className="small">This permanently removes your account and everything LOOP learned from your listening.</p>
         <Field label="Your password"><input className="input" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} /></Field>
         <Field label="Type DELETE to confirm" error={error}><input className="input" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" /></Field>
         <div className="row"><button className="btn danger" disabled={busy || confirm !== 'DELETE' || !password}>{busy ? 'Deleting…' : 'Delete permanently'}</button>

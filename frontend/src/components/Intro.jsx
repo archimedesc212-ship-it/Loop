@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BrandMark } from './Icons';
 
 const KEY = 'muse.introSeen';
-const LINES = ['Every mood has a sound.', 'Tell MUSE how you feel.', 'It finds the music — and tells you why.'];
+const LINES = ['Every mood has a sound.', 'Tell LOOP how you feel.', 'It finds the music — and tells you why.'];
 const LINE_MS = 1700;
 
 export function introSeen() {
@@ -43,7 +43,7 @@ export default function Intro({ onDone }) {
   }, [step, still, finish]);
 
   return (
-    <div className={`intro${leaving ? ' leaving' : ''}${still ? ' still' : ''}`} role="dialog" aria-modal="true" aria-label="MUSE introduction">
+    <div className={`intro${leaving ? ' leaving' : ''}${still ? ' still' : ''}`} role="dialog" aria-modal="true" aria-label="LOOP introduction">
       <div className="intro-wave" aria-hidden="true">
         {Array.from({ length: 48 }).map((_, i) => <i key={i} style={{ '--i': i, '--h': `${18 + Math.round(70 * Math.abs(Math.sin(i * 0.37) * Math.cos(i * 0.11)))}%` }} />)}
       </div>
@@ -52,7 +52,7 @@ export default function Intro({ onDone }) {
         {(still || step >= LINES.length) && (
           <div className="intro-brand">
             <BrandMark width={72} height={72} />
-            <span className="display">MUSE</span>
+            <span className="display">LOOP</span>
             <p className="soft">Music Mood Intelligence</p>
           </div>
         )}

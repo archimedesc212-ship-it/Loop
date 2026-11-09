@@ -100,7 +100,7 @@ export default function Home() {
           <Link to="/world" className="hero" style={{ display: 'block', padding: 28 }}>
             <div className="hero-art"><WorldArt theme={world.data.world.theme} /></div>
             <div className="stack" style={{ '--gap': '8px', maxWidth: 560 }}>
-              <span className="chip accent" style={{ alignSelf: 'flex-start' }}>Your MUSE World this week</span>
+              <span className="chip accent" style={{ alignSelf: 'flex-start' }}>Your LOOP World this week</span>
               <h2 className="display" style={{ fontSize: 'clamp(1.8rem, 3.6vw, 2.8rem)' }}>{world.data.world.title}</h2>
               <p className="soft">{world.data.world.description}</p>
               <span className="link small">Enter this world · {world.data.world.songCount} songs</span>
@@ -111,8 +111,8 @@ export default function Home() {
 
       <Shelf title={similar.data && similar.data.title ? similar.data.title : 'Because you liked…'} sub="Similar sound and mood" state={similar} origin="HOME"
         to={similar.data && similar.data.seed ? `/mix/similar/${similar.data.seed.id}` : undefined}
-        emptyText="Rate a song 4★ or more, or like one, and MUSE will find songs that sound like it." />
-      <Shelf title="Trending now" sub="Most momentum in the last 7 days across MUSE" state={trending} origin="HOME"
+        emptyText="Rate a song 4★ or more, or like one, and LOOP will find songs that sound like it." />
+      <Shelf title="Trending now" sub="Most momentum in the last 7 days across LOOP" state={trending} origin="HOME"
         reasonOf={(s) => (s.trend ? `${s.trend.plays} plays this week${s.trend.velocityPct !== null ? ` · ${s.trend.velocityPct > 0 ? '+' : ''}${Math.round(s.trend.velocityPct)}%` : ' · new'}` : null)} />
       <Shelf title="Recently played" state={recent} origin="LIBRARY" to="/library"
         emptyText={user.incognito ? 'Private sessions do not add to your history.' : 'Play something and it will appear here.'} />

@@ -1,4 +1,4 @@
-// Listening Profile + Music Mood Journey + how MUSE models your taste.
+// Listening Profile + Music Mood Journey + how LOOP models your taste.
 // Every number on this page is computed by a SQL query over your plays.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -112,11 +112,11 @@ export default function Profile() {
       </Panel>
 
       {prefs.data && (
-        <Panel title="How MUSE models your taste" sub={`${prefs.data.model ? `${prefs.data.model.name} ${prefs.data.model.version}` : ''} · short-term half-life 7 days, long-term 90 days, recomputed after every play`}>
+        <Panel title="How LOOP models your taste" sub={`${prefs.data.model ? `${prefs.data.model.name} ${prefs.data.model.version}` : ''} · short-term half-life 7 days, long-term 90 days, recomputed after every play`}>
           <div className="row wrap small" style={{ '--gap': '14px' }}>
             <span>Based on behaviour: <b>{prefs.data.evidence.behaviourShare}%</b></span>
             <span>Based on your onboarding answers: <b>{prefs.data.evidence.onboardingShare}%</b></span>
-            <span className="muted">({prefs.data.evidence.completedPlays} finished plays; {prefs.data.evidence.neededForFullConfidence} are enough for MUSE to rely fully on behaviour)</span>
+            <span className="muted">({prefs.data.evidence.completedPlays} finished plays; {prefs.data.evidence.neededForFullConfidence} are enough for LOOP to rely fully on behaviour)</span>
           </div>
           <div className="grid-3" style={{ alignItems: 'start' }}>
             {[['Genres', prefs.data.genres], ['Artists', prefs.data.artists], ['Moods', prefs.data.moods.slice(0, 10)]].map(([title, rows]) => (

@@ -80,7 +80,7 @@ export function PerformanceAdmin() {
   const plan = (e) => e.plan.map((p) => `${p.table}: ${p.type}${p.key ? ` via ${p.key}` : ' (no index)'} · ~${p.rows} rows`).join(' | ');
   return (
     <div className="stack" style={{ '--gap': '16px' }}>
-      <p className="soft" style={{ maxWidth: 760 }}>Each query is explained twice: as MUSE runs it, and with its index ignored (IGNORE INDEX) or rewritten so no index can help. The rows examined and the measured time (EXPLAIN ANALYZE) show what the index buys.</p>
+      <p className="soft" style={{ maxWidth: 760 }}>Each query is explained twice: as LOOP runs it, and with its index ignored (IGNORE INDEX) or rewritten so no index can help. The rows examined and the measured time (EXPLAIN ANALYZE) show what the index buys.</p>
       {data.map((q) => {
         const speedup = q.withoutIndex && q.withIndex.actualMs && q.withoutIndex.actualMs ? q.withoutIndex.actualMs / q.withIndex.actualMs : null;
         return (

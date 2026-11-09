@@ -58,7 +58,7 @@ export async function request(method, path, body) {
     });
   } catch {
     onNetwork(false);
-    throw new ApiError(0, 'NETWORK', 'Can’t reach the MUSE server. Check your connection or that the API is running.');
+    throw new ApiError(0, 'NETWORK', 'Can’t reach the LOOP server. Check your connection or that the API is running.');
   }
   onNetwork(true);
   const text = await res.text();
