@@ -39,7 +39,7 @@ function Sidebar() {
           <span className="avatar">{user.displayName.slice(0, 1)}</span>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.displayName}</div>
-            <div className="tiny muted">@{user.username}</div>
+            <div className="tiny muted">Guest listener</div>
           </div>
         </div>
         <div className="row" style={{ '--gap': '4px' }}>
