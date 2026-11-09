@@ -12,7 +12,7 @@ function required(keys) {
 // SESSION_SECRET keys the CSRF tokens and the IP hashes. JWT_SECRET is accepted
 // as a fallback so .env files from earlier versions keep working.
 if (!process.env.SESSION_SECRET && process.env.JWT_SECRET) process.env.SESSION_SECRET = process.env.JWT_SECRET;
-required(['DB_HOST', 'DB_NAME', 'DB_APP_USER', 'SESSION_SECRET']);
+required(['DB_HOST', 'DB_NAME', 'DB_APP_USER', 'DB_APP_PASSWORD', 'SESSION_SECRET']);
 const isProd = process.env.NODE_ENV === 'production';
 if (isProd && process.env.SESSION_SECRET.length < 32) {
   console.error('[config] SESSION_SECRET must be at least 32 characters in production.');
