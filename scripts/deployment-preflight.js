@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* global require, __dirname, URL, process, console */
 'use strict';
 
 // Static deployment contract checks. No cloud credentials or database are needed.
