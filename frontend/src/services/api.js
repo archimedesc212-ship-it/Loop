@@ -51,23 +51,37 @@ const QUIET_401 = new Set(['/auth/me', '/auth/login', '/auth/register']);
 
 export async function request(method, path, body) {
   let res;
+  let text;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
   try {
     res = await fetch(`/api${path}`, {
       method, credentials: 'same-origin', headers: buildHeaders(method, body !== undefined),
       body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
     });
-  } catch {
+    text = await res.text();
+  } catch (err) {
     onNetwork(false);
-    throw new ApiError(0, 'NETWORK', 'Can’t reach the LOOP server. Check your connection or that the API is running.');
+    if (err && err.name === 'AbortError') {
+      throw new ApiError(0, 'TIMEOUT', 'LOOP is taking too long to respond. Its server may be unavailable. Please try again shortly.');
+    }
+    throw new ApiError(0, 'NETWORK', 'Can’t reach the LOOP server. Check your connection or try again shortly.');
+  } finally {
+    clearTimeout(timeoutId);
   }
-  onNetwork(true);
-  const text = await res.text();
+  onNetwork(res.status < 500);
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = null; }
   if (!res.ok) {
-    const e = data && data.error ? data.error : { code: `HTTP_${res.status}`, message: 'Something went wrong.' };
+    const fallbackMessage = [502, 503, 504].includes(res.status)
+      ? 'LOOP is temporarily unavailable. Please try again shortly.'
+      : res.status === 404
+        ? 'This LOOP endpoint was not found. Reload the page and try again.'
+        : 'Something went wrong.';
+    const e = data && data.error ? data.error : { code: `HTTP_${res.status}`, message: fallbackMessage };
     if (res.status === 401 && !QUIET_401.has(path)) onUnauthorized(e);
-    throw new ApiError(res.status, e.code, e.message, e.details);
+    throw new ApiError(res.status, e.code, e.message || fallbackMessage, e.details);
   }
   return data;
 }
