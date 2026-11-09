@@ -251,13 +251,30 @@ test('ended sessions are purged by the housekeeping job', async () => {
   assert.equal((await h.one('SELECT COUNT(*) AS n FROM auth_sessions WHERE user_id = ?', [u.id])).n, 0);
 });
 
-test('GET /auth/session answers 200 for anonymous and signed-in callers', async () => {
+test('GET /auth/session is read-only; POST bootstraps a guest session', async () => {
   const anon = await fetch(`${base}/auth/session`);
   assert.equal(anon.status, 200);
   assert.deepEqual(await anon.json(), { authenticated: false });
+
   const stale = await fetch(`${base}/auth/session`, { headers: { Cookie: 'muse_session=not-a-real-token-xxxxxxxxxxxxxxxx' } });
   assert.equal(stale.status, 200);
   assert.deepEqual(await stale.json(), { authenticated: false });
+
+  const guest = await fetch(`${base}/auth/session`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
+  assert.equal(guest.status, 201);
+  const guestBody = await guest.json();
+  assert.equal(guestBody.authenticated, true);
+  assert.equal(guestBody.displayName, 'Guest');
+  const guestCookie = guest.headers.getSetCookie().find((cookie) => cookie.startsWith('muse_session='));
+  assert.ok(guestCookie, 'guest bootstrap sets an httpOnly session cookie');
+  const active = await fetch(`${base}/auth/session`, { headers: { Cookie: guestCookie.split(';')[0] } });
+  assert.equal(active.status, 200);
+  assert.equal((await active.json()).authenticated, true);
+
   const u = await h.newUser({ onboard: false });
   const r = await h.api('GET', '/auth/session', { token: u.token });
   assert.equal(r.status, 200);
