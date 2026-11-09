@@ -1,71 +1,58 @@
 # LOOP Vercel-only deployment refactor
 
-Status: target design and migration checklist. Current repository is not yet Vercel-only deployable.
+Status: **Vercel routing/code migration started; database provisioning and production verification remain blocked.**
 
-## Current blockers confirmed in repository
+## Implemented on `main`
 
-- Root `vercel.json` statically rewrites API calls to the configured persistent Render service.
-- `backend/src/server.js` starts an Express listener and an in-process scheduler.
-- `backend/src/config/env.js` currently calls process.exit when DB config is absent; this is unsuitable for import-time initialization in a serverless function.
-- The application uses MySQL-specific SQL, stored routines, triggers, views and a least-privilege MySQL user. Do not silently replace it with Firebase Firestore or PostgreSQL.
-- The current API has database-backed sessions and CSRF checks; preserve them during migration.
-- Audio is currently local/provider based, not private object storage with signed upload/playback authorization.
+- Added `api/[...path].js`, which exports the existing Express app as a Vercel Node Function.
+- Removed the Render hostname rewrite from `vercel.json`; browser requests continue using same-origin `/api/*`.
+- Made environment validation callable rather than terminating Node during module import.
+- Kept strict validation on persistent-server startup, and made unconfigured serverless API requests return an explicit HTTP 503 instead of leaving the frontend waiting.
+- Reduced the default MySQL pool from 12 connections to 3 per Vercel instance, added bounded idle reuse and connection timeout, and added optional provider TLS/CA settings.
+
+## Remaining release blockers
+
+1. **MySQL is not provisioned/configured for Vercel.** Current production Vercel environment only had the old Render API origin; no `DB_HOST`, `DB_NAME`, `DB_APP_USER`, `DB_APP_PASSWORD`, or `SESSION_SECRET` were present. The old Render API also fails startup because its four database variables are missing.
+2. The app uses MySQL-specific tables, stored routines, triggers, views, and least-privilege grants. Do not replace it with Firestore or PostgreSQL. Do not use a MySQL-compatible service that omits stored procedures/triggers unless the application is intentionally refactored and all SQL behavior is reimplemented and tested.
+3. The target database must be MySQL 8.0.19+ (or a provider-confirmed compatible MySQL implementation) with routines, triggers, views, transactions, JSON functions, and required grants. Confirm TLS, network access from Vercel, connection limits, backup and restore support.
+4. **Never run `npm run db:setup` or `npm run db:reset:unsafe` on an existing database.** The setup script is destructive and drops the named database. Use only a new, verified-empty schema for first bootstrap after reviewing the script. For data already entered, back it up and use the non-destructive migration path.
+5. In Vercel Functions, `backend/src/server.js` and its in-process scheduler are not started. Background jobs still need to be converted into protected, short, idempotent Cron endpoints or moved to a separate worker. Do not start a scheduler on function import.
+6. Local media is not durable serverless storage. Cloudflare R2/private object storage, signed upload/playback, FFmpeg/scanning workers, and media Range/authorization tests remain unfinished.
+7. Production and Preview must use separate database, session secret, storage bucket and job secret. Do not let untrusted Preview deployments write to production data.
 
 ## Target topology
 
-- Vercel: Vite frontend + Node.js serverless API entrypoints.
-- MySQL-compatible managed database: preserve current schema/routines initially; use bounded connection reuse and provider-supported TLS.
+- Vercel: Vite frontend + Express API Node Function.
+- Managed MySQL 8.0.19+: preserve the existing schema/routines initially; use bounded pool reuse and provider-supported TLS.
 - Cloudflare R2: private audio/artwork bucket; separate production and preview buckets.
-- Background processing: external queue/worker or managed background service for FFmpeg/scanning. A normal Vercel request is not a durable worker.
-- Cron: Vercel Cron invokes protected, short, idempotent task endpoints. No in-process setInterval/scheduler in Functions.
-- Firebase: separate LOOP Firebase project may be used for Google sign-in only if desired. Do not use Firestore as a second source of truth. Verify Firebase ID tokens server-side, then establish the existing app session; retain CSRF and cookie controls.
+- Background processing: external queue/worker for FFmpeg and scanning.
+- Cron: protected Vercel Cron routes for short, idempotent jobs; no in-process scheduler inside Functions.
+- Firebase: optional Google sign-in only. Do not use Firestore as a second source of truth.
 
-## Refactor steps
+## Environment variables for Vercel
 
-1. Extract configuration parsing from process boot. Validation should be callable and should not terminate the process merely because a module is imported.
-2. Export the Express app without listening. Add a Vercel Node entrypoint that adapts the request/response to the existing Express app using a supported adapter; test body parsing, cookies, streaming responses and route paths.
-3. Replace the `vercel.json` Render rewrite with explicit Vercel routing to the frontend build and API function. Remove `LOOP_API_ORIGIN` only after preview tests pass.
-4. Make DB pool serverless-safe: small max connections, connection timeout, idle timeout, TLS, no per-request pool creation, no unbounded concurrency. Confirm the selected MySQL host permits Vercel egress/connection strategy.
-5. Convert each scheduler operation into an exported idempotent job function. Add a protected cron route with constant-time secret comparison, job allowlist, bounded execution and run log. Do not expose a generic arbitrary job runner.
-6. Configure Vercel Cron only for supported cadence/plan. For jobs needing longer than a function execution window, use a separate worker/queue.
-7. Add preview/prod separation: database, session secret, Firebase project settings, R2 bucket, cron secret and allowed origins are distinct.
-8. Add Vercel deployment protection / environment review, strict headers, CSP, upload limits, rate limiting and structured redacted logs.
-9. Add CI gates: lint, unit tests, frontend tests, migration verification against MySQL 8, build, route smoke tests and secret scanning.
-10. Run backup/restore, rollback, cold-start, concurrent connection, auth/session/CSRF, upload, Range playback, cache purge and cron replay tests before production.
-
-## Environment variable groups
-
-Existing application:
+Required existing application values:
 - `NODE_ENV=production`
-- `SESSION_SECRET` (strong random secret, never commit)
-- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_APP_USER`, `DB_APP_PASSWORD`, `DB_TIMEZONE`
-- `COOKIE_SECURE=true`, `TRUST_PROXY`, `CORS_ORIGIN`
+- `SESSION_SECRET` (random, at least 32 characters; secret; never commit)
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_APP_USER`, `DB_APP_PASSWORD`
+- `DB_TIMEZONE=+05:30` for India-local database session time
+- `DB_SSL=true` when required by the provider; provide `DB_SSL_CA` only when the provider publishes a CA certificate
+- `COOKIE_SECURE=true`
+- `TRUST_PROXY=1`
+- Optional: `DB_CONNECT_TIMEOUT_MS=10000`, `DB_POOL_MAX=3`
 
-Optional LOOP Firebase Authentication:
-- `FIREBASE_PROJECT_ID`
-- `FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY` only if using Admin SDK service-account verification; prefer workload identity/OIDC where supported and never place private key in frontend variables.
-- Public web config (apiKey/authDomain/projectId/appId) may be exposed in the browser bundle, but use Vercel envs for environment separation.
+The owner account (`DB_OWNER_USER`, `DB_OWNER_PASSWORD`) is for one-time bootstrap/migrations only; do not add it to the Vercel runtime environment.
 
-Private object storage:
-- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`
-- `UPLOAD_MAX_BYTES`, `PLAYBACK_TOKEN_SECRET`
+## Release verification gates
 
-Scheduled jobs:
-- `CRON_SECRET`
-
-Spotify:
-- `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI` only if a reviewed, policy-compliant optional integration is implemented. Never expose client secret with a VITE_ prefix.
-
-## Release gates
-
-- `/api/health` returns liveness; `/api/ready` proves DB and schema compatibility.
-- Signup/login/logout, existing sessions, CSRF and role permissions pass end-to-end on Vercel Preview.
+- Vercel Preview build completes.
+- `/api/health` returns liveness; `/api/ready` returns HTTP 200 and `status: ready` after MySQL is connected and schema is compatible.
+- Guest session creation, session cookie persistence, CSRF, logout, and listener-only permissions pass end-to-end.
 - API routes work without Render or a persistent server.
-- DB connection load remains within provider limits under cold-start burst.
-- Cron rejects missing/incorrect secret and duplicate runs are idempotent.
-- No scheduler starts on import or per request.
+- DB load remains within provider limits during cold-start bursts.
+- Cron rejects missing/incorrect secrets and duplicate runs are idempotent.
+- No scheduler starts during function import or per request.
 - Preview cannot read/write production data or production audio.
-- Audio is private, signed grants are short-lived, Range seeking works and takedown revocation is verified.
-- Build, lint, unit, SQL migration, browser and security checks pass.
+- Auth/session/CSRF, upload, Range playback, cache purge, cron replay, backup and restore drills pass.
 
-Do not call this production-ready until all gates pass on the deployed Vercel project and a restore drill has succeeded.
+Do not call this production-ready until all release gates pass on the deployed Vercel project.
