@@ -1,6 +1,6 @@
 # Feature status
 
-Status as of 11 October 2026, schema version 0003. "Tested" means covered by an
+Status as of 11 October 2026, schema version 0005. "Tested" means covered by an
 automated test or browser check that passed in the run recorded in
 [TESTING.md](TESTING.md); the column names the evidence.
 
@@ -77,6 +77,8 @@ automated test or browser check that passed in the run recorded in
 | TMDB film enrichment | Blocked (credentials) | tested against a mock (`09-providers` 10–11); TMDB logo still to be added before public use |
 | YouTube Data API links | Blocked (credentials) | tested against a mock (`09-providers` 12) |
 | Admin › Providers & media page | Done | browser checks |
+| TheAudioDB artist artwork lookup | Partial | backend adapter, cache, attribution, provider status/test and artist/album artwork endpoints; real provider test remains credential/terms dependent |
+| Kaggle 1950–2019 feature dataset import | Partial | separate CC BY 4.0 staging table and batch importer; not used by the current recommendation scorer and contains no playable audio |
 | Ingestion, provenance, review queue, idempotent jobs | Done | `06-admin`, `07-database` |
 
 ## Database and operations
