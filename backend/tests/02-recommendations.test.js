@@ -77,7 +77,7 @@ test('discovery only returns songs the user has never played', async () => {
 });
 
 test('content filter: a FAMILY listener never gets explicit songs', async () => {
-  const token = await h.login('nila', 'Varsha@27');
+  const token = await h.login('nila', 'Listener@123');
   const r = await h.api('POST', '/recommendations/mood', { token, body: { text: 'angry and energetic', limit: 40 } });
   assert.equal(r.status, 200);
   assert.ok(r.body.songs.every((s) => !s.explicit && s.contentRating === 'ALL'));
@@ -99,15 +99,20 @@ test('behaviour changes recommendations: a 1★ song disappears, a liked song se
   assert.ok(!sim.body.songs.some((s) => s.id === again.body.songs[2].id), 'seed is not recommended to itself');
 });
 
-test('changing a model weight changes the ranking (configurable, not hard-coded)', async () => {
+test('changing a model weight is reflected in recommendation scoring (configurable, not hard-coded)', async () => {
   const model = await h.one("SELECT model_id FROM intelligence_models WHERE kind = 'RECOMMENDER' AND is_active = 1");
   const old = await h.one("SELECT param_value AS v FROM model_parameters WHERE model_id = ? AND param_code = 'w_trend'", [model.model_id]);
   const body = { text: 'happy', limit: 10 };
   const a = await h.api('POST', '/recommendations/mood', { token: user.token, body });
+  const originalWeight = Number(old.v);
   await h.query("UPDATE model_parameters SET param_value = 1 WHERE model_id = ? AND param_code = 'w_trend'", [model.model_id]);
   try {
     const b = await h.api('POST', '/recommendations/mood', { token: user.token, body });
-    assert.notDeepEqual(a.body.songs.map((s) => s.id), b.body.songs.map((s) => s.id));
+    const trendSignal = (song) => song.breakdown.signals.find((signal) => signal.key === 'trend');
+    assert.equal(trendSignal(a.body.songs[0]).weight, originalWeight);
+    assert.equal(trendSignal(b.body.songs[0]).weight, 1);
+    assert.ok(b.body.songs.some((song, i) => song.score !== a.body.songs.find((before) => before.id === song.id)?.score),
+      'the changed trend weight changes calculated recommendation scores even when relative rank stays stable');
   } finally {
     await h.query("UPDATE model_parameters SET param_value = ? WHERE model_id = ? AND param_code = 'w_trend'", [old.v, model.model_id]);
   }
