@@ -98,17 +98,17 @@ credential to GitHub. Do not paste secrets into issue descriptions or pull reque
 
 ## 4. Vercel frontend configuration
 
-Set `LOOP_API_ORIGIN` in Vercel Project Settings for each deployment environment that builds
-with the checked-in `vercel.ts`. It must be the bare HTTPS origin of the corresponding Render
-API, with no `/api` path, credentials, query, or fragment.
+The checked-in `vercel.json` currently rewrites `/api/*` to
+`https://loop-41r7.onrender.com/api/*`. If the Render hostname changes, update that rewrite
+and run `npm run deploy:check` before releasing.
 
 Keep browser API calls as relative `/api/*` requests with same-origin credentials. Vercel
 rewrites those requests to Render. Do not change the browser to call the Render hostname directly:
 that would alter the first-party cookie/CSRF flow.
 
-For Preview deployments, use an isolated preview API and database. Do not expose production data
-to untrusted pull-request previews. If no approved preview backend exists, disable Preview
-deployments until one is configured.
+The current rewrite is shared by Production and Preview. Do not expose production data to
+untrusted pull-request previews; disable Preview deployments or configure an isolated backend
+and database through a separately reviewed deployment configuration.
 
 ## 5. Release verification
 
