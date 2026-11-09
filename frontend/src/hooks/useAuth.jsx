@@ -12,13 +12,14 @@ export function AuthProvider({ children }) {
   // are signed in is to ask the server.
   const refresh = useCallback(async () => {
     try {
-      const r = await api.session();
+      let r = await api.session();
+      if (!r.authenticated) r = await api.createGuestSession();
       const u = r.authenticated ? r : null;
       setUser(u);
       return u;
     } catch (e) {
       if (e.status === 401) setUser(null);
-      else if (e.code === 'NETWORK' || e.status >= 500) throw e;
+      else throw e;
       return null;
     } finally {
       setReady(true);
