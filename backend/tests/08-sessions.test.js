@@ -88,11 +88,11 @@ test('requests from another site are rejected by the Origin check; sign-in inclu
   assert.equal(r.status, 403);
   assert.equal(r.body.error.code, 'ORIGIN_REJECTED');
   const login = await fetch(`${base}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'https://evil.example' },
-    body: JSON.stringify({ login: 'aarav', password: 'Listener@123' }) });
+    body: JSON.stringify({ login: 'varsha', password: 'Varsha@27' }) });
   assert.equal(login.status, 403);
   // an allowed dev origin (CORS_ORIGIN) still works
   const okLogin = await fetch(`${base}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:5173', 'X-Auth-Mode': 'bearer' },
-    body: JSON.stringify({ login: 'aarav', password: 'Listener@123' }) });
+    body: JSON.stringify({ login: 'varsha', password: 'Varsha@27' }) });
   assert.equal(okLogin.status, 200);
   assert.equal(okLogin.headers.get('access-control-allow-origin'), 'http://localhost:5173');
   assert.equal(okLogin.headers.get('access-control-allow-credentials'), 'true');
