@@ -30,8 +30,12 @@ async function throttle(provider, minIntervalMs) {
 const safeUrl = (u) => {
   try {
     const x = new URL(u);
-    const pathname = x.pathname.replace(/(\\/api\\/v1\\/json\\/)[^/]+(?=\\/)/, '$1[redacted]');
-    return `${x.origin}${pathname}`;
+    const segments = x.pathname.split('/');
+    const jsonIndex = segments.indexOf('json');
+    if (jsonIndex > 0 && segments[jsonIndex - 1] === 'v1' && segments[jsonIndex + 1]) {
+      segments[jsonIndex + 1] = '[redacted]';
+    }
+    return `${x.origin}${segments.join('/')}`;
   } catch { return '[invalid url]'; }
 };
 
