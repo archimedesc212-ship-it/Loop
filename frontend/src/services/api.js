@@ -94,10 +94,21 @@ const qs = (o = {}) => {
   return p.length ? `?${new URLSearchParams(p).toString()}` : '';
 };
 
+let pendingGuestSession = null;
+function createGuestSession() {
+  if (!pendingGuestSession) {
+    pendingGuestSession = request('POST', '/auth/session', {}).finally(() => {
+      pendingGuestSession = null;
+    });
+  }
+  return pendingGuestSession;
+}
+
 export const api = {
   // auth & profile
   me: () => request('GET', '/auth/me'),
   session: () => request('GET', '/auth/session'),
+  createGuestSession,
   logout: () => request('POST', '/auth/logout', {}),
   logoutAll: () => request('POST', '/auth/logout-all', {}),
   sessions: () => request('GET', '/me/sessions'),
