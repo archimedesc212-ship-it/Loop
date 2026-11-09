@@ -168,7 +168,7 @@ Expected result is the assertion in the test; **all passed** in the run above.
 | 14 | `/health`, `/ready` | liveness without DB; readiness with schema version = latest migration, provider states, no secrets |
 | 15 | Security headers | `no-store`, `nosniff`, `frame-ancestors 'none'`, no `X-Powered-By` |
 | 16 | Housekeeping | sessions ended > 30 days ago are purged |
-| 17 | `/auth/session` | 200 `{authenticated:false}` for anonymous and stale cookies; profile when signed in |
+| 17 | `/auth/session` | GET returns 200 `{authenticated:false}` for anonymous/stale cookies without creating a user; POST creates a guest session (201); signed-in callers receive their profile |
 
 ### 09 — Providers against a local mock server (`tests/09-providers.test.js`, 15 tests)
 
