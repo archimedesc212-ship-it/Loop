@@ -50,7 +50,13 @@ try {
 }
 
 const render = read('render.yaml');
-const vercel = read('vercel.ts');
+const vercelSource = read('vercel.json');
+let vercel = {};
+try {
+  vercel = JSON.parse(vercelSource);
+} catch {
+  failures.push('vercel.json must contain valid JSON.');
+}
 const app = read('backend/src/app.js');
 const server = read('backend/src/server.js');
 const scheduler = read('backend/src/services/scheduler.js');
@@ -66,33 +72,32 @@ requireCheck(pkg.scripts && pkg.scripts.start === 'npm run start --workspace bac
 requireCheck(pkg.scripts && pkg.scripts['deploy:check'] === 'node scripts/deployment-preflight.js',
   'The root package exposes npm run deploy:check.');
 
-requireCheck(/installCommand:\s*'npm ci'/.test(vercel),
+requireCheck(vercel.installCommand === 'npm ci',
   'Vercel installs the npm workspace from the repository root.');
-requireCheck(/buildCommand:\s*'npm run build'/.test(vercel),
+requireCheck(vercel.buildCommand === 'npm run build',
   'Vercel builds the frontend through the root workspace script.');
-requireCheck(/outputDirectory:\s*'frontend\/dist'/.test(vercel),
+requireCheck(vercel.outputDirectory === 'frontend/dist',
   'Vercel publishes frontend/dist.');
-requireCheck(/process\.env\.LOOP_API_ORIGIN/.test(vercel)
-  && /protocol\s*!==\s*'https:'/.test(vercel)
-  && /pathname\s*!==\s*'\/'/.test(vercel)
-  && /search\s*\|\|/.test(vercel)
-  && /hash\s*\|\|/.test(vercel)
-  && /username\s*\|\|/.test(vercel)
-  && /parsedApiOrigin\.password/.test(vercel),
-  'Vercel requires a validated bare HTTPS LOOP_API_ORIGIN.');
-requireCheck(/source:\s*'\/api\/:path\*'/.test(vercel)
-  && /parsedApiOrigin\.origin/.test(vercel)
-  && /\/api\/:path\*/.test(vercel),
-  'Vercel proxies /api/* to the configured API origin.');
-requireCheck(/source:\s*'\/:path\*'/.test(vercel)
-  && /destination:\s*'\/index\.html'/.test(vercel),
+const rewrites = Array.isArray(vercel.rewrites) ? vercel.rewrites : [];
+const apiRewrite = rewrites.find((rule) => rule && rule.source === '/api/:path*');
+let validApiRewrite = false;
+try {
+  const target = new URL(apiRewrite && apiRewrite.destination);
+  validApiRewrite = target.protocol === 'https:'
+    && /^\/api\/:path\*$/.test(target.pathname)
+    && !target.username && !target.password && !target.search && !target.hash;
+} catch {
+  validApiRewrite = false;
+}
+requireCheck(validApiRewrite,
+  'Vercel proxies /api/* to a valid HTTPS API origin.');
+requireCheck(rewrites.some((rule) => rule && rule.source === '/(.*)' && rule.destination === '/index.html'),
   'Vercel routes client-side pages to the SPA entry point.');
-requireCheck(!/\bcrons\s*:/.test(vercel),
+requireCheck(!/\\bcrons\\s*:/.test(JSON.stringify(vercel)),
   'Vercel does not define duplicate scheduled jobs.');
-requireCheck(
-  !['vercel.json', 'vercel.yaml', 'vercel.yml'].some((file) => fs.existsSync(path.join(root, file))),
-  'Only vercel.ts is present as Vercel project configuration.'
-);
+requireCheck(fs.existsSync(path.join(root, 'vercel.json'))
+  && !['vercel.ts', 'vercel.yaml', 'vercel.yml'].some((file) => fs.existsSync(path.join(root, file))),
+  'Only vercel.json is present as Vercel project configuration.');
 
 requireCheck(/name:\s*loop-muse-api/.test(render)
   && /runtime:\s*node/.test(render)
@@ -139,8 +144,8 @@ requireCheck(/^\s*\.env\s*$/m.test(gitignore)
   'Live environment files are ignored while .env.example stays tracked.');
 requireCheck(/Never run.*db:setup/.test(hybridDocs)
   && /JOBS_ENABLED/.test(hybridDocs)
-  && /LOOP_API_ORIGIN/.test(hybridDocs),
-  'The hybrid runbook documents database safety, scheduler and API origin.');
+  && /vercel\.json/.test(hybridDocs),
+  'The hybrid runbook documents database safety, scheduler and the Vercel JSON config.');
 
 const suppliedOrigin = process.env.LOOP_API_ORIGIN;
 const productionMode = process.argv.includes('--production');
