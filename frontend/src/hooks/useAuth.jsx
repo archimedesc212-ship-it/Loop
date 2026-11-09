@@ -33,28 +33,10 @@ export function AuthProvider({ children }) {
     refresh().catch((e) => setSessionNote(e.message));
   }, [refresh]);
 
-  const signIn = useCallback(async (login, password) => {
-    const r = await api.login(login, password);
-    setUser(r.user);
-    setSessionNote(null);
-    return r.user;
-  }, []);
-
-  const register = useCallback(async (body) => {
-    const r = await api.register(body);
-    setUser(r.user);
-    return r.user;
-  }, []);
-
-  const signOut = useCallback(async () => {
-    try { await api.logout(); } catch { /* session may already be invalid */ }
-    setUser(null);
-  }, []);
-
   const can = useCallback((perm) => !!user && user.permissions.includes(perm), [user]);
 
-  const value = useMemo(() => ({ user, ready, refresh, signIn, register, signOut, can, setUser, sessionNote }),
-    [user, ready, refresh, signIn, register, signOut, can, sessionNote]);
+  const value = useMemo(() => ({ user, ready, refresh, can, setUser, sessionNote }),
+    [user, ready, refresh, can, sessionNote]);
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
