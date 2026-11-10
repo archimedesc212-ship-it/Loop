@@ -89,7 +89,7 @@ export default function Library() {
         : history.data && (history.data.length ? (
           <TrackList songs={history.data} origin="LIBRARY" showRank={false}
             extra={(s) => <span className="tiny muted" style={{ minWidth: 112, textAlign: 'right' }}>{s.completed ? 'finished' : s.skipped ? 'skipped' : `${Math.round(s.completionPct)}%`}{s.replay ? ' · replay' : ''} · {ago(s.playedAt)}</span>} />
-        ) : <Empty title="Nothing played yet">{user.incognito ? 'Private sessions are not added to history.' : 'Your plays will appear here.'}</Empty>))}
+        : <Empty title="Listening history is unavailable">The uploaded files contain catalogue metadata, not playback events or audio streams.</Empty>))}
 
       {creating && (
         <Modal title="New playlist" onClose={() => setCreating(false)}>
