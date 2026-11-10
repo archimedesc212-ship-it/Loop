@@ -32,13 +32,13 @@ function Shelf({ title, sub, to, state, origin, reasonOf, emptyText }) {
 }
 
 const MODES = [
-  { to: '/mix/context/STUDY', emoji: '📚', name: 'Focus', blurb: 'Wordless and steady' },
-  { to: '/mix/context/WORKOUT', emoji: '🏋️', name: 'Workout', blurb: 'High energy, high tempo' },
+  { to: '/mix/context/STUDY', emoji: '📚', name: 'Focus', blurb: 'Lower energy, steady sounds' },
+  { to: '/mix/context/WORKOUT', emoji: '🏋️', name: 'Workout', blurb: 'High energy and danceability' },
   { to: '/mix/context/RELAX', emoji: '🌿', name: 'Chill', blurb: 'Slow down' },
   { to: '/mix/context/NIGHT', emoji: '🌙', name: 'Late night', blurb: 'Low light, dreamy' },
-  { to: '/mix/discovery', emoji: '🧭', name: 'Discovery', blurb: 'Never played before' },
+  { to: '/mix/discovery', emoji: '🧭', name: 'Discovery', blurb: 'Explore more records' },
   { to: '/mix/recovery', emoji: '🌤️', name: 'Mood recovery', blurb: 'From low to bright' },
-  { to: '/mix/regional', emoji: '🗺️', name: 'Your language', blurb: 'Regional discovery' },
+  { to: '/search?q=pop', emoji: '🎼', name: 'Genres', blurb: 'Explore seven music genres' },
   { to: '/mix/context/TRAVEL', emoji: '🛣️', name: 'Road trip', blurb: 'Forward-moving' },
 ];
 
@@ -80,7 +80,7 @@ export default function Home() {
         </div>
       </section>
 
-      <Shelf title="Recommended for you" sub={(d) => d && d.subtitle} to="/mix/daily" state={daily} origin="HOME"
+      <Shelf title="Archive picks" sub={(d) => d && d.subtitle} to="/mix/daily" state={daily} origin="HOME"
         reasonOf={(s) => (s.reasons[0] ? s.reasons[0].text : null)} />
 
       <section className="section">
@@ -100,31 +100,31 @@ export default function Home() {
           <Link to="/world" className="hero" style={{ display: 'block', padding: 28 }}>
             <div className="hero-art"><WorldArt theme={world.data.world.theme} /></div>
             <div className="stack" style={{ '--gap': '8px', maxWidth: 560 }}>
-              <span className="chip accent" style={{ alignSelf: 'flex-start' }}>Your LOOP World this week</span>
+              <span className="chip accent" style={{ alignSelf: 'flex-start' }}>The uploaded music archive</span>
               <h2 className="display" style={{ fontSize: 'clamp(1.8rem, 3.6vw, 2.8rem)' }}>{world.data.world.title}</h2>
               <p className="soft">{world.data.world.description}</p>
-              <span className="link small">Enter this world · {world.data.world.songCount} songs</span>
+              <span className="link small">Browse {world.data.world.songCount.toLocaleString('en-IN')} real track records</span>
             </div>
           </Link>
         </section>
       )}
 
-      <Shelf title={similar.data && similar.data.title ? similar.data.title : 'Because you liked…'} sub="Similar sound and mood" state={similar} origin="HOME"
+      <Shelf title={similar.data && similar.data.title ? similar.data.title : 'Similar sound'} sub="Matched using the dataset audio features" state={similar} origin="HOME"
         to={similar.data && similar.data.seed ? `/mix/similar/${similar.data.seed.id}` : undefined}
         emptyText="Rate a song 4★ or more, or like one, and LOOP will find songs that sound like it." />
-      <Shelf title="Trending now" sub="Most momentum in the last 7 days across LOOP" state={trending} origin="HOME"
-        reasonOf={(s) => (s.trend ? `${s.trend.plays} plays this week${s.trend.velocityPct !== null ? ` · ${s.trend.velocityPct > 0 ? '+' : ''}${Math.round(s.trend.velocityPct)}%` : ' · new'}` : null)} />
+      <Shelf title="Archive highlights" sub="Selected by energy, valence and danceability in the uploaded dataset" state={trending} origin="HOME"
+        reasonOf={(s) => s.reasons?.[0]?.text || null} />
       <Shelf title="Recently played" state={recent} origin="LIBRARY" to="/library"
         emptyText={user.incognito ? 'Private sessions do not add to your history.' : 'Play something and it will appear here.'} />
 
       <section className="section">
-        <div className="section-head"><h2 className="section-title">Popular genres</h2></div>
+        <div className="section-head"><h2 className="section-title">Genres in this dataset</h2></div>
         {genres.data && (
           <div className="grid-4">
-            {[...genres.data].sort((a, b) => b.plays - a.plays).slice(0, 8).map((g) => (
+            {[...genres.data].sort((a, b) => b.songs - a.songs).slice(0, 8).map((g) => (
               <Link key={g.id} to={`/search?q=${encodeURIComponent(g.name)}`} className="card" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${g.color} 26%, var(--surface)) 0%, var(--surface) 70%)` }}>
                 <div style={{ fontWeight: 600 }}>{g.name}</div>
-                <div className="small muted">{g.songs} songs · {g.plays} plays</div>
+                <div className="small muted">{g.songs.toLocaleString('en-IN')} records</div>
               </Link>
             ))}
           </div>
