@@ -9,7 +9,7 @@ function rng(seed) {
 }
 
 /** Album cover: two stored colours + a pattern chosen deterministically from the id. */
-export function Cover({ colors = ['#2A3150', '#F2B544'], seed = 1, size, className = '', title }) {
+export function Cover({ colors = ['#202020', '#1ED760'], seed = 1, size, className = '', title }) {
   const [c1, c2] = colors;
   const r = rng(hash(`cover:${seed}`));
   const kind = Math.floor(r() * 4);
@@ -41,7 +41,7 @@ export function Cover({ colors = ['#2A3150', '#F2B544'], seed = 1, size, classNa
 
 /** The generative MUSE World visual. motif: ORBITS WAVES PEAKS RAIN SUNBURST GRID STARS EMBERS */
 export function WorldArt({ theme, className = '', animate = true }) {
-  const palette = (theme && theme.palette) || ['#171C2E', '#2A3150', '#F2B544'];
+  const palette = (theme && theme.palette) || ['#181818', '#2A2A2A', '#1ED760'];
   const motif = (theme && theme.motif) || 'ORBITS';
   const r = rng(theme && theme.seed ? theme.seed : 7);
   const [bg, mid, hi, a4 = hi, a5 = mid] = palette;

@@ -104,7 +104,7 @@ function TopBar() {
     <div className="topbar">
       <form className="search-box" onSubmit={submit} role="search">
         <Icon.Search />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Track titles, artists, genres, moods…" aria-label="Search" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search songs, artists, albums worldwide…" aria-label="Search" />
       </form>
       <div className="grow" />
       <PrivateToggle />
@@ -158,41 +158,32 @@ function PlayerBar() {
   const { user } = useAuth();
   const [queueOpen, setQueueOpen] = useState(false);
   const [sleepOpen, setSleepOpen] = useState(false);
-  const [appleOpen, setAppleOpen] = useState(false);
   const closeQueue = useCallback(() => setQueueOpen(false), []);
   const s = p.current;
-  const embedUri = p.media?.embedUri;
-
-  useEffect(() => {
-    setAppleOpen(!!embedUri);
-  }, [embedUri]);
-  useEffect(() => {
-    const openExternal = () => setAppleOpen(true);
-    window.addEventListener('muse:open-external', openExternal);
-    return () => window.removeEventListener('muse:open-external', openExternal);
-  }, []);
   if (!s) return null;
   return (
     <>
       <div className={`player${user.incognito ? ' private' : ''}`} role="region" aria-label="Player">
         <div className="now">
-          <Cover colors={s.cover} seed={s.album ? s.album.id * 31 + s.id : s.id} />
+          {s.artworkUrl || p.media?.artworkUrl ? <img className="cover player-artwork" src={s.artworkUrl || p.media.artworkUrl} alt="" /> : <Cover colors={s.cover} seed={s.album ? (Number(s.album.id) || 1) * 31 + (Number(s.id) || 1) : (Number(s.id) || 1)} />}
           <div style={{ minWidth: 0 }}>
-            <Link to={`/song/${s.id}`} style={{ fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</Link>
+            {(String(s.id).startsWith('apple-') || String(s.id).startsWith('yt-'))
+              ? <strong style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</strong>
+              : <Link to={`/song/${s.id}`} style={{ fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</Link>}
             <div className="tiny muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={mediaNote(p.media, user.incognito)}>
               {s.artist.name} · {mediaNote(p.media, user.incognito)}
             </div>
           </div>
-          <span className="hide-sm"><LikeButton song={s} /></span>
+          {!(String(s.id).startsWith('apple-') || String(s.id).startsWith('yt-')) && <span className="hide-sm"><LikeButton song={s} /></span>}
         </div>
         {p.externalPlayback ? (
           <div className="center external-player-center">
             <div className="controls">
               <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
-              <button className="play-btn" onClick={() => setAppleOpen(true)} aria-label="Open Apple Music player"><Icon.Play /></button>
+              <span className="chip accent">{p.media?.type === 'YOUTUBE_EMBED' ? 'YouTube' : 'Apple Music'}</span>
               <button className="icon-btn" onClick={p.next} aria-label="Next"><Icon.Next /></button>
             </div>
-            <div className="tiny muted">Playback is handled by the Apple Music player</div>
+            <div className="tiny muted">Use the embedded player above to listen without leaving LOOP.</div>
           </div>
         ) : (
           <div className="center">
@@ -249,35 +240,26 @@ function PlayerBar() {
         </div>
         {queueOpen && <QueuePanel onClose={closeQueue} />}
       </div>
-      {appleOpen && p.media?.embedUri && (
-        <div className="modal-back" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAppleOpen(false); }}>
-          <section className="modal apple-music-modal" role="dialog" aria-modal="true" aria-labelledby="apple-player-title">
-            <div className="row between" style={{ marginBottom: 14 }}>
-              <div style={{ minWidth: 0 }}>
-                <h2 id="apple-player-title" style={{ margin: 0 }}>Play this track</h2>
-                <div className="tiny muted">{p.media.trackName} · {p.media.artistName} · Apple Music</div>
-              </div>
-              <button className="icon-btn" onClick={() => setAppleOpen(false)} aria-label="Close Apple Music player"><Icon.X /></button>
-            </div>
-            <iframe
-              title={`Apple Music player: ${p.media.trackName}`}
-              src={p.media.embedUri}
-              width="100%"
-              height="175"
-              allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *"
-              frameBorder="0"
-              loading="eager"
-              referrerPolicy="strict-origin-when-cross-origin"
-              style={{ display: 'block', width: '100%', border: 0, borderRadius: 12, background: 'transparent' }}
-            />
-            <p className="tiny muted" style={{ margin: '12px 0' }}>Apple Music controls playback. Full songs may require an Apple Music subscription; otherwise a short preview may be available. LOOP does not download or store audio.</p>
-            <div className="row between" style={{ alignItems: 'center' }}>
-              <a className="btn primary" href={p.media.storeUrl} target="_blank" rel="noreferrer">Open in Apple Music <Icon.Arrow /></a>
-              <span className="tiny muted">Playback controls are inside the player.</span>
-            </div>
-          </section>
-        </div>
+      {p.externalPlayback && (p.media?.embedUri || p.media?.embedUrl) && (
+        <section className={p.media?.type === 'YOUTUBE_EMBED' ? 'apple-inline-panel youtube-inline-panel' : 'apple-inline-panel'} aria-label={p.media?.type === 'YOUTUBE_EMBED' ? 'YouTube embedded player' : 'Apple Music embedded player'}>
+          <div className="row between apple-inline-heading">
+            <div className="tiny muted">NOW PLAYING · {p.media.trackName} — {p.media.artistName}</div>
+            {p.media?.watchUrl ? <a className="tiny link" href={p.media.watchUrl} target="_blank" rel="noreferrer">Open in YouTube</a> : <a className="tiny link" href={p.media.storeUrl} target="_blank" rel="noreferrer">Open in Apple Music</a>}
+          </div>
+          <iframe
+            title={`${p.media?.type === 'YOUTUBE_EMBED' ? 'YouTube' : 'Apple Music'} player: ${p.media.trackName}`}
+            src={p.media.embedUrl || p.media.embedUri}
+            width="100%"
+            height={p.media?.type === 'YOUTUBE_EMBED' ? '315' : '175'}
+            allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *"
+            frameBorder="0"
+            loading="eager"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+          <p className="tiny muted">{p.media?.type === 'YOUTUBE_EMBED' ? 'Playback is provided by YouTube’s official embedded player. Some videos may be unavailable for embedding.' : 'Full tracks may require an Apple Music subscription. Short previews play directly in LOOP when Apple provides one.'}</p>
+        </section>
       )}
+
     </>
   );
 }

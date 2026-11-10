@@ -13,7 +13,7 @@ import { ago, plural } from '../lib/format';
 
 function Mosaic({ covers, id }) {
   const list = (typeof covers === 'string' ? JSON.parse(covers) : covers) || [];
-  if (!list.length) return <Cover colors={['#262D46', '#F2B544']} seed={id} />;
+  if (!list.length) return <Cover colors={['#242424', '#1ED760']} seed={id} />;
   return (
     <div className="cover" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', aspectRatio: 1, borderRadius: 12 }}>
       {[0, 1, 2, 3].map((index) => <Cover key={index} colors={list[index % list.length]} seed={id * 7 + index} className="" />)}

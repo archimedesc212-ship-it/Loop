@@ -6,6 +6,7 @@ const result = {
   wrapperType: 'track', kind: 'song', trackId: 123456,
   trackName: 'Creep', artistName: 'Radiohead', collectionId: 98765,
   collectionName: 'Pablo Honey', trackViewUrl: 'https://music.apple.com/in/album/pablo-honey/98765?i=123456',
+  previewUrl: 'https://audio-ssl.itunes.apple.com/preview.mp3', trackTimeMillis: 240000,
 };
 
 describe('Apple Music link matching', () => {
@@ -50,6 +51,8 @@ describe('Apple Music catalogue lookup', () => {
     const match = await lookupAppleMusic(song, { documentRef: fakeDocument, windowRef: fakeWindow, timeoutMs: 500 });
     expect(match.embedUri).toBe('https://embed.music.apple.com/in/album/pablo-honey/98765?i=123456');
     expect(match.trackName).toBe('Creep');
+    expect(match.previewUri).toBe('https://audio-ssl.itunes.apple.com/preview.mp3');
+    expect(match.storefront).toBe('in');
   });
 
   it('returns null rather than selecting a weak or unrelated result', async () => {
@@ -68,5 +71,45 @@ describe('Apple Music catalogue lookup', () => {
     };
     const { lookupAppleMusic } = await import('./appleMusic');
     expect(await lookupAppleMusic(song, { documentRef: fakeDocument, windowRef: fakeWindow, timeoutMs: 500 })).toBeNull();
+  });
+});
+
+
+describe('worldwide Apple catalogue search', () => {
+  it('searches multiple storefronts and returns playable track metadata with artwork', async () => {
+    const fakeWindow = {
+      setTimeout: globalThis.setTimeout.bind(globalThis),
+      clearTimeout: globalThis.clearTimeout.bind(globalThis),
+    };
+    const requested = [];
+    const fakeDocument = {
+      createElement: () => ({ remove() {} }),
+      head: {
+        appendChild(script) {
+          const url = new URL(script.src);
+          requested.push(url.searchParams.get('country'));
+          const callback = url.searchParams.get('callback');
+          queueMicrotask(() => fakeWindow[callback]({ results: [{ ...result, artworkUrl100: 'https://is1-ssl.mzstatic.com/image.jpg' }] }));
+        },
+      },
+    };
+    const { searchAppleMusicCatalog } = await import('./appleMusic');
+    const songs = await searchAppleMusicCatalog('Creep Radiohead', { countries: ['in', 'us', 'gb'], documentRef: fakeDocument, windowRef: fakeWindow, timeoutMs: 500 });
+    expect(requested).toEqual(['IN', 'US', 'GB']);
+    expect(songs).toHaveLength(1);
+    expect(songs[0].appleMusic.previewUri).toBe('https://audio-ssl.itunes.apple.com/preview.mp3');
+    expect(songs[0].artworkUrl).toBe('https://is1-ssl.mzstatic.com/image.jpg');
+    expect(songs[0].id).toBe('apple-123456');
+  });
+
+  it('rejects insecure or non-Apple preview URLs', async () => {
+    const fakeWindow = { setTimeout: globalThis.setTimeout.bind(globalThis), clearTimeout: globalThis.clearTimeout.bind(globalThis) };
+    const fakeDocument = { createElement: () => ({ remove() {} }), head: { appendChild(script) {
+      const callback = new URL(script.src).searchParams.get('callback');
+      queueMicrotask(() => fakeWindow[callback]({ results: [{ ...result, previewUrl: 'https://evil.example/audio.mp3' }] }));
+    } } };
+    const { searchAppleMusicCatalog } = await import('./appleMusic');
+    const [song] = await searchAppleMusicCatalog('Creep Radiohead', { countries: ['us'], documentRef: fakeDocument, windowRef: fakeWindow, timeoutMs: 500 });
+    expect(song.appleMusic.previewUri).toBeNull();
   });
 });

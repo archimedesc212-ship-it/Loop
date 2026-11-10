@@ -46,7 +46,14 @@ const guestSessionLimiter = rateLimit({
 router.get('/auth/session', optionalAuth, h(c.auth.session));
 router.post('/auth/session', optionalAuth, guestSessionLimiter, h(c.auth.createGuestSession));
 
+
 router.use(requireAuth);
+
+// Worldwide provider search (credentials stay on the API server).
+router.get('/music/youtube', v({ q: r.str(2, 120), limit: opt(r.int(1, 20), 10) }, 'query'), h(c.music.youtubeSearch));
+router.get('/music/musicbrainz', v({ q: r.str(2, 120), limit: opt(r.int(1, 12), 8) }, 'query'), h(c.music.musicbrainzSearch));
+router.get('/music/cover-art', v({ mbid: r.str(36, 36, /^[0-9a-f-]{36}$/i) }, 'query'), h(c.music.coverArt));
+
 router.use((req, res, next) => (req.method === 'GET' ? next() : writeLimiter(req, res, next)));
 
 router.get('/auth/me', h(c.auth.me));

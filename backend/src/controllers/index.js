@@ -418,3 +418,32 @@ exports.admin = {
   resolveArtistRightsReport: async (req, res) => res.json(await artistSvc.resolveRightsReport(actor(req), p(req).id, b(req).status, b(req).note)),
   feedFiles: async (req, res) => res.json(require('../sources/fileFeedSource').listFiles()),
 };
+
+// Public catalogue integrations. YouTube embeds are official YouTube players;
+// MusicBrainz provides metadata and CAA provides release artwork.
+exports.music = {
+  youtubeSearch: async (req, res) => {
+    const providers = require('../providers');
+    const videos = await providers.youtube.searchVideos({ q: q(req).q, max: q(req).limit });
+    res.json({ videos });
+  },
+  musicbrainzSearch: async (req, res) => {
+    const providers = require('../providers');
+    const recordings = await providers.musicbrainz.searchRecordings({ q: q(req).q, limit: q(req).limit });
+    const enriched = await Promise.all(recordings.map(async (recording) => {
+      const release = recording.releases.find((item) => item.id);
+      if (!release) return { ...recording, artworkUrl: null };
+      try {
+        const art = await providers.musicbrainz.coverArt(release.id);
+        return { ...recording, artworkUrl: art.front, artworkReleaseMbid: release.id };
+      } catch {
+        return { ...recording, artworkUrl: null, artworkReleaseMbid: release.id };
+      }
+    }));
+    res.json({ recordings: enriched });
+  },
+  coverArt: async (req, res) => {
+    const providers = require('../providers');
+    res.json(await providers.musicbrainz.coverArt(q(req).mbid));
+  },
+};

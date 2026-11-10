@@ -33,6 +33,7 @@ export default function Home() {
   const moods = useApi(() => api.moods(), []);
   const daily = useApi(() => api.recDaily(12), [user.incognito]);
   const popular = useApi(() => api.trending({ limit: 12 }), []);
+  const recent = useApi(() => api.history(10), [user.incognito]);
   const [selected, setSelected] = useState([]);
   const [text, setText] = useState('');
   const hour = new Date().getHours();
@@ -59,7 +60,18 @@ export default function Home() {
       </section>
 
       <Shelf title="Made for you" sub="A daily mix based on your listening and mood preferences." to="/mix/daily" state={daily} />
-      <Shelf title="Popular tracks" sub="Popular songs from the LOOP catalogue." to="/search?q=popular" state={popular} />
+      <Shelf title="Recently played" sub="Pick up where you left off." state={recent} />
+      <Shelf title="Popular in LOOP" sub="Popular songs from the curated recommendation catalogue." to="/search?q=popular" state={popular} />
+
+      <section className="section">
+        <div className="section-head"><div><h2 className="section-title">Explore music worldwide</h2><p className="small muted">Search music across international catalogues, languages and genres.</p></div><Link to="/search" className="small link">Open global search</Link></div>
+        <div className="world-discovery-grid">
+          {[
+            ['Bollywood', 'Bollywood hits'], ['K-pop', 'K-pop'], ['Afrobeats', 'Afrobeats'], ['Latin pop', 'Latin pop'],
+            ['Arabic', 'Arabic pop'], ['J-pop', 'Japanese pop'], ['Global hits', 'global hits'], ['Rock classics', 'classic rock'],
+          ].map(([label, query]) => <Link key={label} className="world-discovery-tile" to={`/search?q=${encodeURIComponent(query)}`}>{label}<Arrow /></Link>)}
+        </div>
+      </section>
 
       <section className="section">
         <div className="section-head"><h2 className="section-title">Your music</h2></div>

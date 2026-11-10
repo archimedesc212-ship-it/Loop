@@ -143,6 +143,9 @@ export const api = {
   languages: () => request('GET', '/languages'),
   regions: () => request('GET', '/regions'),
   search: (q) => request('GET', `/search${qs({ q })}`),
+  youtubeSearch: (q, limit = 10) => request('GET', `/music/youtube${qs({ q, limit })}`),
+  musicbrainzSearch: (q, limit = 8) => request('GET', `/music/musicbrainz${qs({ q, limit })}`),
+  coverArt: (mbid) => request('GET', `/music/cover-art${qs({ mbid })}`),
   trending: (q) => request('GET', `/trending${qs(q)}`),
   // recommendations
   recMood: (b) => request('POST', '/recommendations/mood', b),

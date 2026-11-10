@@ -108,3 +108,10 @@ Admin UI: **Admin › Providers & media**. Status without secrets: `GET /api/rea
 
 Keep keys out of the repository, screenshots and issue trackers. Restrict each key
 to the one API it is for, and rotate it if it was ever exposed.
+
+
+## Worldwide music search and artwork
+
+- **YouTube Data API v3**: set `YOUTUBE_ENABLED=true` and configure `YOUTUBE_API_KEY` only in the backend host's secret/environment settings. Set frontend `VITE_DEMO_MODE=false` so search requests reach the live API instead of the local demo adapter. LOOP searches embeddable video results and plays them through YouTube's official iframe embed. LOOP does not extract, download, proxy, or re-host YouTube audio. Search quota is limited by Google's project quota.
+- **MusicBrainz**: set `MUSICBRAINZ_ENABLED=true` and provide a descriptive `MUSICBRAINZ_USER_AGENT` including a real contact email or URL. LOOP searches recording metadata and release MBIDs while respecting the one-request-per-second service guidance.
+- **Cover Art Archive**: release artwork is looked up using the MusicBrainz release MBID. The CAA image URLs are used directly; missing artwork is normal and falls back to LOOP's generated cover.

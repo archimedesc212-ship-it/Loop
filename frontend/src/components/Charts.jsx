@@ -1,14 +1,14 @@
 // SVG charts following the dataviz method: thin marks, 4px rounded data-ends
 // anchored to the baseline, 2px surface gaps, hairline grids, one axis,
 // hover tooltips, a legend for 2+ series, and a table view for every chart.
-// Categorical slots were validated against the MUSE dark surface (#171C2E):
+// Categorical slots were validated against the LOOP dark surface (#181818):
 // all checks pass (worst adjacent CVD ΔE 8.4, normal-vision ΔE 19.3).
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const SERIES = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181'];
 export const OTHER = '#5A6078';
-const ACCENT = '#F2B544';
-const SURFACE = '#171C2E';
+const ACCENT = '#1ED760';
+const SURFACE = '#181818';
 
 const niceMax = (v) => {
   if (v <= 0) return 1;

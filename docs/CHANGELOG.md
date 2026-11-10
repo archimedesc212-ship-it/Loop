@@ -1,5 +1,16 @@
 # Changelog — finalisation pass (October 2026)
 
+## Global music search, in-page playback and Spotify-style UI (10 November 2026)
+
+- Global Search now combines the curated LOOP archive with Apple's public catalogue across the listener's locale and multiple international storefronts. Results are deduplicated by Apple track ID and show provider artwork when available.
+- Apple-provided short preview audio now plays through LOOP's persistent HTML audio player (progress, pause/resume, volume and next-track behavior).
+- When Apple does not provide a preview, the official Apple Music embed appears inline above the player bar instead of in a popup. Full playback remains subject to Apple's subscription and territory rules.
+- The Content Security Policy was narrowly extended for Apple's official JSONP search script, artwork CDN, preview audio and embedded player.
+- Search and Home gained international genre/region discovery shortcuts; Home gained a Recently Played shelf.
+- The normal UI moved to charcoal surfaces, green accent, artwork-led global result rows and horizontal music shelves.
+- The supplied notebook's mean feature-vector + standardisation + cosine-distance method remains available for Similar Sound and Made for You in the browser/demo recommendation path, adapted to the seven audio/year features actually present in LOOP's metadata archive.
+- See [GLOBAL_MUSIC_AND_PLAYBACK.md](GLOBAL_MUSIC_AND_PLAYBACK.md) and [PLAYBACK_AND_RECOMMENDATIONS.md](PLAYBACK_AND_RECOMMENDATIONS.md).
+
 Starting point: the MUSE project as audited in [AUDIT.md](AUDIT.md). Nothing was
 rewritten from scratch; every change below extends or corrects the existing code.
 
