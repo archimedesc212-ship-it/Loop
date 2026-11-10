@@ -11,6 +11,7 @@ import { duration } from '../lib/format';
 import { buildSearchSuggestions } from '../lib/searchSuggestions';
 import { formatSleepRemaining } from '../lib/sleepTimer';
 import { registerMoodColors, LikeButton } from './Songs';
+import ImmersivePlayer from './ImmersivePlayer';
 
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
@@ -262,7 +263,7 @@ function mediaNote(media, incognito) {
   return `${media.label}${media.attribution ? ` · ${media.attribution}` : ''}${where}`;
 }
 
-function PlayerBar() {
+function PlayerBar({ onOpenImmersive }) {
   const p = usePlayer();
   const { user } = useAuth();
   const [queueOpen, setQueueOpen] = useState(false);
@@ -338,6 +339,7 @@ function PlayerBar() {
                 onChange={(e) => p.setVolume(Number(e.target.value) / 100)} aria-label="Volume" aria-valuetext={`${Math.round(p.volume * 100)}%`} />
             </div>
           </>}
+          <button className="btn ghost sm" onClick={onOpenImmersive} aria-label="Open immersive player" title="Open immersive player">Immersive</button>
           <button className={`icon-btn${queueOpen ? ' on' : ''}`} onClick={() => setQueueOpen((o) => !o)} aria-label="Show play queue" aria-expanded={queueOpen}>
             <Icon.List /><span className="badge-count">{p.queue.length}</span>
           </button>
@@ -400,6 +402,7 @@ export function OfflineBanner() {
 export default function Layout() {
   const { user } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem('loop.sidebarCollapsed') === 'true'; } catch { return false; } });
+  const [immersiveOpen, setImmersiveOpen] = useState(false);
   useEffect(() => { try { localStorage.setItem('loop.sidebarCollapsed', String(sidebarCollapsed)); } catch { /* preference storage is optional */ } }, [sidebarCollapsed]);
   const nav = useNavigate();
   useEffect(() => { api.moods().then(registerMoodColors).catch(() => {}); }, []);
@@ -419,7 +422,8 @@ export default function Layout() {
         )}
         <Outlet />
       </main>
-      <PlayerBar />
+      <PlayerBar onOpenImmersive={() => setImmersiveOpen(true)} />
+      <ImmersivePlayer open={immersiveOpen} onClose={() => setImmersiveOpen(false)} />
       <LearnedNote />
       <MobileNav />
     </div>
