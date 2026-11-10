@@ -82,8 +82,9 @@ test('diversity: no artist appears more than the configured cap', async () => {
 });
 
 test('discovery only returns songs the user has never played', async () => {
-  const token = await h.login('varsha', 'Varsha@27');
-  const me = await h.one("SELECT user_id FROM users WHERE username = 'varsha'");
+  const listener = await h.newUser();
+  const token = listener.token;
+  const me = await h.one('SELECT user_id FROM users WHERE user_id = ?', [listener.id]);
   const r = await h.api('GET', '/recommendations/discovery?limit=15', { token });
   assert.equal(r.status, 200);
   const played = await h.query('SELECT DISTINCT song_id FROM listening_history WHERE user_id = ? AND song_id IN (?)', [me.user_id, r.body.songs.map((s) => s.id)]);
@@ -157,7 +158,8 @@ test('search finds songs, aliases and moods via SQL', async () => {
 });
 
 test('concurrent recommendation requests do not deadlock (READ COMMITTED scoring + retry)', async () => {
-  const token = await h.login('varsha', 'Varsha@27');
+  const listener = await h.newUser();
+  const token = listener.token;
   const reqs = Array.from({ length: 12 }, (_, i) => (i % 2
     ? h.api('GET', '/recommendations/daily?limit=10', { token })
     : h.api('POST', '/recommendations/mood', { token, body: { text: 'energetic', limit: 10 } })));
