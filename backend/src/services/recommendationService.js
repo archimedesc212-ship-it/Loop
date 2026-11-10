@@ -161,7 +161,7 @@ function breakdown(row, weights, strategy) {
 
 async function shape(user, batchId, rows, meta) {
   // Similar-listener evidence is disabled for private sessions and mood-only mixes.
-  if (!user.incognitoId && ['DAILY', 'REGIONAL', 'DISCOVERY', 'SIMILAR'].includes(meta.strategy) && rows.length) {
+  if (meta.collaborative === true && !user.incognitoId && rows.length) {
     const songIds = rows.map((row) => Number(row.song_id)).filter(Number.isInteger);
     if (songIds.length) {
       const evidence = await query(
@@ -333,7 +333,7 @@ async function daily(user, { limit = 20 } = {}) {
     subtitle = 'Play a few songs and this mix will start to follow your taste';
   }
   const { batchId, rows } = await createAndRun(user, { strategy: 'DAILY', label: 'Daily Mix', targets, moods, limit });
-  return shape(user, batchId, rows, { strategy: 'DAILY', title: 'Daily Mix', subtitle, moods, targets });
+  return shape(user, batchId, rows, { strategy: 'DAILY', title: 'Daily Mix', subtitle, moods, targets, collaborative: true });
 }
 
 /** "Because you liked X": the seed song's sound and moods. */
@@ -363,7 +363,7 @@ async function similar(user, { seedSongId = null, limit = 12 } = {}) {
   const { batchId, rows } = await createAndRun(user, { strategy: 'SIMILAR', label: `Because you liked ${seed.title}`,
     inputText: seed.title, seedSongId: seed.song_id, targets, moods, limit });
   const out = await shape(user, batchId, rows, { strategy: 'SIMILAR', title: `Because you liked ${seed.title}`,
-    subtitle: 'Similar sound and mood', moods, targets });
+    subtitle: 'Similar sound and mood', moods, targets, collaborative: true });
   out.seed = toSong(seed);
   return out;
 }
@@ -386,7 +386,7 @@ async function regional(user, { languageId = null, limit = 16 } = {}) {
   const { batchId, rows } = await createAndRun(user, { strategy: 'REGIONAL', label: `${lang.name} picks`, languageId: lang.language_id,
     targets, moods, limit });
   return shape(user, batchId, rows, { strategy: 'REGIONAL', title: `${lang.name} for you`,
-    subtitle: `${lang.native_name} · tuned to your sound`, moods, targets });
+    subtitle: `${lang.native_name} · tuned to your sound`, moods, targets, collaborative: true });
 }
 
 /** Discovery: only songs never played, with a user-adjustable familiar ↔ unexpected sound target. */
@@ -399,7 +399,7 @@ async function discovery(user, { limit = 16, intensity = 50 } = {}) {
   const { batchId, rows } = await createAndRun(user, { strategy: 'DISCOVERY', label: `Discovery · ${discoveryIntensity}% unexpected`,
     targets, moods, discoveryOnly: true, limit });
   const out = await shape(user, batchId, rows, { strategy: 'DISCOVERY', title: 'Discovery',
-    subtitle: `Only songs you have never played · ${discoveryIntensity}% unexpected`, moods, targets });
+    subtitle: `Only songs you have never played · ${discoveryIntensity}% unexpected`, moods, targets, collaborative: true });
   out.discoveryIntensity = discoveryIntensity;
   return out;
 }
