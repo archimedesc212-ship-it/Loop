@@ -75,7 +75,7 @@ function PrivateToggle() {
         toast.success(`Private session ended — ${r.purged.events} plays and ${r.purged.lists} mixes deleted`);
       } else {
         await api.startIncognito();
-        toast.info('Private session on. LOOP still uses your taste, but nothing you do now is saved to your profile.');
+        toast.info('Private session on. Mood ratings are paused, and this archive view does not collect playback history.');
       }
       await refresh();
     } catch (e) { toast.error(e); } finally { setBusy(false); }
@@ -100,7 +100,7 @@ function TopBar() {
     <div className="topbar">
       <form className="search-box" onSubmit={submit} role="search">
         <Icon.Search />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Songs, artists, moods, languages…" aria-label="Search" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Track titles, artists, genres, moods…" aria-label="Search" />
       </form>
       <div className="grow" />
       <PrivateToggle />
