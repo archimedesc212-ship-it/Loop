@@ -15,8 +15,8 @@ const LOAD = {
   smart: (arg) => api.smart(arg, 20),
   batch: (arg) => api.batch(arg),
 };
-const KICKER = { daily: 'Daily Mix', similar: 'Because you liked', regional: 'Regional discovery', discovery: 'Discovery mode',
-  recovery: 'Mood recovery', context: 'Mode', smart: 'Smart playlist', batch: 'Saved mix' };
+const KICKER = { daily: 'Archive selection', similar: 'Similar sound', regional: 'Regional discovery', discovery: 'Catalogue discovery',
+  recovery: 'Feature journey', context: 'Listening mode', smart: 'Smart archive list', batch: 'Saved list' };
 
 export default function Mix() {
   const { kind, arg } = useParams();
@@ -40,10 +40,10 @@ export default function Mix() {
         <div className="stack" style={{ '--gap': '8px' }}>
           <div className="soft small">Mood recovery</div>
           <h1 className="display">{data.title}</h1>
-          <p className="lead">{data.subtitle}. Three short stages, each scored separately, moving from low energy and low positivity towards bright.</p>
+          <p className="lead">{data.subtitle}. The stages are grouped by the energy, valence, acousticness and danceability values recorded in the dataset.</p>
         </div>
         {data.stages.map((st, i) => (
-          <section key={st.batchId} className="panel stack" style={{ '--gap': '14px' }}>
+          <section key={st.title} className="panel stack" style={{ '--gap': '14px' }}>
             <div className="row between wrap">
               <div><div className="small muted">Stage {i + 1} of {data.stages.length}</div><h2 className="section-title">{st.title}</h2></div>
               <div className="row wrap small soft" style={{ '--gap': '14px' }}>{st.interpretation.summary.slice(0, 2).map((s) => <span key={s.label}>{s.label}: <b>{s.value}</b></span>)}</div>
