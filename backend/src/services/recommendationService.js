@@ -11,6 +11,7 @@ const ApiError = require('../utils/ApiError');
 const { toSong, withUserFlags } = require('./songMapper');
 const moodParser = require('./moodParser');
 const { weightedMoods, interpolateProfile, discoveryTargets, recommendationEvidence } = require('../utils/recommendationLogic');
+const { applyCollaborativeBoost } = require('../utils/collaborativeRanking');
 
 const SIGNALS = [
   ['mood', 'mood_score', 'w_mood', 'Mood match'],
@@ -159,6 +160,58 @@ function breakdown(row, weights, strategy) {
 }
 
 async function shape(user, batchId, rows, meta) {
+  // Similar-listener evidence is disabled for private sessions and mood-only mixes.
+  if (!user.incognitoId && ['DAILY', 'REGIONAL', 'DISCOVERY', 'SIMILAR'].includes(meta.strategy) && rows.length) {
+    const songIds = rows.map((row) => Number(row.song_id)).filter(Number.isInteger);
+    if (songIds.length) {
+      const evidence = await query(
+        `WITH mine AS (
+           SELECT DISTINCT song_id FROM listening_history
+            WHERE user_id = ? AND completion_pct >= 60
+              AND started_at >= NOW() - INTERVAL 180 DAY
+         ),
+         overlap AS (
+           SELECT other.user_id, COUNT(DISTINCT other.song_id) AS common_songs
+             FROM listening_history other JOIN mine ON mine.song_id = other.song_id
+            WHERE other.user_id <> ? AND other.completion_pct >= 60
+              AND other.started_at >= NOW() - INTERVAL 180 DAY
+            GROUP BY other.user_id
+           HAVING COUNT(DISTINCT other.song_id) >= 2
+         ),
+         neighbours AS (
+           SELECT user_id, common_songs,
+                  ROW_NUMBER() OVER (ORDER BY common_songs DESC, user_id) AS neighbour_rank
+             FROM overlap
+         ),
+         neighbour_weights AS (
+           SELECT user_id, common_songs / (common_songs + 2.0) AS similarity
+             FROM neighbours WHERE neighbour_rank <= 100
+         )
+         SELECT lh.song_id, COUNT(DISTINCT lh.user_id) AS listener_count,
+                SUM(nw.similarity * LEAST(1, GREATEST(0, lh.completion_pct / 100)))
+                  / NULLIF(SUM(nw.similarity), 0) AS collaborative_score
+           FROM listening_history lh JOIN neighbour_weights nw ON nw.user_id = lh.user_id
+          WHERE lh.song_id IN (?) AND lh.completion_pct >= 60
+            AND lh.started_at >= NOW() - INTERVAL 180 DAY
+          GROUP BY lh.song_id`,
+        [user.id, user.id, songIds],
+      );
+      const boosted = applyCollaborativeBoost(rows, evidence);
+      const hasSignal = boosted.some((row) => row.collaborative_listeners >= 2);
+      if (hasSignal) {
+        rows = boosted;
+        // Keep the persisted batch ordering aligned with the ranking returned by the API.
+        await withTransaction(async (tx) => {
+          for (const [index, row] of rows.entries()) {
+            await tx.query(
+              'UPDATE recommendation_items SET final_score = ?, rank_position = ? WHERE batch_id = ? AND song_id = ?',
+              [row.final_score, index + 1, batchId, row.song_id],
+            );
+          }
+        });
+      }
+    }
+  }
   const { weights, model } = await modelWeights(batchId);
   let songs = rows.map((r) => ({
     ...toSong(r),
@@ -166,8 +219,18 @@ async function shape(user, batchId, rows, meta) {
     score: Number(r.final_score),
     confidence: recommendationEvidence(r),
     breakdown: breakdown(r, weights, meta.strategy),
-    reasons: (typeof r.reasons === 'string' ? JSON.parse(r.reasons) : r.reasons || [])
-      .sort((a, b) => b.strength - a.strength).map((x) => ({ code: x.code, text: x.text })),
+    reasons: [
+      ...(typeof r.reasons === 'string' ? JSON.parse(r.reasons) : r.reasons || [])
+        .sort((a, b) => b.strength - a.strength).map((x) => ({ code: x.code, text: x.text })),
+      ...(Number(r.collaborative_listeners) >= 2 ? [{
+        code: 'SIMILAR_LISTENERS',
+        text: 'Listeners with similar listening habits also enjoyed this song',
+      }] : []),
+    ],
+    collaborative: Number(r.collaborative_listeners) >= 2 ? {
+      score: Number(r.collaborative_score),
+      listeners: Number(r.collaborative_listeners),
+    } : null,
   }));
   songs = await withUserFlags(user.id, songs);
   const moodIds = meta.moods.map((m) => m.moodId);
