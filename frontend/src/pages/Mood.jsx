@@ -42,7 +42,7 @@ export default function MoodPage() {
       <div className="stack" style={{ '--gap': '20px', maxWidth: 980 }}>
         <div className="stack" style={{ '--gap': '8px' }}>
           <h1 className="display">How are you feeling?</h1>
-          <p className="lead">Pick up to four moods, describe it in your own words, or both. LOOP turns it into a target sound and scores every song in the catalogue against it and your taste.</p>
+          <p className="lead">Pick up to four moods or describe a sound in your own words. LOOP matches your request against the topic labels and audio features in the uploaded music dataset.</p>
         </div>
         <FeelInput value={text} onChange={setText} onSubmit={() => run()} busy={busy} />
         <div className="row wrap" style={{ '--gap': '6px' }}>
@@ -95,7 +95,7 @@ export default function MoodPage() {
               )}
             </div>
             <Interpretation list={result} />
-            <RecHeader list={{ ...result, title: 'Recommended for you', subtitle: 'Every song scored against this sound and your taste. Open ⓘ to see why.' }} />
+            <RecHeader list={{ ...result, title: 'Archive matches', subtitle: 'Matched using the supplied topic labels and audio features.' }} />
             <RecList list={result} />
           </div>
         )}
