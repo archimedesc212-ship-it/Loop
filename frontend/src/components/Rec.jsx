@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../hooks/useAuth';
-import { usePlayer } from '../hooks/usePlayer';
+import { usePlayer, isPlayable } from '../hooks/usePlayer';
 import { TrackList } from './Songs';
 import { MoodChip, Meter, Modal, Field } from './ui';
 import { Play, Save, Arrow } from './Icons';
 
-export const HERO_MOODS = ['Happy', 'Sad', 'Energetic', 'Calm', 'Romantic', 'Motivational', 'Nostalgic', 'Focused', 'Relaxed', 'Dreamy'];
+export const HERO_MOODS = ['Sad', 'Romantic', 'Dreamy', 'Reflective', 'Intense', 'Focused', 'Emotional', 'Energetic', 'Calm', 'Uplifting'];
 
 export function MoodTiles({ moods, selected, onToggle, only }) {
   const list = only ? only.map((n) => moods.find((m) => m.name === n)).filter(Boolean) : moods;
@@ -126,7 +126,7 @@ export function RecHeader({ list, kicker }) {
         <p className="tiny muted">{list.songs.length} songs{list.model ? ` · ranked by ${list.model}` : ''}{list.incognito ? ' · private session' : ''}</p>
       </div>
       <div className="row wrap">
-        {list.songs.length > 0 && <button className="btn primary" onClick={() => player.play(list.songs[0], { queue: list.songs, origin, batchId: list.batchId })}><Play />Play all</button>}
+        {list.songs.some(isPlayable) && <button className="btn primary" onClick={() => player.play(list.songs.find(isPlayable), { queue: list.songs, origin, batchId: list.batchId })}><Play />Play available audio</button>}
         <SaveListButton list={list} />
       </div>
     </div>
