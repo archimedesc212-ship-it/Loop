@@ -7,7 +7,7 @@ import { useToast } from '../hooks/useToast';
 import { ErrorState, Skeleton } from './ui';
 import { validatePct, formatPct, formatAi, ratingCount } from '../lib/moodRating';
 
-/** Moods worth showing first: the AI tagged them, someone rated them, or the user did. */
+/** Moods worth showing first: the source data estimates them, someone rated them, or the user did. */
 const relevant = (m) => m.aiConfidence !== null || m.community || m.mine;
 
 export function MoodRatingRow({ mood, draft, error, disabled, onChange, onRemove, removing }) {
@@ -117,7 +117,7 @@ export default function MoodRatings({ songId, privateSession = false }) {
         <div className="stack" style={{ '--gap': '4px' }}>
           <h3 id="mr-title">How well does it fit each mood?</h3>
           <p className="tiny muted" style={{ maxWidth: '62ch' }}>
-            Rate each mood from 0 to 100 %. <b>Listeners</b> is the average of everyone's ratings; <b>Dataset</b> is an estimate from the source topic and audio-feature fields. Your ratings never change the AI's.
+            Rate each mood from 0 to 100 %. <b>Listeners</b> is the average of everyone's ratings; <b>Dataset</b> is an estimate from the source topic and audio-feature fields. Your ratings are kept separate from the source dataset estimates.
           </p>
         </div>
         <span className="tiny muted">{data.totals.ratings ? `${ratingCount(data.totals.ratings)} from ${data.totals.raters} listener${data.totals.raters > 1 ? 's' : ''}` : 'No mood ratings for this song yet'}</span>
