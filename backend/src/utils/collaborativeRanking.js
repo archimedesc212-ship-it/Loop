@@ -11,7 +11,7 @@ function applyCollaborativeBoost(rows, evidence, { maxWeight = 0.12, minimumList
     { score: Math.max(0, Math.min(1, Number(item.collaborative_score) || 0)), listeners: Number(item.listener_count) || 0 },
   ]));
 
-  return rows.map((row) => {
+  const ranked = rows.map((row) => {
     const signal = bySong.get(Number(row.song_id));
     if (!signal || signal.listeners < minimumListeners) {
       return { ...row, collaborative_score: null, collaborative_listeners: signal?.listeners || 0 };
@@ -28,6 +28,7 @@ function applyCollaborativeBoost(rows, evidence, { maxWeight = 0.12, minimumList
     };
   }).sort((a, b) => Number(b.final_score) - Number(a.final_score)
     || Number(a.song_id) - Number(b.song_id));
+  return ranked.map((row, index) => ({ ...row, rank_position: index + 1 }));
 }
 
 module.exports = { applyCollaborativeBoost };
