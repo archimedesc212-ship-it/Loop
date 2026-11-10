@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { afterAll, beforeEach, describe, it, expect, vi } from 'vitest';
 import { api, buildHeaders, readCookie, request, setUnauthorizedHandler, setNetworkHandler, ApiError } from './api';
 
 const respond = (status, body) => Promise.resolve(new Response(body === undefined ? '' : JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }));
@@ -25,8 +25,97 @@ describe('cookies and CSRF headers', () => {
   });
 });
 
+const catalogueFixture = {
+  schemaVersion: 1,
+  source: { recordCount: 2, lyricsIncluded: false, audioIncluded: false },
+  artists: [[1, 'mukesh'], [2, 'frankie laine']],
+  genres: [[1, 'pop'], [2, 'country']],
+  records: [
+    [1, 1, 'mohabbat bhi jhoothi', 1950, 1, 'sadness', 0.137, 0.352, 0.357, 0.998, 0.901, 0.454,
+      [['sadness', 0.38], ['feelings', 0.11], ['communication', 0.26]]],
+    [2, 2, 'i believe', 1950, 2, 'world/life', 0.263, 0.325, 0.331, 0.955, 0, 0.648,
+      [['world/life', 0.44], ['light/visual perceptions', 0.21], ['music', 0.12]]],
+  ],
+};
+
+describe('uploaded music catalogue', () => {
+  beforeEach(async () => {
+    const { resetCatalogueCacheForTests } = await import('../lib/demoMode');
+    resetCatalogueCacheForTests();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(catalogueFixture), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    ));
+  });
+  afterAll(() => vi.unstubAllGlobals());
+
+  it('uses the supplied real catalogue records and never pretends audio exists', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const result = await demoRequest('GET', '/recommendations/daily');
+    expect(result.songs.length).toBeGreaterThan(0);
+    const song = await demoRequest('GET', '/songs/1');
+    expect(song.title).toBe('mohabbat bhi jhoothi');
+    expect(song.artist.name).toBe('mukesh');
+    expect(song.genre.name).toBe('pop');
+    expect(song.language).toBeNull();
+    expect(song.durationSec).toBeNull();
+    expect(song.playback.playable).toBe(false);
+    expect(song.topic).toBe('sadness');
+    expect(result.songs.every((song) => song.title !== 'Afterglow')).toBe(true);
+  });
+
+  it('provides safe, complete route collections from the real dataset', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const world = await demoRequest('GET', '/worlds/current');
+    const artist = await demoRequest('GET', '/artists/1');
+    const album = await demoRequest('GET', '/albums/1');
+    const film = await demoRequest('GET', '/films/1');
+    const language = await demoRequest('GET', '/languages/1');
+    expect(Array.isArray(world.songs)).toBe(true);
+    expect(Array.isArray(world.versions)).toBe(true);
+    expect(Array.isArray(world.history)).toBe(true);
+    expect(artist.name).toBe('mukesh');
+    expect(artist.songs[0].title).toBe('mohabbat bhi jhoothi');
+    expect(Array.isArray(artist.aliases)).toBe(true);
+    expect(album.notAvailable).toBe(true);
+    expect(film.notAvailable).toBe(true);
+    expect(language.notAvailable).toBe(true);
+  });
+
+  it('keeps all song detail collections safe for UI array methods', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const song = await demoRequest('GET', '/songs/1');
+    for (const key of ['credits', 'genres', 'moods', 'moodsDetailed', 'segments', 'analyses', 'provenance', 'mergedDuplicates', 'videoLinks']) {
+      expect(Array.isArray(song[key])).toBe(true);
+    }
+  });
+
+  it('searches track title, artist, genre and topic without reading lyrics', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const result = await demoRequest('GET', '/search?q=mukesh');
+    expect(result.total).toBe(1);
+    expect(result.songs[0].title).toBe('mohabbat bhi jhoothi');
+    expect(Array.isArray(result.artists)).toBe(true);
+    expect(Array.isArray(result.albums)).toBe(true);
+    expect(Array.isArray(result.languages)).toBe(true);
+  });
+
+  it('maps natural mood requests into dataset feature matches', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const result = await demoRequest('POST', '/recommendations/mood', { text: 'I need something calm for studying' });
+    expect(Array.isArray(result.songs)).toBe(true);
+    expect(Array.isArray(result.interpretation.moods)).toBe(true);
+    expect(Array.isArray(result.interpretation.summary)).toBe(true);
+  });
+});
+
 describe('request()', () => {
-  beforeEach(() => { setUnauthorizedHandler(() => {}); setNetworkHandler(() => {}); });
+  beforeEach(() => {
+  // API transport tests must exercise fetch, not the intentional static-site demo adapter.
+  vi.stubEnv('VITE_DEMO_MODE', 'false');
+  setUnauthorizedHandler(() => {});
+  setNetworkHandler(() => {});
+});
+afterAll(() => vi.unstubAllEnvs());
 
   it('uses same-origin credentials and returns parsed JSON', async () => {
     const f = vi.spyOn(globalThis, 'fetch').mockImplementation(() => respond(200, { ok: 1 }));
@@ -64,7 +153,13 @@ describe('request()', () => {
 
   it('a non-JSON error body still gives a readable error', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('<html>bad gateway</html>', { status: 502 })));
-    await expect(request('GET', '/songs')).rejects.toMatchObject({ code: 'HTTP_502', message: 'Something went wrong.' });
+    await expect(request('GET', '/songs')).rejects.toMatchObject({ code: 'HTTP_502', message: 'LOOP is temporarily unavailable. Please try again shortly.' });
+  });
+
+  it('turns an aborted request into a bounded timeout error', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.reject(Object.assign(new Error('aborted'), { name: 'AbortError' })));
+    await expect(request('POST', '/auth/login', { login: 'varsha', password: 'test' }))
+      .rejects.toMatchObject({ code: 'TIMEOUT', status: 0 });
   });
 
   it('builds the new endpoints correctly', async () => {

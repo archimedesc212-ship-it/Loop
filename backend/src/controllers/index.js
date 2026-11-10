@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 // Controllers: translate HTTP (req.valid, req.user) into service calls and
 // shape the response. No SQL lives here; it is all in services/ and the database.
 const auth = require('../services/authService');
@@ -21,6 +22,7 @@ const { toSong } = require('../services/songMapper');
 const ApiError = require('../utils/ApiError');
 const sessions = require('../services/sessionService');
 const media = require('../services/mediaService');
+const artistSvc = require('../services/artistService');
 const providerSvc = require('../services/providerService');
 const { setSessionCookies, clearSessionCookies } = require('../middleware/auth');
 
@@ -49,7 +51,33 @@ exports.auth = {
   register: async (req, res) => sendSession(req, res, 201, await auth.register(b(req), client(req))),
   login: async (req, res) => sendSession(req, res, 200, await auth.login(b(req), client(req))),
   me: async (req, res) => res.json(await meBody(req)),
-  session: async (req, res) => res.json(req.user ? { authenticated: true, ...(await meBody(req)) } : { authenticated: false }),
+  session: async (req, res) => {
+    if (req.user) return res.json({ authenticated: true, ...(await meBody(req)) });
+    return res.status(200).json({ authenticated: false });
+  },
+  createGuestSession: async (req, res) => {
+    if (req.user) return res.json({ authenticated: true, ...(await meBody(req)) });
+    const suffix = crypto.randomBytes(12).toString('hex');
+    const created = await auth.register({
+      username: `guest_${suffix}`,
+      email: `guest+${suffix}@guest.loop.invalid`,
+      password: `${crypto.randomBytes(32).toString('base64url')}A1`,
+      displayName: 'Guest',
+    }, client(req));
+    const choices = await onboarding.options();
+    const language = choices.languages.find((item) => /telugu/i.test(item.name)) || choices.languages[0];
+    if (!language) throw new ApiError(503, 'CATALOG_NOT_READY', 'LOOP is still preparing its music catalogue. Please try again shortly.');
+    await onboarding.save(created.user.id, {
+      languageIds: [language.id], genreIds: [], artistIds: [], composerIds: [],
+      moodIds: [], contextCodes: [], listeningHabit: 'MIXED', contentFilter: 'OFF',
+    });
+    const user = await auth.profile(created.user.id);
+    setSessionCookies(res, created.session);
+    return res.status(201).json({
+      authenticated: true, ...user,
+      session: { id: created.session.sessionId, expiresAt: created.session.expiresAt, csrfToken: created.session.csrfToken },
+    });
+  },
   logout: async (req, res) => {
     // fold the open listening session into the profile (no-op in a private session)
     const closed = req.user.incognitoId ? 0 : await playback.closeOpenSessions(req.user.id);
@@ -96,6 +124,8 @@ exports.catalog = {
   songs: async (req, res) => res.json(await catalog.listSongs(req.user, q(req))),
   song: async (req, res) => res.json(await catalog.songDetail(req.user, p(req).id)),
   artist: async (req, res) => res.json(await catalog.artistDetail(req.user, p(req).id)),
+  artistArtwork: async (req, res) => res.json(await catalog.artistArtwork(p(req).id)),
+  albumArtwork: async (req, res) => res.json(await catalog.albumArtwork(p(req).id)),
   album: async (req, res) => res.json(await catalog.albumDetail(req.user, p(req).id)),
   genres: async (req, res) => res.json(await catalog.genreTree()),
   moods: async (req, res) => res.json(await catalog.moods()),
@@ -144,6 +174,17 @@ async function targetUser(userId) {
   if (!u) throw ApiError.notFound('User');
   return { ...u, incognitoId: null, permissions: new Set() };
 }
+
+// ---------------------------------------------------------------------------
+// Independent artist onboarding and upload operations.
+exports.artist = {
+  me: async (req, res) => res.json(await artistSvc.myProfile(req.user.id)),
+  apply: async (req, res) => res.status(201).json(await artistSvc.apply(req.user.id, b(req))),
+  createUpload: async (req, res) => res.status(201).json(await artistSvc.createUploadIntent(req.user.id, req.ip, b(req))),
+  uploadContent: async (req, res) => res.status(201).json(await artistSvc.storeUpload(req.user.id, p(req).id, req)),
+  withdraw: async (req, res) => res.json(await artistSvc.withdrawUpload(req.user.id, p(req).id)),
+  report: async (req, res) => res.status(201).json(await artistSvc.reportUpload(req.user.id, p(req).id, b(req))),
+};
 
 // ---------------------------------------------------------------------------
 exports.playback = {
@@ -251,9 +292,11 @@ exports.worlds = {
  */
 exports.media = {
   stream: async (req, res) => {
-    const f = await media.localFile(p(req).id);
+    const f = await media.localFile(p(req).id, req.user);
     if (!playback.contentAllowed(req.user, f.song)) throw new ApiError(403, 'CONTENT_FILTERED', 'Your content filter hides this song.');
-    res.set('Cache-Control', 'private, max-age=300');
+    // User uploads can be withdrawn or taken down for rights reasons. Avoid
+    // browser/proxy caching that would outlive a changed rights decision.
+    res.set('Cache-Control', f.song.source === 'ARTIST_UPLOAD' ? 'private, no-store' : 'private, max-age=300');
     res.type(f.type);
     await new Promise((resolve, reject) => res.sendFile(f.full, { acceptRanges: true, dotfiles: 'deny' }, (err) => (err && !res.headersSent ? reject(err) : resolve())));
   },
@@ -344,5 +387,13 @@ exports.admin = {
   media: async (req, res) => res.json({ summary: await media.summary(), localFiles: require('../providers').localMedia.list() }),
   checkMedia: async (req, res) => res.json(await media.checkLocal()),
   registerMedia: async (req, res) => res.status(201).json(await media.registerLocal(p(req).id, b(req).fileName, b(req))),
+  artistApplications: async (req, res) => res.json(await artistSvc.listApplications(q(req))),
+  decideArtistApplication: async (req, res) => res.json(await artistSvc.decideApplication(actor(req), p(req).id, b(req).action, b(req).note)),
+  artistUploads: async (req, res) => res.json(await artistSvc.listUploads(q(req))),
+  decideArtistUpload: async (req, res) => res.json(await artistSvc.decideUpload(actor(req), p(req).id, b(req).action, b(req).note)),
+  publishArtistUpload: async (req, res) => res.json(await artistSvc.publishUpload(actor(req), p(req).id)),
+  scanArtistUpload: async (req, res) => res.json(await artistSvc.scanUpload(p(req).id, actor(req))),
+  artistRightsReports: async (req, res) => res.json(await artistSvc.listRightsReports(q(req))),
+  resolveArtistRightsReport: async (req, res) => res.json(await artistSvc.resolveRightsReport(actor(req), p(req).id, b(req).status, b(req).note)),
   feedFiles: async (req, res) => res.json(require('../sources/fileFeedSource').listFiles()),
 };

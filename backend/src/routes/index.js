@@ -34,8 +34,17 @@ router.post('/auth/register', loginLimiter, v({
 }), h(c.auth.register));
 router.post('/auth/login', loginLimiter, v({ login: r.str(3, 120), password: r.str(1, 72) }), h(c.auth.login));
 
-// The web app asks this on load: 200 either way, so "not signed in" is not an error.
+// The session check is read-only. Guest creation is an explicit, rate-limited POST.
+const guestSessionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: nodeEnv === 'test' ? 1000 : 30,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip: (req) => !!req.user,
+  message: { error: { code: 'GUEST_LIMITED', message: 'Too many new guest sessions from this network. Please try again later.' } },
+});
 router.get('/auth/session', optionalAuth, h(c.auth.session));
+router.post('/auth/session', optionalAuth, guestSessionLimiter, h(c.auth.createGuestSession));
 
 router.use(requireAuth);
 router.use((req, res, next) => (req.method === 'GET' ? next() : writeLimiter(req, res, next)));
@@ -72,6 +81,32 @@ router.patch('/me/settings', v({
   listeningHabit: opt(r.oneOf(['BACKGROUND', 'ACTIVE', 'MIXED'])),
 }), h(c.me.updateSettings));
 
+// ---------------------------------------------------------------- independent artist studio
+const uploadId = v({ id: r.str(32, 32, /^[a-f0-9]{32}$/) }, 'params');
+router.get('/artist/me', h(c.artist.me));
+router.post('/artist/applications', v({
+  stageName: r.str(1, 100), artistType: opt(r.oneOf(['SOLO', 'GROUP', 'COMPOSER', 'ORCHESTRA']), 'SOLO'),
+  countryCode: opt(r.str(2, 2, /^[A-Z]{2}$/), 'IN'), bio: opt(r.str(0, 400)),
+  websiteUrl: opt(r.str(9, 255, /^https:\/\//i)), proofUrl: opt(r.str(9, 500, /^https:\/\//i)),
+}), h(c.artist.apply));
+router.post('/artist/uploads', requirePermission('artist.upload'), v({
+  artistId: r.int(1, 2 ** 31), title: r.str(1, 150), versionLabel: opt(r.str(0, 40), ''),
+  genreId: r.int(1, 65535), languageId: opt(r.int(1, 65535)), durationSec: r.int(30, 1800),
+  releaseYear: r.int(1900, 2100), explicit: opt(r.bool(), false), fileSize: r.int(1, 52428800),
+  mimeType: r.str(1, 100), compositionRights: r.oneOf(['OWNED', 'LICENSED', 'PUBLIC_DOMAIN']),
+  recordingRights: r.oneOf(['OWNED', 'LICENSED', 'PUBLIC_DOMAIN']),
+  rightsEvidenceRef: opt(r.str(9, 500, /^https:\/\//i)),
+  territories: opt(r.arrayOf(r.str(2, 10, /^(WORLDWIDE|[A-Z]{2})$/), 50, 1), ['WORLDWIDE']),
+  licenceStart: opt(r.date()), licenceEnd: opt(r.date()), royaltySharePct: opt(r.decimal(0, 100, 2), 0),
+  royaltyCurrency: opt(r.str(3, 3, /^[A-Z]{3}$/), 'INR'), rightsAccepted: r.bool(),
+}), h(c.artist.createUpload));
+router.put('/artist/uploads/:id/content', requirePermission('artist.upload'), uploadId, h(c.artist.uploadContent));
+router.post('/artist/uploads/:id/withdraw', requirePermission('artist.upload'), uploadId, h(c.artist.withdraw));
+router.post('/artist/uploads/:id/reports', uploadId, v({
+  reportType: r.oneOf(['COPYRIGHT', 'IMPERSONATION', 'EXPLICIT_CONTENT', 'MISLABELLED', 'SAFETY', 'OTHER']),
+  details: r.str(10, 2000), evidenceRef: opt(r.str(9, 500, /^https:\/\//i)),
+}), h(c.artist.report));
+
 // ---------------------------------------------------------------- catalogue & search
 const listQ = {
   genreId: opt(r.int(1, 65535)), moodId: opt(r.int(1, 65535)), languageId: opt(r.int(0, 65535)),
@@ -80,6 +115,8 @@ const listQ = {
 router.get('/songs', v(listQ, 'query'), h(c.catalog.songs));
 router.get('/songs/:id', id, h(c.catalog.song));
 router.get('/artists/:id', id, h(c.catalog.artist));
+router.get('/artists/:id/artwork', id, h(c.catalog.artistArtwork));
+router.get('/albums/:id/artwork', id, h(c.catalog.albumArtwork));
 router.get('/albums/:id', id, h(c.catalog.album));
 router.get('/genres', h(c.catalog.genres));
 router.get('/moods', h(c.catalog.moods));
@@ -280,7 +317,7 @@ A.post('/pipeline/ingest', can('pipeline.run'), v({
 A.post('/pipeline/weekly', can('pipeline.run'), v({ force: opt(r.bool(), false) }), h(c.admin.weekly));
 A.post('/pipeline/trends', can('pipeline.run'), h(c.admin.trends));
 // providers and media
-const PCODE = v({ code: r.oneOf(['MUSICBRAINZ', 'TMDB', 'YOUTUBE_DATA', 'EXTERNAL_PREVIEW', 'LOCAL_MEDIA', 'AI']) }, 'params');
+const PCODE = v({ code: r.oneOf(['MUSICBRAINZ', 'TMDB', 'YOUTUBE_DATA', 'EXTERNAL_PREVIEW', 'THEAUDIODB', 'LOCAL_MEDIA', 'AI']) }, 'params');
 A.get('/providers', can('pipeline.view'), h(c.admin.providers));
 A.post('/providers/:code/test', can('pipeline.run'), PCODE, h(c.admin.testProvider));
 A.get('/films', can('catalog.write'), h(c.admin.films));
@@ -292,6 +329,16 @@ A.post('/songs/:id/media', can('catalog.write'), id, v({
   fileName: r.str(1, 121, /^[A-Za-z0-9][A-Za-z0-9._-]*$/), rights: opt(r.oneOf(['PERMITTED', 'ATTRIBUTION_REQUIRED']), 'PERMITTED'),
   attribution: opt(r.str(0, 200), null),
 }), h(c.admin.registerMedia));
+// Artist onboarding and rights review is separate from catalogue curation.
+A.get('/artist-applications', can('artist.review'), v({ status: opt(r.oneOf(['PENDING', 'APPROVED', 'REJECTED', 'WITHDRAWN', 'ALL']), 'PENDING'), limit: opt(r.int(1, 200), 100) }, 'query'), h(c.admin.artistApplications));
+A.post('/artist-applications/:id/decision', can('artist.review'), id, v({ action: r.oneOf(['APPROVE', 'REJECT']), note: opt(r.str(0, 500)) }), h(c.admin.decideArtistApplication));
+A.get('/artist-uploads', can('artist.review'), v({ status: opt(r.oneOf(['UPLOADING', 'QUARANTINED', 'PROCESSING', 'PENDING_REVIEW', 'APPROVED', 'PUBLISHED', 'REJECTED', 'TAKEN_DOWN', 'PROCESSING_FAILED', 'ALL']), 'PENDING_REVIEW'), limit: opt(r.int(1, 200), 100) }, 'query'), h(c.admin.artistUploads));
+A.post('/artist-uploads/:id/scan', can('artist.review'), uploadId, h(c.admin.scanArtistUpload));
+A.post('/artist-uploads/:id/decision', can('artist.review'), uploadId, v({ action: r.oneOf(['APPROVE', 'REJECT']), note: opt(r.str(0, 500)) }), h(c.admin.decideArtistUpload));
+A.post('/artist-uploads/:id/publish', can('artist.review'), uploadId, h(c.admin.publishArtistUpload));
+A.get('/artist-rights-reports', can('artist.review'), v({ status: opt(r.oneOf(['OPEN', 'UNDER_REVIEW', 'RESOLVED', 'DISMISSED', 'ALL']), 'OPEN'), limit: opt(r.int(1, 200), 100) }, 'query'), h(c.admin.artistRightsReports));
+A.post('/artist-rights-reports/:id/decision', can('artist.review'), id, v({ status: r.oneOf(['UNDER_REVIEW', 'RESOLVED', 'DISMISSED']), note: opt(r.str(0, 500)) }), h(c.admin.resolveArtistRightsReport));
+
 router.use('/admin', A);
 
 module.exports = router;

@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../hooks/useAuth';
-import { usePlayer } from '../hooks/usePlayer';
+import { usePlayer, isPlayable } from '../hooks/usePlayer';
 import { TrackList } from './Songs';
 import { MoodChip, Meter, Modal, Field } from './ui';
 import { Play, Save, Arrow } from './Icons';
 
-export const HERO_MOODS = ['Happy', 'Sad', 'Energetic', 'Calm', 'Romantic', 'Motivational', 'Nostalgic', 'Focused', 'Relaxed', 'Dreamy'];
+export const HERO_MOODS = ['Sad', 'Romantic', 'Dreamy', 'Reflective', 'Intense', 'Focused', 'Emotional', 'Energetic', 'Calm', 'Uplifting'];
 
 export function MoodTiles({ moods, selected, onToggle, only }) {
   const list = only ? only.map((n) => moods.find((m) => m.name === n)).filter(Boolean) : moods;
@@ -44,13 +44,15 @@ export function SaveListButton({ list, defaultName }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(defaultName || list.title || 'My mix');
   const [busy, setBusy] = useState(false);
-  if (!list.batchId && list.smartType !== 'MOST_REPLAYED') return null;
+  if (!list.batchId && list.smartType !== 'MOST_REPLAYED' && !list.songs?.length) return null;
   const save = async () => {
     setBusy(true);
     try {
       const p = list.batchId
         ? await api.saveBatch({ batchId: list.batchId, name: name.trim(), smartType: list.smartType })
-        : await api.saveSmart(list.smartType, name.trim());
+        : list.smartType === 'MOST_REPLAYED'
+          ? await api.saveSmart(list.smartType, name.trim())
+          : await api.createPlaylist({ name: name.trim(), songIds: list.songs.map((song) => song.id) });
       toast.success(`Saved “${p.name}” · ${p.songCount} songs`);
       setOpen(false);
       nav(`/playlist/${p.id}`);
@@ -63,7 +65,7 @@ export function SaveListButton({ list, defaultName }) {
         <Modal title="Save as playlist" onClose={() => setOpen(false)}>
           <div className="stack">
             <Field label="Name"><input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} /></Field>
-            <p className="small muted">The songs are saved in their ranked order. The list keeps a link to the recommendation it came from.</p>
+            <p className="small muted">The real catalogue records are saved in their current order. Audio is not included.</p>
             <div className="row" style={{ justifyContent: 'flex-end' }}>
               <button className="btn ghost" onClick={() => setOpen(false)}>Cancel</button>
               <button className="btn primary" onClick={save} disabled={busy || !name.trim()}>{busy ? 'Saving…' : 'Save playlist'}</button>
@@ -75,7 +77,7 @@ export function SaveListButton({ list, defaultName }) {
   );
 }
 
-/** "How MUSE read that": parsed phrases, chosen moods and the target sound. */
+/** "How LOOP read that": parsed phrases, chosen moods and the target sound. */
 export function Interpretation({ list }) {
   const it = list.interpretation;
   if (!it) return null;
@@ -83,7 +85,7 @@ export function Interpretation({ list }) {
   return (
     <div className="grid-2" style={{ alignItems: 'start' }}>
       <div className="card stack" style={{ '--gap': '12px' }}>
-        <h3>How MUSE read that</h3>
+        <h3>How LOOP read that</h3>
         {parse && parse.matches.length > 0 ? (
           <div className="stack" style={{ '--gap': '8px' }}>
             {parse.matches.map((m, i) => (
@@ -97,7 +99,7 @@ export function Interpretation({ list }) {
             ))}
           </div>
         ) : parse && parse.source === 'AI'
-          ? <p className="small soft">MUSE’s own word list didn’t recognise that, so the optional AI helper suggested these moods. Only moods that exist in MUSE are accepted.</p>
+          ? <p className="small soft">LOOP’s own word list didn’t recognise that, so the optional AI helper suggested these moods. Only moods that exist in LOOP are accepted.</p>
           : <p className="small soft">You picked these moods directly{list.context ? ` for ${list.context.name.toLowerCase()}` : ''}.</p>}
         <div className="row wrap" style={{ '--gap': '6px' }}>
           {it.moods.map((m) => <MoodChip key={m.id} name={m.name} emoji={m.emoji} color={m.color} weight={m.weight} />)}
@@ -126,7 +128,7 @@ export function RecHeader({ list, kicker }) {
         <p className="tiny muted">{list.songs.length} songs{list.model ? ` · ranked by ${list.model}` : ''}{list.incognito ? ' · private session' : ''}</p>
       </div>
       <div className="row wrap">
-        {list.songs.length > 0 && <button className="btn primary" onClick={() => player.play(list.songs[0], { queue: list.songs, origin, batchId: list.batchId })}><Play />Play all</button>}
+        {list.songs.some(isPlayable) && <button className="btn primary" onClick={() => player.play(list.songs.find(isPlayable), { queue: list.songs, origin, batchId: list.batchId })}><Play />Play available audio</button>}
         <SaveListButton list={list} />
       </div>
     </div>

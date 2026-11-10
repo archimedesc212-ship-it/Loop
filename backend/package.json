@@ -1,5 +1,5 @@
 {
-  "name": "muse-backend",
+  "name": "loop-backend",
   "version": "1.0.0",
   "private": true,
   "type": "commonjs",
@@ -17,7 +17,8 @@
     "demo:concurrency": "node scripts/concurrency-demo.js",
     "demo:explain": "node scripts/explain-demo.js",
     "docs:dictionary": "node scripts/generate-data-dictionary.js",
-    "db:verify": "node scripts/verify-db.js"
+    "db:verify": "node scripts/verify-db.js",
+    "artist:scan": "node scripts/scan-artist-uploads.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

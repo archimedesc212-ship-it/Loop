@@ -4,12 +4,12 @@ import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../hooks/useAuth';
-import { usePlayer } from '../hooks/usePlayer';
+import { usePlayer, isPlayable } from '../hooks/usePlayer';
 import { Cover } from '../components/Art';
 import { TrackList } from '../components/Songs';
 import { ErrorState, ListSkeleton, Empty, Modal, Field, PageHead } from '../components/ui';
 import { Play, Plus, X } from '../components/Icons';
-import { ago, longDuration, plural } from '../lib/format';
+import { ago, plural } from '../lib/format';
 
 function Mosaic({ covers, id }) {
   const list = (typeof covers === 'string' ? JSON.parse(covers) : covers) || [];
@@ -71,7 +71,7 @@ export default function Library() {
 
       {tab === 'smart' && smart.data && (
         <div className="stack" style={{ '--gap': '14px' }}>
-          <p className="soft" style={{ maxWidth: 680 }}>Each smart playlist is generated from your own listening, ratings and likes — open one to see it, then save it if you want to keep it.</p>
+          <p className="soft" style={{ maxWidth: 680 }}>Smart lists are selected from the real track metadata and audio features in your music archive.</p>
           <div className="grid-4">
             {smart.data.map((s) => (
               <Link key={s.type} to={`/mix/smart/${s.type}`} className="card stack" style={{ '--gap': '4px' }}>
@@ -89,7 +89,7 @@ export default function Library() {
         : history.data && (history.data.length ? (
           <TrackList songs={history.data} origin="LIBRARY" showRank={false}
             extra={(s) => <span className="tiny muted" style={{ minWidth: 112, textAlign: 'right' }}>{s.completed ? 'finished' : s.skipped ? 'skipped' : `${Math.round(s.completionPct)}%`}{s.replay ? ' · replay' : ''} · {ago(s.playedAt)}</span>} />
-        ) : <Empty title="Nothing played yet">{user.incognito ? 'Private sessions are not added to history.' : 'Your plays will appear here.'}</Empty>))}
+        ) : <Empty title="Listening history is unavailable">The uploaded files contain catalogue metadata, not playback events or audio streams.</Empty>))}
 
       {creating && (
         <Modal title="New playlist" onClose={() => setCreating(false)}>
@@ -114,7 +114,7 @@ export function PlaylistPage() {
   const remove = async (s) => {
     try {
       await api.removeFromPlaylist(p.id, s.id);
-      setData({ ...p, songs: p.songs.filter((x) => x.id !== s.id), songCount: p.songCount - 1, totalDurationSec: p.totalDurationSec - s.durationSec });
+      setData({ ...p, songs: p.songs.filter((x) => x.id !== s.id), songCount: p.songCount - 1, totalDurationSec: p.totalDurationSec === null ? null : p.totalDurationSec - (s.durationSec || 0) });
       toast.info(`Removed “${s.title}”`);
     } catch (e) { toast.error(e); }
   };
@@ -124,14 +124,14 @@ export function PlaylistPage() {
   };
   return (
     <div className="page stack" style={{ '--gap': '22px' }}>
-      <PageHead kicker={p.kind === 'MANUAL' ? 'Playlist' : p.kind === 'SMART' ? 'Smart playlist' : p.kind === 'WORLD' ? 'Saved MUSE World' : 'Saved mix'} title={p.name}
+      <PageHead kicker={p.kind === 'MANUAL' ? 'Playlist' : p.kind === 'SMART' ? 'Smart playlist' : p.kind === 'WORLD' ? 'Saved LOOP World' : 'Saved mix'} title={p.name}
         actions={<>
-          {p.songs.length > 0 && <button className="btn primary" onClick={() => player.play(p.songs[0], { queue: p.songs, origin: 'PLAYLIST' })}><Play />Play</button>}
+          {p.songs.some(isPlayable) && <button className="btn primary" onClick={() => player.play(p.songs.find(isPlayable), { queue: p.songs, origin: 'PLAYLIST' })}><Play />Play available audio</button>}
           {p.sourceBatchId && <Link className="btn" to={`/mix/batch/${p.sourceBatchId}`}>Original mix</Link>}
           <button className="btn ghost danger" onClick={del}><X />Delete</button>
         </>}>
         {p.description && <p className="soft">{p.description}</p>}
-        <p className="small muted">{plural(p.songCount, 'song')} · {longDuration(p.totalDurationSec)} · count and length kept by database triggers</p>
+        <p className="small muted">{plural(p.songCount, 'song')} · track duration is not included in the supplied dataset</p>
       </PageHead>
       {p.songs.length ? <TrackList songs={p.songs} origin="PLAYLIST" onRemove={p.kind === 'MANUAL' || p.kind === 'SAVED_MIX' ? remove : undefined} />
         : <Empty title="This playlist is empty">Use the + button on any song to add it here.</Empty>}

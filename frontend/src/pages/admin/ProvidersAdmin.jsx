@@ -151,7 +151,7 @@ export function ProvidersAdmin() {
     <div className="stack" style={{ '--gap': '22px' }}>
       <section className="panel stack">
         <h3>External providers</h3>
-        <p className="small soft">Every provider is off until its settings are in <code>.env</code> and the API is restarted. MUSE runs fully without any of them. Secret values are never shown here. See <code>docs/PROVIDERS.md</code>.</p>
+        <p className="small soft">Every provider is off until its settings are in <code>.env</code> and the API is restarted. LOOP runs fully without any of them. Secret values are never shown here. See <code>docs/PROVIDERS.md</code>.</p>
         <ProviderTable />
       </section>
       <section className="panel stack">

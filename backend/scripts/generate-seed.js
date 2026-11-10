@@ -59,7 +59,7 @@ emit(`-- =====================================================================
 --  Every artist, film, album and song is fictional. No lyrics, recordings or
 --  artwork are stored; album art is drawn from two stored colours and
 --  playback uses a generated sketch (see music_sources.MUSE_SKETCH).
---  Demo logins:  aarav / Listener@123   kavya / Curator@123   admin / Admin@123
+--  Demo login is provisioned by migration 0006_varsha_demo_account.sql.
 -- =====================================================================
 SET NAMES utf8mb4;
 SET @muse_actor_id = NULL;

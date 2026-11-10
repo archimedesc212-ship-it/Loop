@@ -20,7 +20,7 @@ test('CHECK constraints reject impossible values', async () => {
   await assert.rejects(h.query('UPDATE audio_features SET energy = 1.5 WHERE song_id = ? AND is_current = 1', [s.song_id]), code(3819));
   await assert.rejects(h.query('UPDATE audio_features SET tempo_bpm = 400 WHERE song_id = ? AND is_current = 1', [s.song_id]), code(3819));
   await assert.rejects(h.query("UPDATE songs SET explicit = 1, content_rating = 'ALL' WHERE song_id = ?", [s.song_id]), code(3819));
-  await assert.rejects(h.query("UPDATE users SET email = 'not-an-email' WHERE username = 'aarav'"), code(3819));
+  await assert.rejects(h.query("UPDATE users SET email = 'not-an-email' WHERE username = 'varsha'"), code(3819));
 });
 
 test('foreign keys protect referenced rows', async () => {

@@ -1,11 +1,11 @@
-# MUSE — Music Mood Intelligence & Recommendation Database System
+# LOOP — Mood-aware Music Discovery
 
-MUSE is a full-stack music recommendation system whose intelligence lives in a
+LOOP is a full-stack music discovery and recommendation platform whose intelligence lives in a
 **MySQL 8 database**. You tell it a mood ("calm", "not happy, need something for studying"),
 a context (Focus, Workout, Late night) or just press play, and it recommends songs
 — each with the real reasons it was chosen. Every play, skip, rating and like is
 stored and folded back into a decaying model of your taste. It also generates a
-weekly, versioned **MUSE World** for each listener, offers a **private session**
+weekly, versioned **LOOP World** for each listener, offers a **private session**
 that never touches the permanent profile, and gives curators and admins an
 ingestion pipeline, a review queue, a database health panel and an audit log.
 
@@ -18,18 +18,24 @@ It is a BTech CSE DBMS project, so the database does the heavy lifting:
 Data API, a licensed preview provider and an optional AI helper are wired as
 separate adapters that stay off until configured — see [docs/PROVIDERS.md](docs/PROVIDERS.md).
 
-> **Moods describe music, not people.** MUSE maps words and audio features to musical moods. It never claims to diagnose how anyone feels.
+> **Moods describe music, not people.** LOOP maps words and audio features to musical moods. It never claims to diagnose how anyone feels.
 > **Region is a signal, not a stereotype.** A listener's region adds a small, configurable weight; it never decides their taste.
-> **No copyrighted audio, lyrics or artwork.** The catalogue is a fictional, project-authored dataset (CC0). Playback of demo songs is a labelled **demo sketch** synthesised in the browser from each song's stored audio features — never presented as the recording. Songs without a permitted source are shown as *metadata only* and are not played.
+> **The public static archive uses the real uploaded music dataset.** It contains 28,372 track-metadata records from 1950–2019 (CC BY 4.0); the lyrics column is excluded. The upload contains no recordings, streaming URLs, track durations, language labels, albums or film metadata, so static archive playback is disabled and no fake songs or recordings are shown. The separate MySQL development seed remains fictional test data.
 
 ---
+
+## Public static archive
+
+Cloudflare Workers and Vercel static builds run the dataset-backed archive adapter. The root `npm run build` first verifies the supplied CSV by its pinned SHA-256, then generates `frontend/public/data/music-catalog.json` for the Vite build. It publishes 28,372 actual track records, 5,426 artists and seven genres. Search, catalogue browsing, audio-feature matching, mood exploration and local playlists use those records. Mood names are estimates from the source topic/audio features, not predictions from a trained AI model. No audio is bundled; playback controls are disabled and song pages offer an external recording search.
+
+The Express/MySQL development and integration-test path remains a separate profile with a fictional seed catalogue. It is not what the public static archive reads. Its Kaggle staging importer is also separate from the static catalogue generator.
 
 ## Contents
 
 - [Features](#features)
 - [Tech stack](#tech-stack)
 - [Quick start](#quick-start)
-- [Demo accounts](#demo-accounts)
+- [Test access](#test-access)
 - [Project structure](#project-structure)
 - [Scripts](#scripts)
 - [How it works (short)](#how-it-works-short)
@@ -103,28 +109,21 @@ cp .env.example .env
 node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"   # a SESSION_SECRET
 ```
 
-**3. Install, build the database, build the web app, run.**
+**3. Install, safely migrate an existing database, build the web app, run.**
 
 ```bash
 npm install
-npm run setup        # db:setup (baseline schema → seed → migrations → first weekly pipeline) + frontend build
+npm run setup        # generate reference seed SQL, apply pending migrations, build frontend
 npm start            # API + built web app on http://localhost:4000
 ```
 
 For development with hot reload: `npm run dev` (API on :4000, Vite on :5173 with an `/api` proxy).
 
-`npm run db:setup` drops and recreates the `muse` database, so it is also the way to reset the demo. To upgrade an existing database without losing data, use `npm run db:migrate`. Every variable is described in [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md); production, backup and recovery in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+`npm run setup` is the normal non-destructive path: it generates reference seed SQL, applies pending migrations, and builds the frontend. The explicit `npm run db:reset:unsafe` command drops and recreates the `muse` database and is only for a brand-new, verified-empty development database. Never use it for the existing production database. To upgrade an existing database, use `npm run db:migrate`. Every variable is described in [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md); production, backup and recovery in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-## Demo accounts
+## Test access
 
-| Username | Password | Role | Notes |
-|---|---|---|---|
-| `aarav` | `Listener@123` | Listener | ~290 plays; Telugu and Hindi; leans motivational and energetic |
-| `nila` | `Listener@123` | Listener | `FAMILY` content filter: never sees explicit songs |
-| `kavya` | `Curator@123` | Curator | Catalogue, moods, review queue; cannot manage users or tune models |
-| `admin` | `Admin@123` | Admin | Everything, including users, model weights and the audit log |
-
-Other seeded listeners use `Listener@123`. You can also register a new account to see onboarding and cold start.
+A listener test account is provisioned by versioned database migrations. Apply pending migrations to the existing database before testing sign-in. Do not publish test credentials in the public login interface or repository documentation.
 
 ## Project structure
 
@@ -155,7 +154,8 @@ muse/
 
 | Command | What it does |
 |---|---|
-| `npm run setup` | Build the database from scratch and build the web app |
+| `npm run setup` | Generate reference seed SQL, apply pending migrations, and build the web app (non-destructive) |
+| `npm run db:reset:unsafe` | Explicit destructive reset for a new, verified-empty development database only |
 | `npm run db:setup` | (Re)create the database only |
 | `npm run db:migrate` / `npm run db:status` | Apply pending migrations / list applied and pending ones |
 | `npm run db:verify` | In a throw-away database: prove upgrade = fresh install, re-run safety, and the empty-catalogue tests |
@@ -232,6 +232,7 @@ Latest results, the full test-case table and the browser walk-throughs are in [d
 | [docs/CONCURRENCY.md](docs/CONCURRENCY.md) | Transactions, isolation levels, locking, the deadlock fix, experiments |
 | [docs/SECURITY.md](docs/SECURITY.md) | Sessions, CSRF, RBAC, least privilege, privacy, content rights, known gaps |
 | [docs/PROVIDERS.md](docs/PROVIDERS.md) | Provider integration guide, final API credentials checklist, step-by-step key setup |
+| [docs/DATASETS.md](docs/DATASETS.md) | Safe Kaggle 1950–2019 music-feature dataset import, CC BY 4.0 attribution, and limits (metadata/features only; no audio) |
 | [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Every environment variable |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production configuration, upgrades, backup and recovery |
 | [docs/STATUS.md](docs/STATUS.md) | Implemented / tested / partial / blocked matrix and limitations |

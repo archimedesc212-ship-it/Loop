@@ -1,6 +1,5 @@
-// "How well does this song fit each mood?" — the signed-in user's 0–100 ratings,
-// shown next to the average of all listeners and the AI's own prediction, which are
-// labelled separately and never mixed. Moods come from the database (GET …/mood-ratings).
+// "How well does this song fit each mood?" — local 0–100 ratings next to the
+// dataset topic estimate. The source file does not contain an AI model or community ratings.
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
@@ -8,7 +7,7 @@ import { useToast } from '../hooks/useToast';
 import { ErrorState, Skeleton } from './ui';
 import { validatePct, formatPct, formatAi, ratingCount } from '../lib/moodRating';
 
-/** Moods worth showing first: the AI tagged them, someone rated them, or the user did. */
+/** Moods worth showing first: the source data estimates them, someone rated them, or the user did. */
 const relevant = (m) => m.aiConfidence !== null || m.community || m.mine;
 
 export function MoodRatingRow({ mood, draft, error, disabled, onChange, onRemove, removing }) {
@@ -30,11 +29,11 @@ export function MoodRatingRow({ mood, draft, error, disabled, onChange, onRemove
             <span className="num small">{formatPct(mood.community.average)}</span>
             <span className="tiny muted">{ratingCount(mood.community.count)}</span>
           </>
-        ) : <span className="tiny muted">No ratings yet</span>}
+        ) : <span className="tiny muted">No community data</span>}
       </div>
 
-      <div className="mr-ai tiny muted" title="The mood model's prediction, not a user rating">
-        {mood.aiConfidence !== null ? <>AI {formatAi(mood.aiConfidence)}</> : <>AI —</>}
+      <div className="mr-ai tiny muted" title="Dataset topic and audio-feature estimate, not an AI model prediction">
+        {mood.aiConfidence !== null ? <>Dataset {formatAi(mood.aiConfidence)}</> : <>Dataset —</>}
       </div>
 
       <div className="mr-mine">
@@ -118,8 +117,7 @@ export default function MoodRatings({ songId, privateSession = false }) {
         <div className="stack" style={{ '--gap': '4px' }}>
           <h3 id="mr-title">How well does it fit each mood?</h3>
           <p className="tiny muted" style={{ maxWidth: '62ch' }}>
-            Rate each mood from 0 to 100 %. <b>Listeners</b> is the average of everyone's ratings; <b>AI</b> is the mood model's own
-            prediction. Your ratings never change the AI's.
+            Rate each mood from 0 to 100 %. <b>Dataset</b> is an estimate from the source topic and audio-feature fields. Your own ratings are stored locally in this browser; the uploaded archive contains no community-rating data.
           </p>
         </div>
         <span className="tiny muted">{data.totals.ratings ? `${ratingCount(data.totals.ratings)} from ${data.totals.raters} listener${data.totals.raters > 1 ? 's' : ''}` : 'No mood ratings for this song yet'}</span>
@@ -127,7 +125,7 @@ export default function MoodRatings({ songId, privateSession = false }) {
 
       {paused && <div className="tiny" style={{ color: 'var(--private)' }}>Mood ratings are paused during a private session, so your profile stays unchanged.</div>}
 
-      <div className="mr-head tiny muted" aria-hidden="true"><span>Mood</span><span>Listeners</span><span>AI</span><span>Your rating</span></div>
+      <div className="mr-head tiny muted" aria-hidden="true"><span>Mood</span><span>Community</span><span>Dataset</span><span>Your rating</span></div>
       <div className="mr-list">
         {list.map((m) => (
           <MoodRatingRow key={m.id} mood={m} draft={drafts[m.id]} error={errors[m.id]} disabled={paused || saving}

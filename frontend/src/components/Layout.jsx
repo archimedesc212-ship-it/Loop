@@ -13,20 +13,18 @@ import { registerMoodColors, LikeButton } from './Songs';
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
   { to: '/mood', label: 'Mood', short: 'Mood', icon: Icon.Mood },
-  { to: '/world', label: 'MUSE World', short: 'World', icon: Icon.Globe },
+  { to: '/world', label: 'LOOP World', short: 'World', icon: Icon.Globe },
   { to: '/search', label: 'Search', short: 'Search', icon: Icon.Search },
   { to: '/library', label: 'Library', short: 'Library', icon: Icon.Library },
   { to: '/profile', label: 'Listening profile', short: 'Profile', icon: Icon.Chart },
 ];
 
 function Sidebar() {
-  const { user, can, signOut } = useAuth();
-  const player = usePlayer();
-  const nav = useNavigate();
+  const { user, can } = useAuth();
   const admin = can('health.view') || can('catalog.write');
   return (
     <aside className="sidebar" aria-label="Main">
-      <Link to="/" className="brand"><Icon.BrandMark className="brand-mark" />MUSE</Link>
+      <Link to="/" className="brand"><Icon.BrandMark className="brand-mark" />LOOP</Link>
       {NAV.map(({ to, label, icon: Ico, end }) => (
         <NavLink key={to} to={to} end={end} className="nav-link"><Ico />{label}</NavLink>
       ))}
@@ -36,17 +34,21 @@ function Sidebar() {
           <NavLink to="/admin" className="nav-link"><Icon.Shield />Admin</NavLink>
         </>
       )}
+      <NavLink to={user.role === 'ARTIST' ? '/artist/studio' : '/artist/apply'} className="nav-link">{user.role === 'ARTIST' ? <Icon.Music /> : <Icon.Mic />} {user.role === 'ARTIST' ? 'Artist Studio' : 'Become an artist'}</NavLink>
       <div className="sidebar-foot stack" style={{ '--gap': '10px' }}>
         <div className="row" style={{ '--gap': '10px' }}>
           <span className="avatar">{user.displayName.slice(0, 1)}</span>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.displayName}</div>
-            <div className="tiny muted">@{user.username}</div>
+            <div className="tiny muted">{user.email?.endsWith('@guest.loop.invalid') ? 'Guest listener' : (user.roleName || 'Listener')}</div>
           </div>
         </div>
+        {user.email?.endsWith('@guest.loop.invalid') && <div className="row" style={{ '--gap': '4px' }}>
+          <Link to="/login" className="btn ghost sm grow">Sign in</Link>
+          <Link to="/register" className="btn primary sm grow">Create account</Link>
+        </div>}
         <div className="row" style={{ '--gap': '4px' }}>
           <Link to="/settings" className="btn ghost sm grow"><Icon.Settings />Settings</Link>
-          <button className="btn ghost sm" onClick={async () => { await player.reset(); await signOut(); nav('/login'); }} aria-label="Sign out"><Icon.Logout /></button>
         </div>
       </div>
     </aside>
@@ -78,7 +80,7 @@ function PrivateToggle() {
         toast.success(`Private session ended — ${r.purged.events} plays and ${r.purged.lists} mixes deleted`);
       } else {
         await api.startIncognito();
-        toast.info('Private session on. MUSE still uses your taste, but nothing you do now is saved to your profile.');
+        toast.info('Private session on. Mood ratings are paused, and this archive view does not collect playback history.');
       }
       await refresh();
     } catch (e) { toast.error(e); } finally { setBusy(false); }
@@ -103,7 +105,7 @@ function TopBar() {
     <div className="topbar">
       <form className="search-box" onSubmit={submit} role="search">
         <Icon.Search />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Songs, artists, moods, languages…" aria-label="Search" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Track titles, artists, genres, moods…" aria-label="Search" />
       </form>
       <div className="grow" />
       <PrivateToggle />
@@ -227,7 +229,7 @@ export function OfflineBanner() {
   return (
     <div className="offline-banner" role="status" aria-live="polite">
       <Icon.Wifi width={18} height={18} />
-      <span>{browserOnline ? 'MUSE can’t reach its server right now. What you see may be out of date; actions will fail until it is back.' : 'You’re offline. Reconnect to keep listening and saving.'}</span>
+      <span>{browserOnline ? 'LOOP can’t reach its server right now. What you see may be out of date; actions will fail until it is back.' : 'You’re offline. Reconnect to keep listening and saving.'}</span>
     </div>
   );
 }
@@ -247,7 +249,7 @@ export default function Layout() {
         {user.incognito && (
           <div className="private-banner" role="status">
             <Icon.EyeOff width={18} height={18} style={{ color: 'var(--private)' }} />
-            <span className="grow">Private session. Recommendations read your taste, but plays, ratings, searches and playlists are not saved. <Link to="/private" style={{ color: 'var(--private)', fontWeight: 600 }}>See what this session remembers</Link></span>
+            <span className="grow">Private session. No listening history or audio playback is collected in this metadata-only archive view; mood ratings are paused. <Link to="/private" style={{ color: 'var(--private)', fontWeight: 600 }}>See what this session remembers</Link></span>
           </div>
         )}
         <Outlet />

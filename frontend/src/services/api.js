@@ -1,3 +1,4 @@
+import { demoRequest } from '../lib/demoMode';
 // Thin fetch wrapper. Every call goes to the Express API (/api/...), which
 // queries MySQL; the frontend never holds data it did not get from there.
 //
@@ -5,6 +6,8 @@
 // scripts cannot read. State-changing requests also send the CSRF token from the
 // readable `muse_csrf` cookie (double-submit, verified server-side with an HMAC).
 // No token is ever stored in localStorage.
+
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE !== 'false';
 
 export class ApiError extends Error {
   constructor(status, code, message, details) {
@@ -50,24 +53,40 @@ export function buildHeaders(method, hasBody, cookieSource) {
 const QUIET_401 = new Set(['/auth/me', '/auth/login', '/auth/register']);
 
 export async function request(method, path, body) {
+  // Presentation mode is intentionally database-free: all demo data stays in this browser.
+  if (isDemoMode) return demoRequest(method, path, body);
   let res;
+  let text;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
   try {
     res = await fetch(`/api${path}`, {
       method, credentials: 'same-origin', headers: buildHeaders(method, body !== undefined),
       body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
     });
-  } catch {
+    text = await res.text();
+  } catch (err) {
     onNetwork(false);
-    throw new ApiError(0, 'NETWORK', 'Can’t reach the MUSE server. Check your connection or that the API is running.');
+    if (err && err.name === 'AbortError') {
+      throw new ApiError(0, 'TIMEOUT', 'LOOP is taking too long to respond. Its server may be unavailable. Please try again shortly.');
+    }
+    throw new ApiError(0, 'NETWORK', 'Can’t reach the LOOP server. Check your connection or try again shortly.');
+  } finally {
+    clearTimeout(timeoutId);
   }
-  onNetwork(true);
-  const text = await res.text();
+  onNetwork(res.status < 500);
   let data = null;
   try { data = text ? JSON.parse(text) : null; } catch { data = null; }
   if (!res.ok) {
-    const e = data && data.error ? data.error : { code: `HTTP_${res.status}`, message: 'Something went wrong.' };
+    const fallbackMessage = [502, 503, 504].includes(res.status)
+      ? 'LOOP is temporarily unavailable. Please try again shortly.'
+      : res.status === 404
+        ? 'This LOOP endpoint was not found. Reload the page and try again.'
+        : 'Something went wrong.';
+    const e = data && data.error ? data.error : { code: `HTTP_${res.status}`, message: fallbackMessage };
     if (res.status === 401 && !QUIET_401.has(path)) onUnauthorized(e);
-    throw new ApiError(res.status, e.code, e.message, e.details);
+    throw new ApiError(res.status, e.code, e.message || fallbackMessage, e.details);
   }
   return data;
 }
@@ -77,12 +96,23 @@ const qs = (o = {}) => {
   return p.length ? `?${new URLSearchParams(p).toString()}` : '';
 };
 
+let pendingGuestSession = null;
+function createGuestSession() {
+  if (!pendingGuestSession) {
+    pendingGuestSession = request('POST', '/auth/session', {}).finally(() => {
+      pendingGuestSession = null;
+    });
+  }
+  return pendingGuestSession;
+}
+
 export const api = {
   // auth & profile
-  login: (login, password) => request('POST', '/auth/login', { login, password }),
-  register: (b) => request('POST', '/auth/register', b),
   me: () => request('GET', '/auth/me'),
   session: () => request('GET', '/auth/session'),
+  register: (b) => request('POST', '/auth/register', b),
+  login: (b) => request('POST', '/auth/login', b),
+  createGuestSession,
   logout: () => request('POST', '/auth/logout', {}),
   logoutAll: () => request('POST', '/auth/logout-all', {}),
   sessions: () => request('GET', '/me/sessions'),
@@ -97,6 +127,8 @@ export const api = {
   songs: (q) => request('GET', `/songs${qs(q)}`),
   song: (id) => request('GET', `/songs/${id}`),
   artist: (id) => request('GET', `/artists/${id}`),
+  artistArtwork: (id) => request('GET', `/artists/${id}/artwork`),
+  albumArtwork: (id) => request('GET', `/albums/${id}/artwork`),
   album: (id) => request('GET', `/albums/${id}`),
   film: (id) => request('GET', `/films/${id}`),
   language: (id) => request('GET', `/languages/${id}`),
@@ -153,6 +185,35 @@ export const api = {
   activity: () => request('GET', '/insights/activity'),
   journey: (period) => request('GET', `/insights/journey${qs({ period })}`),
   preferences: () => request('GET', '/insights/preferences'),
+  // independent artist onboarding and private audio upload
+  artist: {
+    profile: () => request('GET', '/artist/me'),
+    apply: (b) => request('POST', '/artist/applications', b),
+    createUpload: (b) => request('POST', '/artist/uploads', b),
+    withdraw: (id) => request('POST', `/artist/uploads/${id}/withdraw`, {}),
+    report: (id, b) => request('POST', `/artist/uploads/${id}/reports`, b),
+    uploadFile: async (id, file) => {
+      if (isDemoMode) throw new ApiError(400, 'DEMO_MODE', 'Artist uploads require the connected LOOP API. Set VITE_DEMO_MODE=false to use server-backed features.');
+      let response;
+      try {
+        response = await fetch(`/api/artist/uploads/${id}/content`, {
+          method: 'PUT', credentials: 'same-origin',
+          headers: { ...buildHeaders('PUT', false), 'Content-Type': file.type || 'application/octet-stream' },
+          body: file,
+        });
+      } catch {
+        throw new ApiError(0, 'NETWORK', 'The upload connection was interrupted. The private upload intent can be retried only if it is still open.');
+      }
+      const raw = await response.text();
+      let data = null;
+      try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+      if (!response.ok) {
+        const e = data?.error || { code: `HTTP_${response.status}`, message: 'The upload could not be completed.' };
+        throw new ApiError(response.status, e.code, e.message, e.details);
+      }
+      return data;
+    },
+  },
   // private sessions & worlds
   incognito: () => request('GET', '/incognito'),
   startIncognito: (moodId) => request('POST', '/incognito', moodId ? { moodId } : {}),
@@ -205,5 +266,13 @@ export const api = {
     media: () => request('GET', '/admin/media'),
     checkMedia: () => request('POST', '/admin/media/check', {}),
     registerMedia: (songId, b) => request('POST', `/admin/songs/${songId}/media`, b),
+    artistApplications: (status = 'PENDING') => request('GET', `/admin/artist-applications${qs({ status })}`),
+    decideArtistApplication: (id, b) => request('POST', `/admin/artist-applications/${id}/decision`, b),
+    artistUploads: (status = 'ALL') => request('GET', `/admin/artist-uploads${qs({ status })}`),
+    scanArtistUpload: (id) => request('POST', `/admin/artist-uploads/${id}/scan`, {}),
+    decideArtistUpload: (id, b) => request('POST', `/admin/artist-uploads/${id}/decision`, b),
+    publishArtistUpload: (id) => request('POST', `/admin/artist-uploads/${id}/publish`, {}),
+    artistRightsReports: (status = 'OPEN') => request('GET', `/admin/artist-rights-reports${qs({ status })}`),
+    resolveArtistRightsReport: (id, b) => request('POST', `/admin/artist-rights-reports/${id}/decision`, b),
   },
 };

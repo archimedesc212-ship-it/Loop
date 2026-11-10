@@ -88,11 +88,11 @@ test('requests from another site are rejected by the Origin check; sign-in inclu
   assert.equal(r.status, 403);
   assert.equal(r.body.error.code, 'ORIGIN_REJECTED');
   const login = await fetch(`${base}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'https://evil.example' },
-    body: JSON.stringify({ login: 'aarav', password: 'Listener@123' }) });
+    body: JSON.stringify({ login: 'varsha', password: 'Varsha@27' }) });
   assert.equal(login.status, 403);
   // an allowed dev origin (CORS_ORIGIN) still works
   const okLogin = await fetch(`${base}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://localhost:5173', 'X-Auth-Mode': 'bearer' },
-    body: JSON.stringify({ login: 'aarav', password: 'Listener@123' }) });
+    body: JSON.stringify({ login: 'varsha', password: 'Varsha@27' }) });
   assert.equal(okLogin.status, 200);
   assert.equal(okLogin.headers.get('access-control-allow-origin'), 'http://localhost:5173');
   assert.equal(okLogin.headers.get('access-control-allow-credentials'), 'true');
@@ -251,13 +251,30 @@ test('ended sessions are purged by the housekeeping job', async () => {
   assert.equal((await h.one('SELECT COUNT(*) AS n FROM auth_sessions WHERE user_id = ?', [u.id])).n, 0);
 });
 
-test('GET /auth/session answers 200 for anonymous and signed-in callers', async () => {
+test('GET /auth/session is read-only; POST bootstraps a guest session', async () => {
   const anon = await fetch(`${base}/auth/session`);
   assert.equal(anon.status, 200);
   assert.deepEqual(await anon.json(), { authenticated: false });
+
   const stale = await fetch(`${base}/auth/session`, { headers: { Cookie: 'muse_session=not-a-real-token-xxxxxxxxxxxxxxxx' } });
   assert.equal(stale.status, 200);
   assert.deepEqual(await stale.json(), { authenticated: false });
+
+  const guest = await fetch(`${base}/auth/session`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{}',
+  });
+  assert.equal(guest.status, 201);
+  const guestBody = await guest.json();
+  assert.equal(guestBody.authenticated, true);
+  assert.equal(guestBody.displayName, 'Guest');
+  const guestCookie = guest.headers.getSetCookie().find((cookie) => cookie.startsWith('muse_session='));
+  assert.ok(guestCookie, 'guest bootstrap sets an httpOnly session cookie');
+  const active = await fetch(`${base}/auth/session`, { headers: { Cookie: guestCookie.split(';')[0] } });
+  assert.equal(active.status, 200);
+  assert.equal((await active.json()).authenticated, true);
+
   const u = await h.newUser({ onboard: false });
   const r = await h.api('GET', '/auth/session', { token: u.token });
   assert.equal(r.status, 200);

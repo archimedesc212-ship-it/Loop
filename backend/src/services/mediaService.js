@@ -14,6 +14,7 @@
 const { query, one } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { localMedia, externalPreview } = require('../providers');
+const { artistTerritoryAllows } = require('../utils/artistRights');
 
 const LABELS = {
   USER_LOCAL: 'Licensed local file',
@@ -25,8 +26,13 @@ const LABELS = {
 async function candidates(songId) {
   return query(
     `SELECT sm.media_id, sm.media_type, sm.uri, sm.rights_status, sm.availability,
-            COALESCE(sm.attribution, ms.attribution_text) AS attribution, ms.code AS source, ms.name AS source_name
+            COALESCE(sm.attribution, ms.attribution_text) AS attribution, ms.code AS source, ms.name AS source_name,
+            au.territory_codes, au.status AS artist_upload_status, aa.account_status AS artist_account_status,
+            (au.licence_start IS NULL OR au.licence_start <= CURRENT_DATE) AND
+            (au.licence_end IS NULL OR au.licence_end >= CURRENT_DATE) AS artist_rights_date_active
        FROM song_media sm JOIN music_sources ms ON ms.source_id = sm.source_id
+       LEFT JOIN artist_uploads au ON au.media_id = sm.media_id
+       LEFT JOIN artist_accounts aa ON aa.user_id = au.user_id AND aa.artist_id = au.artist_id
       WHERE sm.song_id = ? AND ms.is_enabled = 1 AND sm.rights_status <> 'RESTRICTED' AND sm.availability <> 'UNAVAILABLE'
       ORDER BY sm.priority, ms.priority, sm.media_id`, [songId]);
 }
@@ -45,12 +51,13 @@ const out = (m, extra = {}) => ({
  * Pick the first working source for a song. Returns a media descriptor, or null
  * when nothing can play it (metadata-only). `fetchImpl` is for tests.
  */
-async function resolve(song, { fetchImpl } = {}) {
+async function resolve(song, { fetchImpl, user } = {}) {
   for (const m of await candidates(song.song_id)) {
+    if (m.source === 'ARTIST_UPLOAD' && (m.artist_upload_status !== 'PUBLISHED' || m.artist_account_status !== 'ACTIVE' || !m.artist_rights_date_active || !artistTerritoryAllows(m.territory_codes, user))) continue;
     if (m.media_type === 'USER_LOCAL') {
-      if (m.source === 'LOCAL_MEDIA' && localMedia.available(m.uri)) {
+      if (['LOCAL_MEDIA', 'ARTIST_UPLOAD'].includes(m.source) && localMedia.available(m.uri)) {
         if (m.availability !== 'AVAILABLE') await mark(m.media_id, 'AVAILABLE');
-        return out(m, { uri: `/api/media/${m.media_id}` });
+        return out(m, { label: m.source === 'ARTIST_UPLOAD' ? 'Artist upload' : LABELS[m.media_type], uri: `/api/media/${m.media_id}` });
       }
       await mark(m.media_id, 'UNAVAILABLE');
       continue;
@@ -74,13 +81,19 @@ async function resolve(song, { fetchImpl } = {}) {
 }
 
 /** For GET /api/media/:id — the local file behind a registered USER_LOCAL media row. */
-async function localFile(mediaId) {
+async function localFile(mediaId, user) {
   const m = await one(
-    `SELECT sm.media_id, sm.song_id, sm.uri, s.status, s.explicit, s.content_rating
+    `SELECT sm.media_id, sm.song_id, sm.uri, s.status, s.explicit, s.content_rating, ms.code AS source,
+            au.territory_codes, au.status AS artist_upload_status, aa.account_status AS artist_account_status,
+            (au.licence_start IS NULL OR au.licence_start <= CURRENT_DATE) AND
+            (au.licence_end IS NULL OR au.licence_end >= CURRENT_DATE) AS artist_rights_date_active
        FROM song_media sm JOIN music_sources ms ON ms.source_id = sm.source_id JOIN songs s ON s.song_id = sm.song_id
-      WHERE sm.media_id = ? AND sm.media_type = 'USER_LOCAL' AND ms.code = 'LOCAL_MEDIA' AND ms.is_enabled = 1
+       LEFT JOIN artist_uploads au ON au.media_id = sm.media_id
+       LEFT JOIN artist_accounts aa ON aa.user_id = au.user_id AND aa.artist_id = au.artist_id
+      WHERE sm.media_id = ? AND sm.media_type = 'USER_LOCAL' AND ms.code IN ('LOCAL_MEDIA','ARTIST_UPLOAD') AND ms.is_enabled = 1
         AND sm.rights_status <> 'RESTRICTED'`, [mediaId]);
   if (!m || m.status !== 'ACTIVE') throw ApiError.notFound('Media');
+  if (m.source === 'ARTIST_UPLOAD' && (m.artist_upload_status !== 'PUBLISHED' || m.artist_account_status !== 'ACTIVE' || !m.artist_rights_date_active || !artistTerritoryAllows(m.territory_codes, user))) throw ApiError.notFound('Media');
   const f = localMedia.available(m.uri) ? localMedia.resolveFile(m.uri) : null;
   if (!f) { await mark(m.media_id, 'UNAVAILABLE'); throw new ApiError(404, 'MEDIA_UNAVAILABLE', 'This audio file is no longer available.'); }
   return { ...f, song: m };
@@ -113,7 +126,7 @@ async function registerLocal(songId, fileName, { rights = 'PERMITTED', attributi
 async function checkLocal() {
   const rows = await query(
     `SELECT sm.media_id, sm.uri, sm.availability FROM song_media sm JOIN music_sources ms ON ms.source_id = sm.source_id
-      WHERE sm.media_type = 'USER_LOCAL' AND ms.code = 'LOCAL_MEDIA'`);
+      WHERE sm.media_type = 'USER_LOCAL' AND ms.code IN ('LOCAL_MEDIA','ARTIST_UPLOAD')`);
   let available = 0; let unavailable = 0;
   for (const r of rows) {
     const ok = localMedia.available(r.uri);

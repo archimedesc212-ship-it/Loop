@@ -10,7 +10,7 @@ describe('Intro', () => {
 
   it('is a labelled dialog whose Skip button has focus from the start', () => {
     render(<Intro onDone={() => {}} />);
-    expect(screen.getByRole('dialog', { name: 'MUSE introduction' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'LOOP introduction' })).toBeTruthy();
     expect(document.activeElement.textContent).toBe('Skip intro');
     expect(screen.getByText('Every mood has a sound.')).toBeTruthy();
   });
@@ -39,7 +39,7 @@ describe('Intro', () => {
     render(<Intro onDone={done} />);
     // each step schedules the next after it renders, so advance one step at a time
     act(() => { vi.advanceTimersByTime(1700); });
-    expect(screen.getByText('Tell MUSE how you feel.')).toBeTruthy();
+    expect(screen.getByText('Tell LOOP how you feel.')).toBeTruthy();
     act(() => { vi.advanceTimersByTime(1700); });
     act(() => { vi.advanceTimersByTime(1700); });
     expect(screen.getByText('Music Mood Intelligence')).toBeTruthy();

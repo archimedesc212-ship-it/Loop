@@ -31,11 +31,11 @@ export default function PrivateSession() {
     <div className="page stack" style={{ '--gap': '22px', maxWidth: 900 }}>
       <PageHead kicker="Private session" title={data && data.active ? 'Listening privately' : 'Private sessions'}
         actions={<button className="btn" onClick={toggle} style={data && data.active ? { color: 'var(--private)' } : undefined}><EyeOff />{data && data.active ? 'End private session' : 'Start private session'}</button>}>
-        <p className="lead">Your permanent profile is <b>read</b> so recommendations still sound like you, but nothing you do here is <b>written</b> to it: no history, no ratings, no likes, no searches, no preference changes. The database itself rejects permanent plays while the session is active.</p>
+        <p className="lead">This archive view contains metadata rather than audio streams, so it does not collect listening history. A private session pauses mood ratings in this browser while you explore the catalogue.</p>
       </PageHead>
       {loading && <Skeleton h={200} />}
       {error && <ErrorState error={error} onRetry={reload} />}
-      {data && !data.active && <Empty title="No private session is running">Start one from here or the Private button at the top. It ends by itself after two hours, and its memory is deleted when it ends.</Empty>}
+      {data && !data.active && <Empty title="No private session is running">Start one from here or the Private button at the top. End it whenever you like; no playback history is collected in this archive view.</Empty>}
       {data && data.active && (
         <>
           <div className="row wrap small soft" style={{ '--gap': '18px' }}>

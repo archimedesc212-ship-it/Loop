@@ -4,7 +4,8 @@ export const duration = (sec) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
 export const longDuration = (sec) => {
-  const m = Math.round((sec || 0) / 60);
+  if (sec === null || sec === undefined || Number.isNaN(sec)) return '–';
+  const m = Math.round(sec / 60);
   return m >= 60 ? `${Math.floor(m / 60)} hr ${m % 60} min` : `${m} min`;
 };
 export const pct = (x, d = 0) => (x === null || x === undefined ? '–' : `${Number(x).toFixed(d)}%`);

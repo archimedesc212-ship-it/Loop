@@ -9,12 +9,13 @@ import { CatalogAdmin, ContentAdmin } from './CatalogAdmin';
 import { PipelineAdmin, ReviewAdmin } from './PipelineAdmin';
 import { ProvidersAdmin } from './ProvidersAdmin';
 import { HealthAdmin, PerformanceAdmin, ModelsAdmin, UsersAdmin, AuditAdmin } from './SystemAdmin';
+import { ArtistReviewAdmin } from './ArtistReviewAdmin';
 
 const TABS = [
   ['', 'Overview', 'health.view'], ['catalog', 'Catalogue', 'catalog.write'], ['content', 'Add content', 'catalog.write'],
   ['review', 'Review queue', 'pipeline.view'], ['pipeline', 'Pipeline', 'pipeline.view'], ['providers', 'Providers & media', 'pipeline.view'], ['models', 'Models', 'health.view'],
   ['users', 'Users', 'users.manage'], ['health', 'Database health', 'health.view'], ['performance', 'Query performance', 'health.view'],
-  ['audit', 'Audit log', 'audit.view'],
+  ['audit', 'Audit log', 'audit.view'], ['artists', 'Artists & rights', 'artist.review'],
 ];
 
 function Overview() {
@@ -73,6 +74,7 @@ export default function Admin() {
         <Route path="health" element={<HealthAdmin />} />
         <Route path="performance" element={<PerformanceAdmin />} />
         <Route path="audit" element={<AuditAdmin />} />
+        <Route path="artists" element={<ArtistReviewAdmin />} />
       </Routes>
     </div>
   );

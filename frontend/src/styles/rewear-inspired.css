@@ -1,0 +1,188 @@
+/* LOOP — clean, airy marketplace-inspired visual refresh.
+   Keeps LOOP's music identity and all existing controls/routes intact. */
+:root {
+  --bg: #f5f6f1;
+  --bg-2: #edf1e9;
+  --surface: #fffefa;
+  --surface-2: #f0f3ed;
+  --surface-3: #e5ebe1;
+  --glass: rgba(255, 254, 250, 0.76);
+  --glass-strong: rgba(255, 254, 250, 0.94);
+  --line: rgba(34, 54, 39, 0.09);
+  --line-2: rgba(34, 54, 39, 0.16);
+  --text: #1e2a21;
+  --text-2: #58665b;
+  --muted: #7d897f;
+  --accent: #4b6b4c;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(75, 107, 76, 0.12);
+  --good: #3f8060;
+  --warn: #a9782e;
+  --bad: #b9534c;
+  --private: #7867a8;
+  --radius-s: 9px;
+  --radius: 16px;
+  --radius-l: 24px;
+  --shadow: 0 20px 55px -30px rgba(38, 55, 39, 0.24);
+  --sidebar: 248px;
+  color-scheme: light;
+}
+
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--text); }
+::selection { background: #dce8d8; color: #1d3222; }
+:focus-visible { outline-color: #668866; }
+
+.app { background: var(--bg); }
+.main { padding-top: 26px; }
+.sidebar {
+  background: #fafbf7;
+  border-right-color: rgba(34, 54, 39, 0.09);
+  box-shadow: 1px 0 0 rgba(255,255,255,0.72);
+}
+.brand { color: #203528; padding-bottom: 26px; }
+.brand-mark { filter: saturate(.8); }
+.nav-link { color: #68756a; border-radius: 12px; padding: 11px 13px; }
+.nav-link:hover { background: #f0f3ed; color: #263c2b; }
+.nav-link.active {
+  color: #31543a;
+  background: #eaf0e6;
+  box-shadow: inset 3px 0 0 #6b8a67;
+}
+.nav-label { color: #829084; }
+.sidebar-foot {
+  background: #f0f3ed;
+  border: 1px solid rgba(34, 54, 39, 0.07);
+}
+.avatar { background: #e5eee1; color: #456849; }
+
+.topbar { gap: 16px; margin-bottom: 30px; }
+.search-box input {
+  height: 46px;
+  background: #fffefa;
+  border-color: rgba(34, 54, 39, 0.12);
+  box-shadow: 0 4px 16px rgba(38, 55, 39, 0.035);
+}
+.search-box input:focus { background: #fff; border-color: #80977d; }
+.search-box svg { top: 14px; }
+
+.card, .panel {
+  background: #fffefa;
+  border-color: rgba(34, 54, 39, 0.09);
+  box-shadow: 0 8px 24px rgba(38, 55, 39, 0.035);
+}
+.panel { border-radius: 22px; }
+.glass {
+  background: rgba(255, 254, 250, 0.82);
+  border-color: rgba(34, 54, 39, 0.1);
+}
+.section { margin-top: 44px; }
+.section-head { margin-bottom: 17px; }
+.section-title { color: #24362a; }
+.muted { color: #7b887e; }
+.soft { color: #58665b; }
+
+.btn {
+  border-color: rgba(34, 54, 39, 0.13);
+  background: #f0f3ed;
+  color: #304334;
+}
+.btn:hover { background: #e5ebe1; }
+.btn.primary {
+  background: #4b6b4c;
+  color: #fff;
+  border-color: #4b6b4c;
+  box-shadow: 0 6px 16px rgba(75, 107, 76, 0.16);
+}
+.btn.primary:hover { background: #3e5d40; }
+.btn.ghost { color: #667368; }
+.btn.ghost:hover { background: #eef2eb; color: #263b2c; }
+.icon-btn { color: #718074; }
+.icon-btn:hover { background: #e9eee6; color: #304b36; }
+.play-btn { background: #4b6b4c; color: #fff; box-shadow: 0 6px 16px rgba(75, 107, 76, 0.18); }
+
+.input, .select, .textarea {
+  background: #fff;
+  border-color: rgba(34, 54, 39, 0.15);
+  color: #1e2a21;
+}
+.input:focus, .select:focus, .textarea:focus { border-color: #779174; box-shadow: 0 0 0 3px rgba(91, 127, 91, 0.1); }
+.field > span, .field > label { color: #59685b; }
+.chip { background: #f0f3ed; border-color: rgba(34, 54, 39, 0.08); color: #5f6e62; }
+.chip.accent { background: #e8f0e5; color: #436647; }
+.toggle-group { background: #f0f3ed; border-color: rgba(34, 54, 39, 0.09); }
+.toggle-group button { color: #718074; }
+.toggle-group button.on { background: #fffefa; color: #2f4934; box-shadow: 0 1px 4px rgba(30, 50, 32, 0.1); }
+
+.hero {
+  border-radius: 30px;
+  border-color: rgba(61, 91, 62, 0.12);
+  background: linear-gradient(128deg, #e7eee3 0%, #f4f5ed 58%, #e2ebdf 100%);
+  box-shadow: 0 16px 42px rgba(50, 76, 52, 0.06);
+}
+.hero::before {
+  background: linear-gradient(100deg, rgba(238, 243, 233, 0.96) 0%, rgba(238, 243, 233, 0.84) 56%, rgba(238, 243, 233, 0.28) 100%);
+}
+.hero-art { opacity: 0.22; mix-blend-mode: multiply; }
+.hero .display { color: #23392a; }
+.hero .soft, .hero .lead { color: #5c6b5e; }
+
+.song-card {
+  background: #fffefa;
+  border: 1px solid rgba(34, 54, 39, 0.075);
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(38, 55, 39, 0.035);
+  padding: 13px;
+}
+.song-card:hover {
+  background: #fff;
+  border-color: rgba(75, 107, 76, 0.2);
+  box-shadow: 0 14px 30px rgba(38, 55, 39, 0.09);
+}
+.song-card .cover { border-radius: 13px; }
+.song-card .title { color: #253629; }
+.song-card .meta { color: #7b887e; }
+
+.player {
+  background: rgba(255, 254, 250, 0.94);
+  border-top-color: rgba(34, 54, 39, 0.1);
+  box-shadow: 0 -10px 32px rgba(38, 55, 39, 0.06);
+}
+.progress { color: #7c897e; }
+.progress input[type=range], .player input[type=range] { accent-color: #4b6b4c; }
+
+.auth { background: #fafbf7; }
+.auth-art {
+  background: linear-gradient(145deg, #e4ecdf 0%, #eff2e9 55%, #e1eadc 100%);
+  color: #203528;
+  border-right: 1px solid rgba(34, 54, 39, 0.08);
+}
+.auth-art svg.motif { opacity: 0.17; filter: saturate(.65); }
+.auth-art .display { color: #203528; }
+.auth-art .lead { color: #5a6b5d; }
+.auth-form { background: #fafbf7; }
+.auth-form .section-title { color: #263a2b; }
+.auth-form .card { background: #fff; }
+.modal-back { background: rgba(24, 38, 27, 0.42); }
+.modal, .menu { background: #fffefa; border-color: rgba(34, 54, 39, 0.12); color: #1e2a21; }
+.menu button:hover { background: #f0f3ed; }
+
+.private-banner { background: rgba(120, 103, 168, 0.08); border-color: rgba(120, 103, 168, 0.2); }
+.mobile-nav { background: rgba(255, 254, 250, 0.96); border-top-color: rgba(34, 54, 39, 0.1); }
+.mobile-nav a { color: #748075; }
+.mobile-nav a.active { color: #3d6343; }
+.offline-banner { background: #fff7e8; color: #7b5724; border-color: #edd9b5; }
+
+@media (max-width: 900px) {
+  .sidebar { background: #fafbf7; }
+  .main { padding-top: 18px; }
+  .player { background: rgba(255, 254, 250, 0.97); }
+}
+@media (max-width: 560px) {
+  .hero { border-radius: 22px; }
+  .song-card { padding: 10px; border-radius: 15px; }
+  .auth-art { padding: 32px 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page, .song-card, .btn, .hero { animation: none !important; transition: none !important; }
+}

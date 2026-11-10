@@ -162,6 +162,7 @@ for (const f of REG.features.filter((x) => x.id >= 33)) {
 }
 md.push('## Original features 1–32: evidence and gaps', '', '| # | Feature | Status | Evidence (passing tests) | Gaps |', '| --- | --- | --- | --- | --- |',
   ...range(1, 32).map((f) => `| ${f.id} | ${f.name} | ${f.status} | ${(f.tests?.existing || []).map((t) => `"${t}"`).join('; ') || '—'} | ${(f.gaps || []).join(' ') || '—'} |`), '');
+fs.mkdirSync(path.join(ROOT, 'docs/roadmap/.build'), { recursive: true });
 fs.writeFileSync(path.join(ROOT, 'docs/roadmap/.build/dependency-graph.json'), JSON.stringify({ deps, names: Object.fromEntries(REG.features.map((f) => [f.id, f.name])), status: Object.fromEntries(REG.features.map((f) => [f.id, f.status])), dependency: Object.fromEntries(REG.features.map((f) => [f.id, f.dependency])), phase: Object.fromEntries(REG.features.map((f) => [f.id, f.phase])) }, null, 1));
 fs.writeFileSync(path.join(ROOT, 'docs/roadmap/FEATURE_REGISTRY.md'), md.join('\n'));
 console.log(`Registry OK: ${N} features. ${statusLine(REG.features)}${PASSED ? ` · VERIFIED checked against ${RESULTS.backend.counts.passed + RESULTS.frontend.counts.passed} passing tests` : ' · (no --results: VERIFIED checked for test existence only)'}`);

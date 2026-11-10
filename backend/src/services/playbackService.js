@@ -36,7 +36,7 @@ async function start(user, { songId, origin = 'HOME', batchId = null, contextCod
   if (!ORIGINS.includes(origin)) throw ApiError.badRequest(`origin must be one of: ${ORIGINS.join(', ')}`);
   const base = await activeSong(songId);
   if (!contentAllowed(user, base)) throw new ApiError(403, 'CONTENT_FILTERED', 'Your content filter hides this song. Change it in Settings.');
-  const song = await playableSong(songId);
+  const song = await playableSong(songId, { user });
 
   if (user.incognitoId) {
     return { private: true, playId: null, incognitoId: user.incognitoId, song: { id: song.song_id, durationSec: song.duration_sec }, media: song.media };

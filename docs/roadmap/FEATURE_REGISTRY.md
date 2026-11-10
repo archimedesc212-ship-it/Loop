@@ -1,6 +1,6 @@
 # LOOP × MUSE — 87-feature master registry
 
-Developed by Vaishnav Sai. Generated from `feature-registry.json` by `backend/scripts/roadmap/check-registry.js`, which checks every reference against the code and every VERIFIED status against the test run of 2026-10-31 (121 backend + 34 frontend passing tests).
+Developed by Vaishnav Sai. Generated from `feature-registry.json` by `backend/scripts/roadmap/check-registry.js`, which checks every reference against the code.
 
 **All 87:** VERIFIED 9 · IMPLEMENTED-UNVERIFIED 1 · PARTIAL 33 · PLANNED 30 · BLOCKED 7 · NOT IMPLEMENTED 7
 

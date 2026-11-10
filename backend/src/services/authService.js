@@ -72,14 +72,20 @@ async function changePassword(userId, currentSessionId, { currentPassword, newPa
 }
 
 /**
- * Delete the account and everything owned by it (listening history, ratings,
- * playlists, preferences, sessions, worlds — all ON DELETE CASCADE). Audit rows
- * stay with the actor set to NULL. The last active admin cannot delete themself.
+ * Delete ordinary listener data. Verified artist uploads and rights reports are
+ * retained as legal/moderation records, so an artist account with those records
+ * must be deactivated/anonymised through a reviewed support workflow instead.
  */
 async function deleteAccount(userId, { password }) {
   await checkPassword(userId, password);
   return withTransaction(async (tx) => {
     const me = await tx.one('SELECT u.user_id, r.code FROM users u JOIN roles r USING (role_id) WHERE u.user_id = ? FOR UPDATE OF u', [userId]);
+    if (!me) throw ApiError.notFound('User');
+    const artistRecords = await tx.one(`SELECT (SELECT COUNT(*) FROM artist_uploads WHERE user_id = ?) +
+                                           (SELECT COUNT(*) FROM artist_rights_reports WHERE reporter_user_id = ?) AS total`, [userId, userId]);
+    if (Number(artistRecords?.total || 0) > 0) {
+      throw new ApiError(409, 'ARTIST_RECORDS_REQUIRE_REVIEW', 'This account has artist upload or rights-report records that must be retained for legal and moderation history. Contact LOOP support for a reviewed deactivation or anonymisation request.');
+    }
     if (me.code === 'ADMIN') {
       const admins = await tx.query(`SELECT u.user_id FROM users u JOIN roles r USING (role_id)
                                       WHERE r.code = 'ADMIN' AND u.is_active = 1 FOR UPDATE OF u`);

@@ -29,11 +29,11 @@ test('registration rejects duplicates and invalid input with field details', asy
 });
 
 test('login works with username or email; wrong password is a generic 401', async () => {
-  const ok = await h.api('POST', '/auth/login', { body: { login: 'aarav', password: 'Listener@123' } });
+  const ok = await h.api('POST', '/auth/login', { body: { login: 'varsha', password: 'Varsha@27' } });
   assert.equal(ok.status, 200);
-  const byEmail = await h.api('POST', '/auth/login', { body: { login: 'aarav@muse.dev', password: 'Listener@123' } });
+  const byEmail = await h.api('POST', '/auth/login', { body: { login: 'varsha@muse.dev', password: 'Varsha@27' } });
   assert.equal(byEmail.status, 200);
-  const wrong = await h.api('POST', '/auth/login', { body: { login: 'aarav', password: 'nope-nope1' } });
+  const wrong = await h.api('POST', '/auth/login', { body: { login: 'varsha', password: 'nope-nope1' } });
   assert.equal(wrong.status, 401);
   assert.equal(wrong.body.error.code, 'INVALID_LOGIN');
   const unknown = await h.api('POST', '/auth/login', { body: { login: 'nobody_here', password: 'nope-nope1' } });
@@ -67,7 +67,7 @@ test('a deactivated account loses access immediately', async () => {
 test('SQL injection in login and search is treated as plain text', async () => {
   const r = await h.api('POST', '/auth/login', { body: { login: "' OR 1=1 -- ", password: 'x' } });
   assert.equal(r.status, 401);
-  const token = await h.login('aarav', 'Listener@123');
+  const token = await h.login('varsha', 'Varsha@27');
   const s = await h.api('GET', `/search?q=${encodeURIComponent("'; DROP TABLE songs; --")}`, { token });
   assert.equal(s.status, 200);
   const songs = await h.one('SELECT COUNT(*) AS n FROM songs');

@@ -4,6 +4,7 @@ const { query, one } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { toSong, withUserFlags } = require('./songMapper');
 const { normalise } = require('./moodParser');
+const providers = require('../providers');
 
 /** SQL fragment + params that applies the user's content filter to alias `sc`. */
 function contentFilter(user) {
@@ -62,6 +63,40 @@ async function songDetail(user, songId) {
     stats: stats ? { plays: stats.plays, listeners: stats.listeners, completes: stats.completes, skips: stats.skips,
       replays: stats.replays, likes: stats.likes, avgRating: stats.avg_rating, ratingCount: stats.rating_count } : null,
   };
+}
+
+async function artistArtwork(artistId) {
+  const row = await one(
+    `SELECT a.name, ms.is_enabled AS source_enabled
+       FROM artists a LEFT JOIN music_sources ms ON ms.code = 'THEAUDIODB'
+      WHERE a.artist_id = ?`, [artistId]);
+  if (!row) throw ApiError.notFound('Artist');
+  if (!row.source_enabled || providers.theAudioDb.check().state !== 'ready') return null;
+  try {
+    return await providers.theAudioDb.artistArtwork({ name: row.name });
+  } catch (error) {
+    // Artwork is optional: a provider outage must never break the artist page.
+    console.warn(`[TheAudioDB] artwork lookup skipped (${error.code || 'ERROR'})`);
+    return null;
+  }
+}
+
+async function albumArtwork(albumId) {
+  const row = await one(
+    `SELECT al.title,
+            (SELECT ar.name FROM album_artists aa JOIN artists ar ON ar.artist_id = aa.artist_id
+              WHERE aa.album_id = al.album_id ORDER BY aa.credit_order LIMIT 1) AS artist,
+            ms.is_enabled AS source_enabled
+       FROM albums al LEFT JOIN music_sources ms ON ms.code = 'THEAUDIODB'
+      WHERE al.album_id = ?`, [albumId]);
+  if (!row) throw ApiError.notFound('Album');
+  if (!row.artist || !row.source_enabled || providers.theAudioDb.check().state !== 'ready') return null;
+  try {
+    return await providers.theAudioDb.searchAlbum({ artist: row.artist, title: row.title });
+  } catch (error) {
+    console.warn(`[TheAudioDB] album artwork lookup skipped (${error.code || 'ERROR'})`);
+    return null;
+  }
 }
 
 async function artistDetail(user, artistId) {
@@ -319,4 +354,4 @@ async function languageDetail(user, languageId) {
   };
 }
 
-module.exports = { filmDetail, languageDetail, albumDetail, listSongs, songDetail, artistDetail, genreTree, moods, contexts, languages, regions, search, trending, contentFilter };
+module.exports = { filmDetail, languageDetail, albumDetail, listSongs, songDetail, artistDetail, artistArtwork, albumArtwork, genreTree, moods, contexts, languages, regions, search, trending, contentFilter };

@@ -27,7 +27,17 @@ async function throttle(provider, minIntervalMs) {
   if (wait > 0) await sleep(wait);
 }
 
-const safeUrl = (u) => { try { const x = new URL(u); return `${x.origin}${x.pathname}`; } catch { return '[invalid url]'; } };
+const safeUrl = (u) => {
+  try {
+    const x = new URL(u);
+    const segments = x.pathname.split('/');
+    const jsonIndex = segments.indexOf('json');
+    if (jsonIndex > 0 && segments[jsonIndex - 1] === 'v1' && segments[jsonIndex + 1]) {
+      segments[jsonIndex + 1] = '[redacted]';
+    }
+    return `${x.origin}${segments.join('/')}`;
+  } catch { return '[invalid url]'; }
+};
 
 /**
  * request(provider, url, { method, headers, body, timeoutMs, retries, minIntervalMs, fetchImpl })

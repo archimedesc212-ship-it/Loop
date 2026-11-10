@@ -1,20 +1,20 @@
 {
-  "name": "muse",
+  "name": "loop",
   "version": "1.0.0",
   "private": true,
-  "description": "MUSE — Music Mood Intelligence & Recommendation Database System (BTech CSE DBMS project)",
+  "description": "LOOP \u2014 mood-aware music discovery and listening platform",
   "workspaces": [
     "backend",
     "frontend"
   ],
   "scripts": {
-    "setup": "npm run db:setup && npm run build",
-    "db:setup": "npm run db:setup --workspace backend",
+    "setup": "npm run db:seed:generate && npm run db:migrate && npm run build",
+    "db:setup": "node backend/scripts/setup-db.js",
     "db:migrate": "npm run db:migrate --workspace backend",
     "db:status": "npm run db:status --workspace backend",
     "db:seed:generate": "npm run seed:generate --workspace backend",
     "dev": "concurrently -n api,web -c magenta,cyan \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
-    "build": "npm run build --workspace frontend",
+    "build": "node scripts/prepare-music-catalog.js && npm run build --workspace frontend",
     "start": "npm run start --workspace backend",
     "test": "npm test --workspace backend",
     "test:sql": "npm run test:sql --workspace backend",
@@ -35,7 +35,11 @@
     "roadmap:results": "node backend/scripts/roadmap/collect-test-results.js",
     "roadmap:verify": "node backend/scripts/roadmap/collect-test-results.js && node backend/scripts/roadmap/check-registry.js --results docs/roadmap/.build/test-results.json",
     "roadmap:mutation": "node backend/scripts/roadmap/mutation-check.js",
-    "roadmap:features": "node backend/scripts/roadmap/features-58-87.js"
+    "roadmap:features": "node backend/scripts/roadmap/features-58-87.js",
+    "deploy:check": "node scripts/deployment-preflight.js",
+    "dataset:import": "node backend/scripts/import-kaggle-features.js",
+    "db:reset:unsafe": "npm run db:seed:generate && node backend/scripts/setup-db.js --allow-destructive",
+    "artist:scan": "npm run artist:scan --workspace backend --"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -47,6 +51,6 @@
     "globals": "^17.13.0"
   },
   "engines": {
-    "node": ">=20.19"
+    "node": "22.x"
   }
 }

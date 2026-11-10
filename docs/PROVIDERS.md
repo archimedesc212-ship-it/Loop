@@ -47,7 +47,16 @@ Admin UI: **Admin › Providers & media**. Status without secrets: `GET /api/rea
 - **Settings**: `YOUTUBE_ENABLED=true`, `YOUTUBE_API_KEY=…`.
 - **Quota**: by default a project gets 100 `search.list` calls per day (and 10,000 units per day for other endpoints); each lookup and each admin "Test" uses one search call. Google can change this; check your project's Quotas page. YouTube API Services Terms apply. https://developers.google.com/youtube/v3/getting-started
 
-### 4. Licensed preview provider — playable previews (vendor-neutral)
+### 4. TheAudioDB — artist and album metadata/artwork (no audio)
+
+- **Purpose**: look up exact artist names and show artist banners, fan art, thumbnails/logos and album artwork on catalogue pages. The backend caches positive results for 24 hours and misses for 1 hour, validates returned image URLs, and spaces requests to remain below the free API's published 30 requests/minute limit.
+- **Endpoints**: v1 `search.php?s=<artist>` and `searchalbum.php?s=<artist>&a=<album>`. The free shared key is `123`; a premium key can be supplied via `THEAUDIODB_API_KEY`.
+- **Settings**: `THEAUDIODB_ENABLED=true`, `THEAUDIODB_API_KEY=123`. The provider is deliberately **off by default**. Its shared free key is for development/testing; TheAudioDB's current terms distinguish development use from public/App Store production releases. Confirm the applicable plan/permission before enabling it on a public production service.
+- **Attribution**: pages link to TheAudioDB and identify its metadata/artwork contribution. Do not strip source notices or imply that TheAudioDB provides song recordings.
+- **Important**: this integration returns metadata and image URLs only. It does **not** return an MP3, a full-track stream, or permission to play any recording. Album lookups that are unavailable on the selected API plan simply fall back to LOOP's generated cover artwork.
+- **References**: https://www.theaudiodb.com/free_music_api · https://www.theaudiodb.com/api_guide.php · https://www.theaudiodb.com/terms_of_use.php
+
+### 5. Licensed preview provider — playable previews (vendor-neutral)
 
 - **Purpose**: make songs playable with short licensed previews, looked up by ISRC **at play time** (the URL is never stored).
 - **Contract** any licensed provider, or a small proxy in front of one, must implement:
@@ -61,14 +70,14 @@ Admin UI: **Admin › Providers & media**. Status without secrets: `GET /api/rea
 - **Enable**: set `EXTERNAL_PREVIEW_ENABLED=true`, `EXTERNAL_PREVIEW_BASE_URL`, `EXTERNAL_PREVIEW_API_KEY`, `EXTERNAL_PREVIEW_MEDIA_ORIGIN` (the https origin the audio is served from — it is added to the CSP), restart, switch the `EXTERNAL_PREVIEW` source on in Admin › Pipeline › Sources, and register preview rows: `INSERT INTO song_media (song_id, source_id, media_type, uri, rights_status, priority) SELECT song_id, (SELECT source_id FROM music_sources WHERE code='EXTERNAL_PREVIEW'), 'PREVIEW', 'provider:EXTERNAL_PREVIEW', 'ATTRIBUTION_REQUIRED', 20 FROM songs WHERE isrc IS NOT NULL;`
 - **Credential / terms**: depends entirely on the provider you contract. Use one only if its licence covers streaming previews to your users. MUSE does not name or recommend a vendor and does not scrape any service.
 
-### 5. Local media — licensed files you hold
+### 6. Local media — licensed files you hold
 
 - **Purpose**: stream audio files you own or are licensed to use. On by default with an empty folder.
 - **Settings**: `LOCAL_MEDIA_ENABLED=true`, `LOCAL_MEDIA_DIR=/path/to/media` (default `<repo>/media`).
 - **Use**: copy `song-file.mp3` into the folder; Admin › Providers & media › Playback media → song id + file name → Register. Formats: mp3, m4a, aac, ogg, opus, wav, flac. Files are streamed only to signed-in users via `/api/media/:id` with range support. Missing files are detected (on play and hourly) and the song falls back.
 - **Credential**: none. You are responsible for the rights to every file.
 
-### 6. AI (optional) — fallback for free-text mood input
+### 7. AI (optional) — fallback for free-text mood input
 
 - **Purpose**: only when MUSE's own deterministic parser finds nothing in a sentence ("zxqv…" or unusual phrasing). The model may answer **only** with mood names and context codes that exist in MUSE; anything else is discarded. Never used in a private session. If the call fails, the user gets the same answer as without AI.
 - **Credential**: an Anthropic API key (paid per token).
@@ -82,6 +91,7 @@ Admin UI: **Admin › Providers & media**. Status without secrets: `GET /api/rea
 | MusicBrainz | recording metadata for ingestion | none — a User-Agent with your contact email or URL | `MUSICBRAINZ_ENABLED=true`, `MUSICBRAINZ_USER_AGENT` | https://musicbrainz.org/doc/MusicBrainz_API | non-commercial free; ~1 req/s per IP | Admin › Providers & media › MusicBrainz › **Test** (expects "OK … 1 result"), then Admin › Pipeline › "Ingest from MusicBrainz" and check the job log and Review queue |
 | TMDB | film details for soundtracks | API Read Access Token (v4) or API key (v3) | `TMDB_ENABLED=true`, `TMDB_READ_ACCESS_TOKEN` or `TMDB_API_KEY` | https://www.themoviedb.org/settings/api | non-commercial free with attribution + logo; commercial needs a licence | **Test** on the TMDB row; then Film details › "Find on TMDB" for a film and open `/film/:id` — the overview and the TMDB notice appear; run it again → "already up to date" |
 | YouTube Data API v3 | video links on song pages | Google Cloud API key with YouTube Data API v3 enabled | `YOUTUBE_ENABLED=true`, `YOUTUBE_API_KEY` | https://console.cloud.google.com/apis/library/youtube.googleapis.com | 100 search calls/day by default; YouTube API Services Terms | **Test** (uses 1 search call); then `POST /api/admin/songs/1/video-links` as admin and open `/song/1` → "Watch elsewhere" |
+| TheAudioDB | artist banners/fan art and optional album covers | shared development/test key `123` (premium key optional) | `THEAUDIODB_ENABLED=true`, `THEAUDIODB_API_KEY=123` | https://www.theaudiodb.com/free_music_api | free v1 rate limit 30/minute; current terms limit free shared-key use to development/testing; confirm production plan | **Test** in Admin › Providers & media; open an artist page with an exact TheAudioDB match → banner appears. This never enables audio playback |
 | Licensed preview provider | short playable previews | whatever your contracted provider issues (bearer key) | `EXTERNAL_PREVIEW_ENABLED=true`, `EXTERNAL_PREVIEW_BASE_URL`, `EXTERNAL_PREVIEW_API_KEY`, `EXTERNAL_PREVIEW_MEDIA_ORIGIN` | your provider | per contract; must cover streaming previews | **Test** (resolves one ISRC); enable the source, register preview rows (SQL above), play a song with an ISRC → the player shows "Licensed preview · <attribution>" |
 | Local media | your licensed audio files | none | `LOCAL_MEDIA_ENABLED`, `LOCAL_MEDIA_DIR` | — | you hold the rights | put a file in the folder, register it to a song, play the song → "Licensed local file"; delete the file → the song falls back and shows as unavailable |
 | AI (optional) | free-text mood fallback | Anthropic API key | `AI_PROVIDER=anthropic`, `AI_API_KEY`, `AI_MODEL` | https://console.anthropic.com/ | paid per token | **Test** on the AI row; then Mood page → type a sentence MUSE's word list doesn't know → "How MUSE read that" says the AI helper suggested the moods |

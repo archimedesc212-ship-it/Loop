@@ -88,6 +88,8 @@ named in `.env`.
 The database holds everything except your licensed audio files (`LOCAL_MEDIA_DIR`)
 and `.env`.
 
+For independent-artist uploads, `LOCAL_MEDIA_DIR` must be a private persistent volume shared by the API and scan worker. The new quarantine directory is created beneath it with restrictive permissions and is not statically served. Configure ClamAV (`CLAMAV_HOST` / `CLAMAV_PORT`) and `ffprobe` (`FFPROBE_PATH`) before enabling artist submissions. Render ephemeral disk and Vercel/serverless local storage are not suitable for published artist audio; a durable mounted disk or private object-storage/CDN adapter is required before public launch. See `docs/ARTIST_UPLOADS_MODERATION_RIGHTS.md` for the implemented slice and remaining launch blockers.
+
 ```bash
 # consistent online dump of data, routines, triggers and views (InnoDB)
 mysqldump -u muse_owner -p --single-transaction --routines --triggers --events \
@@ -123,3 +125,15 @@ token).
 No container image, no infrastructure-as-code, no multi-instance setup (rate limits
 are per process), no read replicas, no CDN, no email service, no monitoring stack.
 Each is a reasonable next step for a public deployment.
+
+## Independent artist uploads (optional release slice)
+
+Artist onboarding and the local private-quarantine upload workflow are implemented behind the additive migration `0008_artist_accounts_uploads_rights.sql`. Before enabling this slice:
+
+- Set `VITE_DEMO_MODE=false` and apply `npm run db:migrate` after taking a database backup.
+- Set `LOCAL_MEDIA_DIR` to a private, persistent mounted volume. The API and the scanning worker must share the same volume. Never serve this directory as static content.
+- Configure a reachable ClamAV daemon with `CLAMAV_HOST` / `CLAMAV_PORT` and install `ffprobe` (or set `FFPROBE_PATH`). If scanning is unavailable, files remain private and cannot be published.
+- Run the bounded scanner as `npm run artist:scan --workspace backend`; production should replace manual/in-process scanning with a durable job worker and object storage/CDN delivery before broad public launch.
+- Verify the full artist journey, rights review, takedown behaviour and backup/restore on a staging database and persistent volume before production.
+
+The current local-volume implementation is not suitable for an ephemeral serverless filesystem. See [artist uploads, moderation and rights](ARTIST_UPLOADS_MODERATION_RIGHTS.md) for its exact implemented boundary and remaining legal/technical launch gates.

@@ -50,7 +50,8 @@ sessions immediately. Requests with an `Origin` header from another site are ref
 |---|---|---|---|
 | POST | `/auth/register` | `username` (3–30, `a-z0-9_`), `email`, `password` (8–72, letter + digit), `displayName` | 201, signs in (cookie or bearer, see above); bcrypt cost 10 |
 | POST | `/auth/login` | `login` (username or email), `password` | generic 401 for unknown user or wrong password; body `{ user, expiresAt, csrfToken }` (+ `token` in bearer mode) |
-| GET | `/auth/session` | | **no auth required**: `{ authenticated: false }` or `{ authenticated: true, …profile }` — the web app's start-up check |
+| GET | `/auth/session` | | **no auth required**: read-only startup check; returns `{ authenticated: false }` or `{ authenticated: true, …profile }` |
+| POST | `/auth/session` | `{}` | **no auth required**: creates a limited guest account/session (201) when anonymous; returns the current profile if already signed in; rate-limited |
 | GET | `/auth/me` | | profile, role, permissions, languages, private-session state, `session { id, expiresAt, csrfToken? }` |
 | POST | `/auth/logout` | | revokes this session, clears cookies, closes the open listening session |
 | POST | `/auth/logout-all` | | revokes every session of this user |

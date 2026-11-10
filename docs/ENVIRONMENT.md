@@ -19,6 +19,10 @@ any change**. Invalid numeric values stop the API with a clear message.
 | `DB_APP_PASSWORD` | yes | empty | its password (set it; empty is accepted only for local experiments) |
 | `DB_APP_HOST` | no | `localhost` | host part of the app account (`'muse_app'@'localhost'`) |
 | `DB_TIMEZONE` | no | `+00:00` | session time zone for `NOW()`, "today", week boundaries. India: `+05:30` |
+| `DB_SSL` | no | `false` | enable TLS for managed MySQL providers that require it; keep certificate verification enabled |
+| `DB_SSL_CA` | no | — | optional PEM CA certificate supplied by the database provider |
+| `DB_CONNECT_TIMEOUT_MS` | no | `10000` | connection timeout in milliseconds |
+| `DB_POOL_MAX` | no | `3` on Vercel, `12` elsewhere | maximum pool connections per process/function instance |
 
 ## API and sessions
 
@@ -58,6 +62,9 @@ any change**. Invalid numeric values stop the API with a clear message.
 | `YOUTUBE_ENABLED` | `false` | turn the YouTube Data API adapter on |
 | `YOUTUBE_API_KEY` | — | Google Cloud API key with YouTube Data API v3 enabled |
 | `YOUTUBE_BASE_URL` | `https://www.googleapis.com/youtube/v3` | override |
+| `THEAUDIODB_ENABLED` | `false` | enable TheAudioDB artist/album artwork metadata (development/testing only with the shared free key) |
+| `THEAUDIODB_API_KEY` | `123` | shared public test key; use a paid/approved key for a permitted production deployment |
+| `THEAUDIODB_BASE_URL` | `https://www.theaudiodb.com/api/v1/json` | TheAudioDB v1 API base URL |
 | `EXTERNAL_PREVIEW_ENABLED` | `false` | turn the licensed-preview adapter on |
 | `EXTERNAL_PREVIEW_BASE_URL` | — | base URL implementing `GET /previews?isrc=` |
 | `EXTERNAL_PREVIEW_API_KEY` | — | bearer key for that service |
