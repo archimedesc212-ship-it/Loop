@@ -6,13 +6,15 @@
 // the listener's preferences in the same transaction. In a private session only
 // /playback/private is called, which writes temporary memory and nothing else.
 //
-// What actually sounds is decided by the server (see backend mediaService):
+// Real app playback is selected by the server (backend mediaService):
 //   USER_LOCAL / PREVIEW → a real <audio> element (time comes from the element)
-//   GENERATED_SKETCH     → the labelled demo fixture synthesised in lib/sketch.js
-//   metadata-only songs  → not playable; skipped in queues, never faked.
+//   GENERATED_SKETCH     → a clearly labelled demo sound sketch
+// The bundled metadata catalogue is a separate demo path: exact Apple Music matches
+// open Apple's official iframe player. LOOP does not synthesize or store recordings.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../services/api';
 import { createSketchPlayer } from '../lib/sketch';
+import { lookupAppleMusic } from '../lib/appleMusic';
 import { sleepFadeFactor } from '../lib/sleepTimer';
 import { useToast } from './useToast';
 
@@ -34,7 +36,7 @@ export function PlayerProvider({ children }) {
   const audio = useRef(null);
   const [queue, setQueue] = useState([]);
   const [index, setIndex] = useState(-1);
-  const [status, setStatus] = useState('idle');          // idle | loading | playing | paused
+  const [status, setStatus] = useState('idle');          // idle | loading | playing | paused | external
   const [position, setPosition] = useState(0);
   const [media, setMedia] = useState(null);              // what is sounding: { type, label, demo, attribution, … }
   const [speed, setSpeedState] = useState(() => stored(SPEED_KEY, 1));
@@ -102,6 +104,7 @@ export function PlayerProvider({ children }) {
   /** Start song i of the queue; songs with no playable source are skipped (never faked). */
   const startAt = useCallback(async (i, q = queueRef.current, tried = 0) => {
     stopAudio();
+    setMedia(null);
     if (i < 0 || i >= q.length || tried > q.length) { setStatus('idle'); setMedia(null); return; }
     const song = q[i];
     setIndex(i);
@@ -110,6 +113,20 @@ export function PlayerProvider({ children }) {
     if (!isPlayable(song)) { toast.info(`“${song.title}” has metadata only — skipped.`); await startAt(i + 1, q, tried + 1); return; }
     const ctx = ctxRef.current;
     try {
+      // Metadata-catalogue tracks are resolved against Apple's public catalogue.
+      // The official Apple embed performs playback; LOOP never downloads or stores audio.
+      if (song.playback?.type === 'APPLE_MUSIC_LOOKUP') {
+        const match = await lookupAppleMusic(song);
+        if (!match) {
+          setStatus('idle');
+          toast.info(`No close Apple Music match was found for “${song.title}”. Try another track.`);
+          return;
+        }
+        handle.current = null; // Apple embeds do not expose listen events to LOOP.
+        setMedia({ type: 'APPLE_MUSIC_EMBED', label: 'Apple Music player', ...match });
+        setStatus('external');
+        return;
+      }
       const r = await api.playStart({ songId: song.id, origin: ctx.origin || 'HOME', batchId: ctx.batchId || undefined, contextCode: ctx.contextCode || undefined });
       handle.current = { playId: r.playId, private: r.private, songId: song.id };
       setMedia(r.media || null);
@@ -160,7 +177,7 @@ export function PlayerProvider({ children }) {
 
   const goTo = useCallback(async (i, reason) => {
     await finishCurrent(reason);
-    if (i < 0 || i >= queueRef.current.length) { stopAudio(); setStatus('idle'); return; }
+    if (i < 0 || i >= queueRef.current.length) { stopAudio(); handle.current = null; setStatus('idle'); setMedia(null); return; }
     await startAt(i);
   }, [finishCurrent, startAt, stopAudio]);
 
@@ -194,7 +211,15 @@ export function PlayerProvider({ children }) {
     if (h && !h.private) api.playEvent(h.playId, { type: 'RESUME', positionSec: Math.round(posRef.current) }).catch(() => {});
   }, []);
 
-  const toggle = useCallback(() => (statusRef.current === 'playing' ? pause() : resume()), [pause, resume]);
+  const toggle = useCallback(() => {
+    if (statusRef.current === 'external') {
+      window.dispatchEvent(new CustomEvent('muse:open-external'));
+      return;
+    }
+    if (statusRef.current === 'playing') pause();
+    else if (statusRef.current === 'paused') resume();
+    else if (statusRef.current === 'idle' && index >= 0 && currentRef.current) startAt(index);
+  }, [index, pause, resume, startAt]);
   const setSpeed = useCallback((s) => { setSpeedState(s); store(SPEED_KEY, s); }, []);
   const setVolume = useCallback((v) => { const x = Math.max(0, Math.min(1, v)); setVolumeState(x); setMuted(false); store(VOLUME_KEY, x); }, []);
   const toggleMute = useCallback(() => setMuted((m) => !m), []);
@@ -285,6 +310,7 @@ export function PlayerProvider({ children }) {
     current, queue, index, status, position, length, speed, volume, muted, media, lastResult, sleepRemaining,
     play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset,
     realAudio: !!(media && media.uri),
+    externalPlayback: !!(media && media.embedUri),
     isCurrent: (id) => current && current.id === id,
     isPlaying: (id) => current && current.id === id && status === 'playing',
   }), [current, queue, index, status, position, length, speed, volume, muted, media, lastResult, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);

@@ -13,7 +13,7 @@
     "db:migrate": "npm run db:migrate --workspace backend",
     "db:status": "npm run db:status --workspace backend",
     "db:seed:generate": "npm run seed:generate --workspace backend",
-    "dev": "concurrently -n api,web -c magenta,cyan \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
+    "dev": "node scripts/prepare-music-catalog.js && concurrently -n api,web -c magenta,cyan \"npm run dev --workspace backend\" \"npm run dev --workspace frontend\"",
     "build": "node scripts/prepare-music-catalog.js && npm run build --workspace frontend",
     "start": "npm run start --workspace backend",
     "test": "npm test --workspace backend",

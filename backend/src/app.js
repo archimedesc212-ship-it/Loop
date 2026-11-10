@@ -25,12 +25,13 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", 'https://itunes.apple.com'],
       styleSrc: ["'self'", "'unsafe-inline'"],
       fontSrc: ["'self'", 'data:'],
       imgSrc: ["'self'", 'data:', 'https://r2.theaudiodb.com', 'https://www.theaudiodb.com'],
       connectSrc: ["'self'"],
       mediaSrc,
+      frameSrc: ["'self'", 'https://embed.music.apple.com'],
       frameAncestors: ["'none'"],
       formAction: ["'self'"],
     },

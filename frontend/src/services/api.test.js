@@ -48,7 +48,7 @@ describe('uploaded music catalogue', () => {
   });
   afterAll(() => vi.unstubAllGlobals());
 
-  it('uses the supplied real catalogue records and never pretends audio exists', async () => {
+  it('uses the supplied real catalogue records and resolves recordings through Apple Music', async () => {
     const { demoRequest } = await import('../lib/demoMode');
     const result = await demoRequest('GET', '/recommendations/daily');
     expect(result.songs.length).toBeGreaterThan(0);
@@ -58,7 +58,8 @@ describe('uploaded music catalogue', () => {
     expect(song.genre.name).toBe('pop');
     expect(song.language).toBeNull();
     expect(song.durationSec).toBeNull();
-    expect(song.playback.playable).toBe(false);
+    expect(song.playback.playable).toBe(true);
+    expect(song.playback.type).toBe('APPLE_MUSIC_LOOKUP');
     expect(song.topic).toBe('sadness');
     expect(result.songs.every((song) => song.title !== 'Afterglow')).toBe(true);
   });
@@ -105,6 +106,15 @@ describe('uploaded music catalogue', () => {
     expect(Array.isArray(result.songs)).toBe(true);
     expect(Array.isArray(result.interpretation.moods)).toBe(true);
     expect(Array.isArray(result.interpretation.summary)).toBe(true);
+  });
+
+  it('uses the uploaded Spotify-notebook cosine-centroid method for liked-song daily mixes', async () => {
+    localStorage.setItem('loop.catalog.v1.likes', JSON.stringify([1]));
+    const { demoRequest } = await import('../lib/demoMode');
+    const result = await demoRequest('GET', '/recommendations/daily?limit=1');
+    expect(result.algorithm).toBe('NOTEBOOK_COSINE_CENTROID');
+    expect(result.songs).toHaveLength(1);
+    expect(result.songs[0].id).toBe(2);
   });
 });
 

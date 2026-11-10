@@ -5,19 +5,17 @@ import { useApi } from '../../hooks/useApi';
 import { Stat, ErrorState, Skeleton, PageHead } from '../../components/ui';
 import { Columns, HBars } from '../../components/Charts';
 import { date, n } from '../../lib/format';
-import { CatalogAdmin, ContentAdmin } from './CatalogAdmin';
-import { PipelineAdmin, ReviewAdmin } from './PipelineAdmin';
-import { ProvidersAdmin } from './ProvidersAdmin';
-import { HealthAdmin, PerformanceAdmin, ModelsAdmin, UsersAdmin, AuditAdmin } from './SystemAdmin';
+import { CatalogAdmin } from './CatalogAdmin';
+import { ReviewAdmin } from './PipelineAdmin';
+import { UsersAdmin } from './SystemAdmin';
 import { ArtistReviewAdmin } from './ArtistReviewAdmin';
-import { PermissionsAdmin } from './PermissionsAdmin';
-import { MigrationsAdmin } from './MigrationsAdmin';
 
 const TABS = [
-  ['', 'Overview', 'health.view'], ['catalog', 'Catalogue', 'catalog.write'], ['content', 'Add content', 'catalog.write'],
-  ['review', 'Review queue', 'pipeline.view'], ['pipeline', 'Pipeline', 'pipeline.view'], ['providers', 'Providers & media', 'pipeline.view'], ['models', 'Models', 'health.view'],
-  ['users', 'Users', 'users.manage'], ['health', 'Database health', 'health.view'], ['performance', 'Query performance', 'health.view'],
-  ['audit', 'Audit log', 'audit.view'], ['permissions', 'Permissions', 'health.view'], ['migrations', 'Migrations', 'health.view'], ['artists', 'Artists & rights', 'artist.review'],
+  ['', 'Overview', 'health.view'],
+  ['catalog', 'Catalogue', 'catalog.write'],
+  ['review', 'Review queue', 'pipeline.view'],
+  ['users', 'Users', 'users.manage'],
+  ['artists', 'Artists', 'artist.review'],
 ];
 
 function Overview() {
@@ -65,20 +63,12 @@ export default function Admin() {
         {tabs.map(([to, label]) => <NavLink key={to} to={to ? `/admin/${to}` : '/admin'} end={!to}>{label}</NavLink>)}
       </nav>
       <Routes>
-        <Route index element={can('health.view') ? <Overview /> : <Navigate to="catalog" replace />} />
+        <Route index element={tabs[0][0] === '' ? <Overview /> : <Navigate to={tabs[0][0]} replace />} />
         <Route path="catalog" element={<CatalogAdmin />} />
-        <Route path="content" element={<ContentAdmin />} />
         <Route path="review" element={<ReviewAdmin />} />
-        <Route path="pipeline" element={<PipelineAdmin />} />
-        <Route path="providers" element={<ProvidersAdmin />} />
-        <Route path="models" element={<ModelsAdmin />} />
         <Route path="users" element={<UsersAdmin />} />
-        <Route path="health" element={<HealthAdmin />} />
-        <Route path="performance" element={<PerformanceAdmin />} />
-        <Route path="audit" element={<AuditAdmin />} />
-        <Route path="permissions" element={<PermissionsAdmin />} />
-        <Route path="migrations" element={<MigrationsAdmin />} />
         <Route path="artists" element={<ArtistReviewAdmin />} />
+        <Route path="*" element={<Navigate to={tabs[0][0] ? `/admin/${tabs[0][0]}` : '/admin'} replace />} />
       </Routes>
     </div>
   );

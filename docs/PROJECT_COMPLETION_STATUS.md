@@ -9,9 +9,19 @@ LOOP now has a substantial end-to-end product foundation: listener authenticatio
 
 **The project is not yet complete or production-ready.** The remaining gap is not just UI polish: full dependency installation, database-backed integration testing, durable production media infrastructure, and several provider/legal/monetisation modules are still outstanding.
 
+## Current product direction
+
+The target release is a normal, manageable music app. The 87-item roadmap is retained only as historical/academic project material; it is **not** the release target. The visible user workflow is limited to account access, Home, Discover, Search, Library, Settings, artist submission and basic admin review. See [the basic product scope](BASIC_PRODUCT_SCOPE.md).
+
+## Simplified interface in the current hand-off
+
+The current UI has been deliberately simplified to the basic product scope. Normal listener navigation contains Home, Discover, Search and Library; Settings is in the account area. Mood discovery shows mood selection, a free-text request and an optional activity context. Library shows Playlists, Liked Songs and Recently Played. The default admin console shows only Overview, Catalogue, Review Queue, Users and Artists. Experimental/academic modules remain in source but are hidden or redirected from normal navigation. The artist upload form now shows only the basic track details plus the rights choices needed to keep declarations accurate.
+
+The supplied Mana icon kit is integrated via `frontend/src/components/mana/Icon.jsx`; the app's existing icon imports now resolve through Lucide React. The provider registry is retained, but `@lobehub/icons` is not installed because the basic music UI does not currently display AI-provider marks.
+
 ## Roadmap snapshot
 
-The checked-in feature registry contains 87 roadmap features. The latest registry consistency check reports:
+The checked-in legacy feature registry still contains 87 roadmap features. This registry is retained for coursework/history and is no longer the chosen product scope. The latest registry consistency check reports:
 
 | Registry status | Features |
 |---|---:|
@@ -64,7 +74,7 @@ The registry command was run without a passing-test-results artifact. Therefore,
 | Check | Result | Notes |
 |---|---|---|
 | Backend JavaScript syntax | Passed | `node --check` across backend JS files |
-| Frontend source syntax | Passed | TypeScript compiler `transpileModule` parsed 61 JS/JSX files; this is a syntax parse, not a Vite production build |
+| Frontend source syntax | Passed | TypeScript compiler parser parsed 44 JSX/TSX files after the basic UI simplification; this is a syntax parse, not a Vite production build |
 | Focused dependency-free backend tests | **16 passed, 0 failed** | Audio/upload validation, Mood Diary dates, playlist ordering and recommendation-logic helpers |
 | Playlist-health helper smoke checks | Passed | Duplicate normalization, version distinction, unavailable/hidden/energy issues and unknown metadata scenarios |
 | Deployment preflight | **31 passed, 0 failed** | Static configuration checks only; not a live deployment |
@@ -73,6 +83,7 @@ The registry command was run without a passing-test-results artifact. Therefore,
 | Frontend Vitest suite | **Not runnable** | `vitest` is not installed |
 | Proposed migration/database checks | **Not runnable** | `mysql2/promise` driver and MySQL service are unavailable |
 | Vite production build | Not certified | Vite dependencies are not installed |
+| Mana/Lucide dependency installation | Blocked in this environment | npm registry DNS returned `EAI_AGAIN`; dependency and lockfile entries are included, but module download/build needs an internet-connected install |
 | MySQL migration application/schema verification | Not run | No configured database service/credentials |
 | ClamAV/ffprobe live scan integration | Not run | Scanner and media-probe executables/services not available for an end-to-end test |
 | Cloud object storage/CDN and production deployment | Not run | Requires provider credentials, service configuration and a deployed environment |
@@ -102,4 +113,4 @@ node --test backend/tests/playlistOrder.test.js backend/tests/moodDiaryDate.test
 - Configure private persistent media storage and scanner services before accepting artist uploads. A missing scanner is designed to fail closed; do not weaken that gate for a public launch.
 - Keep secrets in environment variables and never commit a populated `.env` file.
 
-**Bottom line:** the current ZIP is a significantly expanded implementation and hand-off source tree, not a fully verified production release. The remaining major gate is a configured, dependency-complete MySQL + media-scanner + persistent-storage environment in which full integration and deployment tests can be run.
+**Bottom line:** the simplified UI now exposes only the agreed basic music-app workflow. The underlying codebase still contains additional academic/experimental modules, but those are not the release target. The project is not a fully verified production release until the configured database, dependencies and media infrastructure are integration-tested. The remaining major gate is a configured, dependency-complete MySQL + media-scanner + persistent-storage environment in which full integration and deployment tests can be run.

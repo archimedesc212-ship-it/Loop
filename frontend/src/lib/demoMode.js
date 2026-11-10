@@ -1,4 +1,5 @@
 import { diaryDateKey, upsertDiaryEntry, removeDiaryEntry } from './moodDiary';
+import { recommendByFeatureCentroid } from './spotifySimilarity';
 // Static, dataset-backed catalogue adapter. No invented songs, play counts or audio.
 const DATA_PATH = String(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/') + 'data/music-catalog.json';
 const STORAGE_PREFIX = 'loop.catalog.v1.';
@@ -90,7 +91,7 @@ function makeCatalogue(payload) {
       artist: { id: artistId, name: artistName },
       album: null, language: null, genre, genres: [genre],
       cover: palette, coverColor1: palette[0], coverColor2: palette[1],
-      playback: { playable: false, type: 'METADATA_ONLY' },
+      playback: { playable: true, type: 'APPLE_MUSIC_LOOKUP', source: 'APPLE_MUSIC' },
       features, topic, topicScores,
       moods: moods.map((mood) => mood.name),
       moodsDetailed: moods.map((mood) => ({
@@ -323,9 +324,20 @@ export async function demoRequest(method, path, body) {
     const limit = safeLimit(q.get('limit'), 24, 100);
     const seedId = Number(q.get('seed'));
     const seed = Number.isFinite(seedId) && seedId > 0 ? catalogue.songById.get(seedId) : null;
-    const target = seed ? seed.features : { energy: 0.56, valence: 0.56, danceability: 0.55 };
-    const rows = choose(catalogue, target, limit, seed ? all.filter((song) => song.id !== seed.id) : all);
-    return { ...listResult(rows, seed ? 'Similar sound' : 'Archive selection', 'Ranked using the dataset audio features and topic labels.'), seed: seed ? withPersonalState(seed) : null };
+    const storedLikes = read('likes', []);
+    const likedSeeds = (Array.isArray(storedLikes) ? storedLikes : []).map((id) => catalogue.songById.get(Number(id))).filter(Boolean).slice(-5);
+    const seeds = seed ? [seed] : (p === '/recommendations/daily' ? likedSeeds : []);
+    const notebookRanked = seeds.length
+      ? recommendByFeatureCentroid(all, seeds, Math.min(100, limit * 3)).map((entry) => entry.song)
+      : [];
+    const rows = notebookRanked.length
+      ? notebookRanked.slice(0, limit)
+      : choose(catalogue, seed ? seed.features : { energy: 0.56, valence: 0.56, danceability: 0.55 }, limit,
+        seed ? all.filter((song) => song.id !== seed.id) : all);
+    const sourceNote = notebookRanked.length
+      ? 'Spotify notebook method: standardised audio-feature centroid with cosine-distance ranking. Uses available LOOP features only.'
+      : 'Ranked using available archive audio features and topic labels; no liked-song seed was available.';
+    return { ...listResult(rows, seed ? 'Similar sound' : 'Made for you', sourceNote), seed: seed ? withPersonalState(seed) : null, algorithm: notebookRanked.length ? 'NOTEBOOK_COSINE_CENTROID' : 'FEATURE_MATCH' };
   }
   if (p === '/recommendations/regional') return { empty: true, message: 'This dataset contains no language or region field, so a reliable regional mix cannot be generated.' };
   if (p === '/recommendations/recovery') {

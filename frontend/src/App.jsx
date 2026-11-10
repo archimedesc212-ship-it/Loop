@@ -6,18 +6,14 @@ import { Thinking } from './components/ui';
 import Home from './pages/Home';
 import MoodPage from './pages/Mood';
 import Mix from './pages/Mix';
-import World from './pages/World';
 import Search from './pages/Search';
 import { SongPage, ArtistPage, AlbumPage, FilmPage, LanguagePage } from './pages/Catalog';
 import Library, { PlaylistPage } from './pages/Library';
-import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import PrivateSession from './pages/Private';
 import ArtistApply from './pages/ArtistApply';
 import ArtistStudio from './pages/ArtistStudio';
 import AuthPage from './pages/AuthPage';
-import DatabaseExplorer from './pages/DatabaseExplorer';
-import MoodDiary from './pages/MoodDiary';
 
 const Admin = lazy(() => import('./pages/admin/Admin'));
 
@@ -62,7 +58,7 @@ export default function App() {
         <Route path="mood" element={<MoodPage />} />
         <Route path="mix/:kind" element={<Mix />} />
         <Route path="mix/:kind/:arg" element={<Mix />} />
-        <Route path="world" element={<World />} />
+        <Route path="world" element={<Navigate to="/" replace />} />
         <Route path="search" element={<Search />} />
         <Route path="song/:id" element={<SongPage />} />
         <Route path="artist/:id" element={<ArtistPage />} />
@@ -71,9 +67,9 @@ export default function App() {
         <Route path="language/:id" element={<LanguagePage />} />
         <Route path="library" element={<Library />} />
         <Route path="playlist/:id" element={<PlaylistPage />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="mood-diary" element={<MoodDiary />} />
-        <Route path="database" element={<DatabaseExplorer />} />
+        <Route path="profile" element={<Navigate to="/" replace />} />
+        <Route path="mood-diary" element={<Navigate to="/" replace />} />
+        <Route path="database" element={<Navigate to="/" replace />} />
         <Route path="settings" element={<Settings />} />
         <Route path="private" element={<PrivateSession />} />
         <Route path="artist/apply" element={<ArtistApply />} />

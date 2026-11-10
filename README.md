@@ -1,13 +1,14 @@
-# LOOP — Mood-aware Music Discovery
+# LOOP — Simple Mood-aware Music Discovery
 
-LOOP is a full-stack music discovery and recommendation platform whose intelligence lives in a
-**MySQL 8 database**. You tell it a mood ("calm", "not happy, need something for studying"),
-a context (Focus, Workout, Late night) or just press play, and it recommends songs
-— each with the real reasons it was chosen. Every play, skip, rating and like is
-stored and folded back into a decaying model of your taste. It also generates a
-weekly, versioned **LOOP World** for each listener, offers a **private session**
-that never touches the permanent profile, and gives curators and admins an
-ingestion pipeline, a review queue, a database health panel and an audit log.
+LOOP is a full-stack music discovery and listening app. The normal listener experience is intentionally
+simple: **Home, Discover, Search, Library and Settings**. Listeners can find music by mood or text,
+search tracks and artists, play available audio, like songs and create playlists. Artists can apply for
+access and submit recordings for review; admins can manage catalogue entries and review submissions.
+The React app uses the supplied **Mana Universal Icon Kit** through its Lucide `AppIcon` wrapper.
+
+Advanced recommendation experiments, the database explorer, analytics and other academic/demo modules
+remain in the source tree for project documentation, but are not part of the standard listener navigation.
+See [docs/BASIC_PRODUCT_SCOPE.md](docs/BASIC_PRODUCT_SCOPE.md) for the deliberately small release scope.
 
 It is a BTech CSE DBMS project, so the database does the heavy lifting:
 64 normalised tables, 20 views, 11 stored procedures, 11 functions,
@@ -44,38 +45,25 @@ The Express/MySQL development and integration-test path remains a separate profi
 - [Documentation index](#documentation-index)
 - [Limitations and future scope](#limitations-and-future-scope)
 
-## Features
+## Basic features
 
-**Listening**
-- Mood picker and free-text mood input with a deterministic, explainable parser (negation, intensity, activities; vocabulary stored in the database).
-- Context modes (Focus/Study, Workout, Travel, Relax, Night…) and eight recommendation strategies: mood, context, daily mix, "because you liked", regional, discovery, recovery, weekly world.
-- Every recommended song shows *why*: reasons generated from real signals (`recommendation_reasons`), and a per-signal score breakdown.
-- Playback through a permitted source only — a licensed local file, a licensed preview (when a provider is configured) or the labelled demo sketch — with a play queue, volume and honest "metadata only" states; start / pause / seek / finish events are stored; completion %, skip and replay are derived by the database.
-- "Not for me" removes a song from all future recommendations (undo in Settings); film (soundtrack) and language pages.
-- A short cinematic introduction on the first visit (skippable, keyboard-operable, a still frame with reduced motion).
-- **Mood-wise percentage ratings**: rate how well a song fits each mood (0–100 %, two decimals) on the song page; see the listeners' average and count next to the AI's own prediction, and rank songs for a mood by average or by a Bayesian-adjusted score (migration 0004).
-- Ratings (1–5), likes, playlists (manual, saved mixes, 8 smart playlist types), search with an ngram FULLTEXT index and alias matching.
-- Listening profile and **Music Mood Journey**: daily/weekly/monthly mood share, mood transitions (LAG), streaks (gaps-and-islands), peak hours, 7-day moving average — all SQL.
-- Cold-start onboarding (languages, genres, artists, composers and film music, moods and moments, region) that fades out as real behaviour accumulates; editable later from Settings.
+**Listeners**
+- Create an account, sign in and manage basic profile settings.
+- Discover tracks by choosing moods or describing what they want to hear.
+- Search tracks, artists, albums and genres.
+- Play available recordings with play/pause, seek, volume and queue controls. Metadata-only tracks are clearly labelled and are never presented as playable audio.
+- Like songs, create playlists, remove tracks and view recently played music.
 
-**Private session (incognito)**
-- The permanent profile becomes read-only; plays go to temporary memory that shapes only that session's recommendations.
-- Enforced in the database (`trg_lh_bi` rejects permanent history while a private session is active) and proven by a test that snapshots 14 permanent tables before and after a busy session.
-- Ending (or expiry) deletes the temporary memory and private lists.
+**Artists and admins**
+- Apply for an artist account and check application status.
+- Approved artists can submit track details and audio files to private quarantine.
+- Uploaded tracks require security checks and moderator review before publication.
+- Admins can manage the catalogue, users, artist applications and track reviews.
 
-**MUSE World**
-- A weekly themed world per listener (archetype, title, generative art, 18 songs), chosen from mood taste, season, novelty and the listener's "Love this world" / "Not for me" feedback. Versioned: regenerate creates v2, rollback restores v1; the database guarantees exactly one active version; a failed refresh keeps the current world.
-
-**Curation and operations**
-- Ingestion pipeline with statuses DISCOVERED → VALIDATING → PROCESSING → COMPLETED / SKIPPED / FAILED, idempotency keys, provenance (`source_records`), duplicate detection and a review queue (APPROVE / REJECT / MERGE / IGNORE / REPROCESS).
-- Versioned audio analysis and mood models; curators can add or remove a song's mood and the decision survives re-analysis.
-- Tunable model weights (bounded, audited), weekly intelligence and trend snapshots (24H / 7D / 30D).
-- Admin: catalogue CRUD, users and roles, audit log, database health checks, a performance lab (EXPLAIN with and without each index).
-
-**Security**
-- bcrypt password hashing; server-side sessions in httpOnly SameSite=Strict cookies with CSRF tokens and an Origin check; logout that really revokes; sessions list, sign out everywhere, password change, account deletion; account lockout; rate limiting; role-based permissions read from the database on every request.
-- Parameterised SQL everywhere; strict input validation; errors never leak SQL or stack traces.
-- The API connects as a **least-privilege** MySQL account (`muse_app`): no DDL, and the audit log is append-only (SELECT, INSERT only).
+**Core safety and project foundation**
+- Password hashing, secure server-side sessions, CSRF protection, rate limiting and role-based permissions.
+- MySQL schema, versioned migrations, stored procedures, triggers, views and DBMS documentation.
+- Responsive React interface with loading, error, empty and offline states.
 
 ## Tech stack
 
@@ -83,7 +71,7 @@ The Express/MySQL development and integration-test path remains a separate profi
 |---|---|
 | Database | MySQL 8.0 (InnoDB, utf8mb4, CHECK constraints, generated columns, window functions, recursive CTEs, JSON, FULLTEXT ngram) |
 | API | Node.js 20.19+ / Express 4, `mysql2/promise`, bcryptjs, helmet, express-rate-limit, cors, dotenv |
-| Web app | React 18, React Router 7, Vite 7; self-hosted Fraunces + Hanken Grotesk fonts; Web Audio for the demo sketch |
+| Web app | React 18, React Router 7, Vite 7, Lucide React via the Mana icon wrapper; self-hosted Fraunces + Hanken Grotesk fonts |
 | Quality | ESLint 9; `node:test` API + database suites; Vitest + Testing Library component tests; SQL runner; Playwright browser checks with an axe-core accessibility scan |
 
 ## Quick start
@@ -254,3 +242,9 @@ See [docs/STATUS.md](docs/STATUS.md) and [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.
 ## Current implementation status
 
 See [the project completion and verification report](docs/PROJECT_COMPLETION_STATUS.md) for the latest implemented roadmap areas, checks run, and the external services / integration tests that still require a configured deployment environment. The report deliberately distinguishes implemented code from production-verified functionality.
+
+## Music playback and supplied recommendation notebook
+
+The regular music catalogue is metadata, not a collection of recording files. When a listener selects a catalogue track, LOOP searches Apple's public catalogue using title and artist and opens the official Apple Music embedded player for a close match. Apple states that listeners not logged in to Apple Music can play a 30-second clip, while logged-in Apple Music listeners can hear full tracks in the embed ([Apple Music Marketing Tools](https://artists.apple.com/support/1117-apple-music-marketing-tools)). Provider availability varies by track and region. LOOP does not download or store Apple audio, and embedded playback events are not reported back as full listening-history events.
+
+The root `npm run dev` command prepares the music metadata catalogue first (it downloads the checksum-pinned CC BY 4.0 dataset unless `LOOP_MUSIC_CSV` points to a local CSV). The uploaded Spotify recommendation notebook is preserved at `music-recommendation/notebooks/spotify-music-recommendation.ipynb`. Its seed-song mean-vector and cosine-distance recommendation method is ported to `frontend/src/lib/spotifySimilarity.js` and used for the listener's daily mix and similar-track recommendations. The notebook expects separate Spotify CSV files and Spotify API credentials that were not included in the upload; LOOP therefore uses only the seven numerical fields actually available in its own music catalogue. See `docs/PLAYBACK_AND_RECOMMENDATIONS.md` for the exact scope and limitations.

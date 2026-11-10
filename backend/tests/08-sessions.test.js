@@ -237,7 +237,10 @@ test('API responses are not cached and carry security headers', async () => {
   const r = await fetch(`${base}/health`);
   assert.equal(r.headers.get('cache-control'), 'no-store');
   assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
-  assert.match(r.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+  const csp = r.headers.get('content-security-policy');
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.match(csp, /script-src[^;]*https:\x2f\x2fitunes\.apple\.com/);
+  assert.match(csp, /frame-src[^;]*https:\x2f\x2fembed\.music\.apple\.com/);
   assert.equal(r.headers.get('x-powered-by'), null);
 });
 

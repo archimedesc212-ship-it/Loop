@@ -13,18 +13,14 @@ import { registerMoodColors, LikeButton } from './Songs';
 
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
-  { to: '/mood', label: 'Mood', short: 'Mood', icon: Icon.Mood },
-  { to: '/mood-diary', label: 'Mood Diary', short: 'Diary', icon: Icon.BookOpen },
-  { to: '/world', label: 'LOOP World', short: 'World', icon: Icon.Globe },
+  { to: '/mood', label: 'Discover', short: 'Discover', icon: Icon.Mood },
   { to: '/search', label: 'Search', short: 'Search', icon: Icon.Search },
   { to: '/library', label: 'Library', short: 'Library', icon: Icon.Library },
-  { to: '/profile', label: 'Listening profile', short: 'Profile', icon: Icon.Chart },
-  { to: '/database', label: 'DB Explorer', short: 'Database', icon: Icon.Database },
 ];
 
 function Sidebar() {
   const { user, can } = useAuth();
-  const admin = can('health.view') || can('catalog.write');
+  const admin = ['health.view', 'catalog.write', 'pipeline.view', 'users.manage', 'artist.review'].some((permission) => can(permission));
   return (
     <aside className="sidebar" aria-label="Main">
       <Link to="/" className="brand"><Icon.BrandMark className="brand-mark" />LOOP</Link>
@@ -59,7 +55,7 @@ function Sidebar() {
 }
 
 function MobileNav() {
-  const items = [NAV[0], NAV[1], NAV[2], NAV[5], NAV[6]];
+  const items = NAV;
   return (
     <nav className="mobile-nav" aria-label="Main">
       {items.map(({ to, short, icon: Ico, end }) => (
@@ -139,7 +135,7 @@ function QueuePanel({ onClose }) {
               <span className="num tiny muted">{i + 1}</span>
               <span className="grow" style={{ minWidth: 0 }}>
                 <span className="q-title">{s.title}</span>
-                <span className="tiny muted">{s.artist.name}{s.playback && s.playback.playable === false ? ' · metadata only' : ''}</span>
+                <span className="tiny muted">{s.artist.name}{s.playback?.type === 'APPLE_MUSIC_LOOKUP' ? ' · Apple Music' : s.playback && s.playback.playable === false ? ' · metadata only' : ''}</span>
               </span>
             </button>
             {i !== p.index && <button className="icon-btn" onClick={() => p.removeAt(i)} aria-label={`Remove ${s.title} from the queue`}><Icon.X width={16} height={16} /></button>}
@@ -162,72 +158,127 @@ function PlayerBar() {
   const { user } = useAuth();
   const [queueOpen, setQueueOpen] = useState(false);
   const [sleepOpen, setSleepOpen] = useState(false);
+  const [appleOpen, setAppleOpen] = useState(false);
   const closeQueue = useCallback(() => setQueueOpen(false), []);
   const s = p.current;
+  const embedUri = p.media?.embedUri;
+
+  useEffect(() => {
+    setAppleOpen(!!embedUri);
+  }, [embedUri]);
+  useEffect(() => {
+    const openExternal = () => setAppleOpen(true);
+    window.addEventListener('muse:open-external', openExternal);
+    return () => window.removeEventListener('muse:open-external', openExternal);
+  }, []);
   if (!s) return null;
   return (
-    <div className={`player${user.incognito ? ' private' : ''}`} role="region" aria-label="Player">
-      <div className="now">
-        <Cover colors={s.cover} seed={s.album ? s.album.id * 31 + s.id : s.id} />
-        <div style={{ minWidth: 0 }}>
-          <Link to={`/song/${s.id}`} style={{ fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</Link>
-          <div className="tiny muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={mediaNote(p.media, user.incognito)}>
-            {s.artist.name} · {mediaNote(p.media, user.incognito)}
-          </div>
-        </div>
-        <span className="hide-sm"><LikeButton song={s} /></span>
-      </div>
-      <div className="center">
-        <div className="controls">
-          <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
-          <button className="play-btn" onClick={p.toggle} aria-label={p.status === 'playing' ? 'Pause' : 'Play'} disabled={p.status === 'loading'}>
-            {p.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}
-          </button>
-          <button className="icon-btn" onClick={p.next} aria-label="Next (counts as a skip if early)"><Icon.Next /></button>
-        </div>
-        <div className="progress">
-          <span style={{ textAlign: 'right' }}>{duration(p.position)}</span>
-          <input type="range" min="0" max={Math.max(1, Math.floor(p.length))} value={Math.round(p.position)} onChange={(e) => p.seek(Number(e.target.value))}
-            aria-label="Seek" aria-valuetext={`${duration(p.position)} of ${duration(p.length)}`} />
-          <span>{duration(p.length)}</span>
-        </div>
-      </div>
-      <div className="right">
-        <div className="sleep-control">
-          <button className={`icon-btn${sleepOpen ? ' on' : ''}`} onClick={() => setSleepOpen((open) => !open)} aria-label="Sleep timer" aria-expanded={sleepOpen} title="Sleep timer">
-            <Icon.Clock />
-            {p.sleepRemaining !== null && <span className="badge-count">{formatSleepRemaining(p.sleepRemaining)}</span>}
-          </button>
-          {sleepOpen && <div className="sleep-panel" role="dialog" aria-label="Sleep timer settings">
-            <div className="row between"><b>Sleep timer</b><button className="icon-btn" onClick={() => setSleepOpen(false)} aria-label="Close sleep timer"><Icon.X /></button></div>
-            <p className="tiny muted">Playback fades down during the final 30 seconds, then stops.</p>
-            <div className="sleep-options">
-              {[5, 15, 30, 45, 60, 90].map((minutes) => <button key={minutes} className="btn ghost sm" onClick={() => { p.setSleepTimer(minutes); setSleepOpen(false); }}>{minutes} min</button>)}
+    <>
+      <div className={`player${user.incognito ? ' private' : ''}`} role="region" aria-label="Player">
+        <div className="now">
+          <Cover colors={s.cover} seed={s.album ? s.album.id * 31 + s.id : s.id} />
+          <div style={{ minWidth: 0 }}>
+            <Link to={`/song/${s.id}`} style={{ fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</Link>
+            <div className="tiny muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={mediaNote(p.media, user.incognito)}>
+              {s.artist.name} · {mediaNote(p.media, user.incognito)}
             </div>
-            {p.sleepRemaining !== null && <div className="row between" style={{ marginTop: 10 }}>
-              <span className="small">Stops in <b>{formatSleepRemaining(p.sleepRemaining)}</b></span>
-              <button className="btn ghost sm" onClick={() => p.cancelSleepTimer()}>Cancel</button>
-            </div>}
-          </div>}
+          </div>
+          <span className="hide-sm"><LikeButton song={s} /></span>
         </div>
-        <div className="row hide-sm" style={{ '--gap': '4px' }}>
-          <button className="icon-btn" onClick={p.toggleMute} aria-label={p.muted ? 'Unmute' : 'Mute'} aria-pressed={p.muted}>
-            {p.muted || p.volume === 0 ? <Icon.VolumeOff /> : <Icon.Volume />}
-          </button>
-          <input type="range" className="volume" min="0" max="100" value={Math.round((p.muted ? 0 : p.volume) * 100)}
-            onChange={(e) => p.setVolume(Number(e.target.value) / 100)} aria-label="Volume" aria-valuetext={`${Math.round(p.volume * 100)}%`} />
-        </div>
-        <button className={`icon-btn${queueOpen ? ' on' : ''}`} onClick={() => setQueueOpen((o) => !o)} aria-label="Show play queue" aria-expanded={queueOpen}>
-          <Icon.List /><span className="badge-count">{p.queue.length}</span>
-        </button>
-        {!p.realAudio && (
-          <div className="toggle-group hide-sm" role="group" aria-label="Demo sketch clock" title="Demo time: the sketch clock runs faster so a full listen fits a presentation. Listened time is still measured honestly. Real audio always plays in real time.">
-            {[1, 10].map((v) => <button key={v} className={p.speed === v ? 'on' : ''} aria-pressed={p.speed === v} onClick={() => p.setSpeed(v)}>{v === 1 ? 'Real time' : 'Demo ×10'}</button>)}
+        {p.externalPlayback ? (
+          <div className="center external-player-center">
+            <div className="controls">
+              <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
+              <button className="play-btn" onClick={() => setAppleOpen(true)} aria-label="Open Apple Music player"><Icon.Play /></button>
+              <button className="icon-btn" onClick={p.next} aria-label="Next"><Icon.Next /></button>
+            </div>
+            <div className="tiny muted">Playback is handled by the Apple Music player</div>
+          </div>
+        ) : (
+          <div className="center">
+            <div className="controls">
+              <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
+              <button className="play-btn" onClick={p.toggle} aria-label={p.status === 'playing' ? 'Pause' : 'Play'} disabled={p.status === 'loading'}>
+                {p.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}
+              </button>
+              <button className="icon-btn" onClick={p.next} aria-label="Next (counts as a skip if early)"><Icon.Next /></button>
+            </div>
+            <div className="progress">
+              <span style={{ textAlign: 'right' }}>{duration(p.position)}</span>
+              <input type="range" min="0" max={Math.max(1, Math.floor(p.length))} value={Math.round(p.position)} onChange={(e) => p.seek(Number(e.target.value))}
+                aria-label="Seek" aria-valuetext={`${duration(p.position)} of ${duration(p.length)}`} />
+              <span>{duration(p.length)}</span>
+            </div>
           </div>
         )}
+        <div className="right">
+          {!p.externalPlayback && <>
+            <div className="sleep-control">
+              <button className={`icon-btn${sleepOpen ? ' on' : ''}`} onClick={() => setSleepOpen((open) => !open)} aria-label="Sleep timer" aria-expanded={sleepOpen} title="Sleep timer">
+                <Icon.Clock />
+                {p.sleepRemaining !== null && <span className="badge-count">{formatSleepRemaining(p.sleepRemaining)}</span>}
+              </button>
+              {sleepOpen && <div className="sleep-panel" role="dialog" aria-label="Sleep timer settings">
+                <div className="row between"><b>Sleep timer</b><button className="icon-btn" onClick={() => setSleepOpen(false)} aria-label="Close sleep timer"><Icon.X /></button></div>
+                <p className="tiny muted">Playback fades down during the final 30 seconds, then stops.</p>
+                <div className="sleep-options">
+                  {[5, 15, 30, 45, 60, 90].map((minutes) => <button key={minutes} className="btn ghost sm" onClick={() => { p.setSleepTimer(minutes); setSleepOpen(false); }}>{minutes} min</button>)}
+                </div>
+                {p.sleepRemaining !== null && <div className="row between" style={{ marginTop: 10 }}>
+                  <span className="small">Stops in <b>{formatSleepRemaining(p.sleepRemaining)}</b></span>
+                  <button className="btn ghost sm" onClick={() => p.cancelSleepTimer()}>Cancel</button>
+                </div>}
+              </div>}
+            </div>
+            <div className="row hide-sm" style={{ '--gap': '4px' }}>
+              <button className="icon-btn" onClick={p.toggleMute} aria-label={p.muted ? 'Unmute' : 'Mute'} aria-pressed={p.muted}>
+                {p.muted || p.volume === 0 ? <Icon.VolumeOff /> : <Icon.Volume />}
+              </button>
+              <input type="range" className="volume" min="0" max="100" value={Math.round((p.muted ? 0 : p.volume) * 100)}
+                onChange={(e) => p.setVolume(Number(e.target.value) / 100)} aria-label="Volume" aria-valuetext={`${Math.round(p.volume * 100)}%`} />
+            </div>
+          </>}
+          <button className={`icon-btn${queueOpen ? ' on' : ''}`} onClick={() => setQueueOpen((o) => !o)} aria-label="Show play queue" aria-expanded={queueOpen}>
+            <Icon.List /><span className="badge-count">{p.queue.length}</span>
+          </button>
+          {!p.realAudio && !p.externalPlayback && (
+            <div className="toggle-group hide-sm" role="group" aria-label="Demo sketch clock" title="Demo time: the sketch clock runs faster so a full listen fits a presentation. Listened time is still measured honestly. Real audio always plays in real time.">
+              {[1, 10].map((v) => <button key={v} className={p.speed === v ? 'on' : ''} aria-pressed={p.speed === v} onClick={() => p.setSpeed(v)}>{v === 1 ? 'Real time' : 'Demo ×10'}</button>)}
+            </div>
+          )}
+        </div>
+        {queueOpen && <QueuePanel onClose={closeQueue} />}
       </div>
-      {queueOpen && <QueuePanel onClose={closeQueue} />}
-    </div>
+      {appleOpen && p.media?.embedUri && (
+        <div className="modal-back" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAppleOpen(false); }}>
+          <section className="modal apple-music-modal" role="dialog" aria-modal="true" aria-labelledby="apple-player-title">
+            <div className="row between" style={{ marginBottom: 14 }}>
+              <div style={{ minWidth: 0 }}>
+                <h2 id="apple-player-title" style={{ margin: 0 }}>Play this track</h2>
+                <div className="tiny muted">{p.media.trackName} · {p.media.artistName} · Apple Music</div>
+              </div>
+              <button className="icon-btn" onClick={() => setAppleOpen(false)} aria-label="Close Apple Music player"><Icon.X /></button>
+            </div>
+            <iframe
+              title={`Apple Music player: ${p.media.trackName}`}
+              src={p.media.embedUri}
+              width="100%"
+              height="175"
+              allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *"
+              frameBorder="0"
+              loading="eager"
+              referrerPolicy="strict-origin-when-cross-origin"
+              style={{ display: 'block', width: '100%', border: 0, borderRadius: 12, background: 'transparent' }}
+            />
+            <p className="tiny muted" style={{ margin: '12px 0' }}>Apple Music controls playback. Full songs may require an Apple Music subscription; otherwise a short preview may be available. LOOP does not download or store audio.</p>
+            <div className="row between" style={{ alignItems: 'center' }}>
+              <a className="btn primary" href={p.media.storeUrl} target="_blank" rel="noreferrer">Open in Apple Music <Icon.Arrow /></a>
+              <span className="tiny muted">Playback controls are inside the player.</span>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
   );
 }
 

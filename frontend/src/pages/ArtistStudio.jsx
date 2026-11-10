@@ -62,38 +62,43 @@ export default function ArtistStudio() {
               <div className="row wrap">{profile.data.artists.map((artist) => <button type="button" key={artist.id} className={`pick${artistId === String(artist.id) ? ' on' : ''}`} onClick={() => setArtistId(String(artist.id))}>{artist.name}</button>)}</div>
             </section>
             <section className="panel stack section">
-              <h3>Upload a recording</h3>
-              <p className="small soft">Accepted formats: MP3, M4A, WAV, FLAC, OGG and AAC. Maximum 50 MB per file. A declared duration is only a hint; ffprobe verifies the actual media duration.</p>
+              <h3>Upload a track</h3>
+              <p className="small soft">Upload your track and add a few details. It will stay private until security checks and moderator review are complete.</p>
               <form className="stack" onSubmit={submit}>
                 <div className="grid-2">
                   <Field label="Track title"><input className="input" required maxLength={150} value={form.title} onChange={(e) => change('title', e.target.value)} /></Field>
-                  <Field label="Version / edit"><input className="input" maxLength={40} placeholder="Original, acoustic, remix…" value={form.versionLabel} onChange={(e) => change('versionLabel', e.target.value)} /></Field>
-                  <Field label="Genre"><select className="select" required value={form.genreId} onChange={(e) => change('genreId', e.target.value)}><option value="">Choose genre</option>{(genres.data || []).map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}</select></Field>
-                  <Field label="Language"><select className="select" value={form.languageId} onChange={(e) => change('languageId', e.target.value)}><option value="">Unknown / instrumental</option>{(languages.data || []).map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</select></Field>
-                  <Field label="Duration (seconds)" hint="Approximate only; verified by ffprobe."><input className="input" type="number" min="30" max="1800" required value={form.durationSec} onChange={(e) => change('durationSec', e.target.value)} /></Field>
+                  <Field label="Genre"><select className="select" required value={form.genreId} onChange={(e) => change('genreId', e.target.value)}><option value="">Choose genre</option>{(genres.data || []).map((genre) => <option key={genre.id} value={genre.id}>{genre.name}</option>)}</select></Field>
+                  <Field label="Language"><select className="select" value={form.languageId} onChange={(e) => change('languageId', e.target.value)}><option value="">Unknown / instrumental</option>{(languages.data || []).map((language) => <option key={language.id} value={language.id}>{language.name}</option>)}</select></Field>
                   <Field label="Release year"><input className="input" type="number" min="1900" max="2100" required value={form.releaseYear} onChange={(e) => change('releaseYear', e.target.value)} /></Field>
                 </div>
                 <label className="row small"><input type="checkbox" checked={form.explicit} onChange={(e) => change('explicit', e.target.checked)} /> Contains explicit content</label>
-                <Field label="Audio file" hint="The upload is stored privately until malware and media checks complete."><input id="artist-audio-file" className="input" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/x-wav,audio/flac,audio/ogg,audio/aac,.mp3,.m4a,.wav,.flac,.ogg,.aac" required onChange={(e) => setFile(e.target.files?.[0] || null)} /></Field>
-                <h3 className="section-title">Rights declaration</h3>
+                <Field label="Audio file" hint="MP3, M4A, WAV, FLAC, OGG or AAC. Maximum 50 MB. Your file stays private until security checks and moderator review are complete.">
+                  <input id="artist-audio-file" className="input" type="file" accept="audio/mpeg,audio/mp4,audio/wav,audio/x-wav,audio/flac,audio/ogg,audio/aac,.mp3,.m4a,.wav,.flac,.ogg,.aac" required onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                </Field>
                 <div className="grid-2">
-                  <Field label="Composition rights"><select className="select" value={form.compositionRights} onChange={(e) => change('compositionRights', e.target.value)}><option value="OWNED">I own / control the composition</option><option value="LICENSED">I have a licence for the composition</option><option value="PUBLIC_DOMAIN">Composition is public domain</option></select></Field>
-                  <Field label="Sound recording / master rights"><select className="select" value={form.recordingRights} onChange={(e) => change('recordingRights', e.target.value)}><option value="OWNED">I own / control the sound recording</option><option value="LICENSED">I have a licence for the sound recording</option><option value="PUBLIC_DOMAIN">Recording is public domain</option></select></Field>
+                  <Field label="Composition rights">
+                    <select className="select" value={form.compositionRights} onChange={(e) => change('compositionRights', e.target.value)}>
+                      <option value="OWNED">I own / control it</option><option value="LICENSED">I have a licence</option><option value="PUBLIC_DOMAIN">Public domain</option>
+                    </select>
+                  </Field>
+                  <Field label="Recording / master rights">
+                    <select className="select" value={form.recordingRights} onChange={(e) => change('recordingRights', e.target.value)}>
+                      <option value="OWNED">I own / control it</option><option value="LICENSED">I have a licence</option><option value="PUBLIC_DOMAIN">Public domain</option>
+                    </select>
+                  </Field>
                 </div>
-                <Field label="Rights evidence reference" hint="Required when either declaration is Licensed. Link to a licence or authorization document that moderators can review."><input className="input" type="url" placeholder="https://" value={form.rightsEvidenceRef} onChange={(e) => change('rightsEvidenceRef', e.target.value)} /></Field>
-                <div className="grid-2">
-                  <Field label="Territories" hint="Comma-separated ISO country codes, or WORLDWIDE."><input className="input" value={form.territories} onChange={(e) => change('territories', e.target.value)} /></Field>
-                  <Field label="Artist royalty share (%)" hint="A declaration only; does not create a payout agreement."><input className="input" type="number" min="0" max="100" step="0.01" value={form.royaltySharePct} onChange={(e) => change('royaltySharePct', e.target.value)} /></Field>
-                  <Field label="Licence start date (optional)"><input className="input" type="date" value={form.licenceStart} onChange={(e) => change('licenceStart', e.target.value)} /></Field>
-                  <Field label="Licence end date (optional)"><input className="input" type="date" value={form.licenceEnd} onChange={(e) => change('licenceEnd', e.target.value)} /></Field>
-                </div>
-                <Field label="Royalty currency"><select className="select" value={form.royaltyCurrency} onChange={(e) => change('royaltyCurrency', e.target.value)}><option value="INR">INR</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option></select></Field>
+                {(form.compositionRights === 'LICENSED' || form.recordingRights === 'LICENSED') && <Field label="Licence evidence URL" hint="Required when either rights type is licensed.">
+                  <input className="input" type="url" required placeholder="https://" value={form.rightsEvidenceRef} onChange={(e) => change('rightsEvidenceRef', e.target.value)} />
+                </Field>}
+                <Field label="Territories" hint="Enter WORLDWIDE or comma-separated ISO country codes, for example IN, US.">
+                  <input className="input" value={form.territories} onChange={(e) => change('territories', e.target.value)} />
+                </Field>
                 <div className="card stack small">
-                  <strong>Required declaration</strong>
-                  <p className="soft">I confirm that I own or have documented authority to distribute both the composition and the sound recording for interactive streaming in the selected territories and dates. I understand that inaccurate claims may result in removal and account action. Metadata-provider access does not grant audio rights.</p>
-                  <label className="row"><input type="checkbox" required /> I accept the LOOP Artist Rights Declaration (version 1.0).</label>
+                  <strong>Rights confirmation</strong>
+                  <p className="soft">Only submit music you have permission to distribute in the selected territories. LOOP checks each file and a moderator reviews it before it can become public.</p>
+                  <label className="row"><input type="checkbox" required /> I confirm the rights declarations above are accurate.</label>
                 </div>
-                <div className="row"><button className="btn primary" disabled={busy || !artistId || !file}>{busy ? 'Uploading securely…' : 'Upload to private quarantine'}</button></div>
+                <div className="row"><button className="btn primary" disabled={busy || !artistId || !file}>{busy ? 'Uploading securely…' : 'Submit track for review'}</button></div>
               </form>
             </section>
             <section className="panel stack section">
