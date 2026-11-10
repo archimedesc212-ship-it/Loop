@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * Mana Universal Icon Kit — React wrapper for Lucide icons.
  * Adapted from the supplied kit's src/Icon.tsx for this Vite JavaScript app.
