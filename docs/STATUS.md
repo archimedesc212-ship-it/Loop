@@ -105,7 +105,7 @@ automated test or browser check that passed in the run recorded in
 ## Limitations
 
 - Audio features are pre-computed values in the seed and feed; no signal-processing model analyses real audio.
-- The demo catalogue is fictional; there is no real music in the project and none should be added without a licence.
+- Public static archive mode now uses the uploaded 28,372-record CC BY 4.0 dataset for real track metadata and audio-feature matching; its lyrics column is excluded. The archive has no audio recordings or stream URLs, so playback remains disabled. The separate MySQL development/integration seed is still fictional and is not served by the static archive.
 - No collaborative filtering ("listeners like you").
 - Single process and single MySQL instance; rate limits are per process; no load testing.
 - Chromium only in browser tests.
