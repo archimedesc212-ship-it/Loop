@@ -16,7 +16,10 @@ CREATE TABLE IF NOT EXISTS mood_diary_entries (
   UNIQUE KEY uq_mde_user_day (user_id, checkin_date),
   KEY idx_mde_mood_day (mood_id, checkin_date),
   CONSTRAINT fk_mde_user FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
-  CONSTRAINT fk_mde_mood FOREIGN KEY (mood_id) REFERENCES moods (mood_id) ON DELETE SET NULL,
+  -- Keep the referenced mood stable: MySQL 8.0.46 rejects a CHECK that reads a
+  -- column whose FK action can mutate it (ON DELETE SET NULL). RESTRICT keeps
+  -- the mood-or-note invariant enforced by chk_mde_content at the DB boundary.
+  CONSTRAINT fk_mde_mood FOREIGN KEY (mood_id) REFERENCES moods (mood_id),
   CONSTRAINT chk_mde_content CHECK (mood_id IS NOT NULL OR (note IS NOT NULL AND CHAR_LENGTH(TRIM(note)) > 0)),
   CONSTRAINT chk_mde_note CHECK (note IS NULL OR CHAR_LENGTH(TRIM(note)) > 0)
 ) ENGINE=InnoDB;
