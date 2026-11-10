@@ -35,6 +35,9 @@ export default function Home() {
   const moods = useApi(() => api.moods(), []);
   const daily = useApi(() => api.recDaily(12), [user?.incognito]);
   const popular = useApi(() => api.trending({ limit: 12 }), []);
+  const telugu = useApi(() => api.recRegional(1, 8), []);
+  const hindi = useApi(() => api.recRegional(2, 8), []);
+  const tamil = useApi(() => api.recRegional(3, 8), []);
   const recent = useApi(() => api.history(10), [user?.incognito]);
   const [selected, setSelected] = useState([]);
   const [text, setText] = useState('');
@@ -123,9 +126,12 @@ export default function Home() {
       <Shelf title="Made for you" sub="A daily mix based on your listening and mood preferences." to="/mix/daily" state={daily} />
       <Shelf title="Recently played" sub="Pick up where you left off." state={recent} />
       <Shelf title="Popular in LOOP" sub="Popular songs from the curated recommendation catalogue." to="/search?q=popular" state={popular} />
+      <Shelf title="Telugu hits" sub="A starter collection of Telugu film and independent music." to="/search?q=Telugu" state={telugu} />
+      <Shelf title="Hindi hits" sub="A starter collection of Hindi film and pop music." to="/search?q=Hindi" state={hindi} />
+      <Shelf title="Tamil hits" sub="A starter collection of Tamil film and independent music." to="/search?q=Tamil" state={tamil} />
 
       <section className="section">
-        <div className="section-head"><div><h2 className="section-title">Explore music worldwide</h2><p className="small muted">Search music across international catalogues, languages and genres.</p></div><Link to="/search" className="small link">Open global search</Link></div>
+        <div className="section-head"><div><h2 className="section-title">Explore music worldwide</h2><p className="small muted">Discover Telugu, Hindi, Tamil and global music from the collections available in LOOP.</p></div><Link to="/search" className="small link">Open global search</Link></div>
         <div className="world-discovery-grid">
           {[
             ['Bollywood', 'Bollywood hits'], ['K-pop', 'K-pop'], ['Afrobeats', 'Afrobeats'], ['Latin pop', 'Latin pop'],

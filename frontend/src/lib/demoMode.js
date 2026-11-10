@@ -1,5 +1,6 @@
 import { diaryDateKey, upsertDiaryEntry, removeDiaryEntry } from './moodDiary';
 import { recommendByFeatureCentroid } from './spotifySimilarity';
+import { regionalSeeds } from './regionalSeeds';
 // Static, dataset-backed catalogue adapter. No invented songs, play counts or audio.
 const DATA_PATH = String(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/') + 'data/music-catalog.json';
 const STORAGE_PREFIX = 'loop.catalog.v1.';
@@ -105,6 +106,28 @@ function makeCatalogue(payload) {
     };
     return record;
   });
+  // Curated multilingual starter catalogue; metadata only, playback via official-provider search.
+  const regionalSongs = regionalSeeds.map((item) => {
+    const artistId = 900000 + item.id;
+    const genreId = 990000 + item.id;
+    const palette = ['#26384A', '#83A8C9'];
+    const genre = { id: genreId, name: item.genre, color: palette[1] };
+    const features = { energy: 0.62, valence: 0.62, danceability: 0.62, acousticness: 0.35, instrumentalness: 0.05, loudnessIndex: 0.65 };
+    const moods = inferredMoods({ ...features, topic: 'music' });
+    return {
+      id: item.id, title: item.title, releaseYear: item.year, explicit: null, durationSec: null,
+      artist: { id: artistId, name: item.artist }, album: null, language: item.language,
+      genre, genres: [genre], cover: palette, coverColor1: palette[0], coverColor2: palette[1],
+      playback: { playable: true, type: 'YOUTUBE_LOOKUP', source: 'OFFICIAL_PROVIDER_SEARCH' },
+      features, topic: 'music', topicScores: [], moods: moods.map((mood) => mood.name),
+      moodsDetailed: moods.map((mood) => ({ id: mood.id, name: mood.name, emoji: mood.emoji, color: mood.color, confidence: 0.5 })),
+      reasons: [{ code: 'REGIONAL_STARTER', text: `${item.language} music starter collection` }],
+      credits: [], segments: [], analyses: [], provenance: [], mergedDuplicates: [], videoLinks: [],
+      liked: false, myRating: null,
+      recordingSearchUrl: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(item.artist + ' ' + item.title + ' official audio'),
+    };
+  });
+  for (const song of regionalSongs) if (!songById.has(song.id)) { songs.push(song); songById.set(song.id, song); }
   const artistSongs = new Map();
   const songById = new Map();
   const genreCounts = new Map();
@@ -302,7 +325,15 @@ export async function demoRequest(method, path, body) {
   if (p === '/moods') return MOODS.map((mood) => ({ ...mood, description: 'Estimated from the dataset topic and audio features.' }));
   if (p === '/genres') return catalogue.genres;
   if (p === '/contexts') return CONTEXTS;
-  if (p === '/languages' || p === '/regions') return [];
+  if (p === '/languages') return [...new Set(all.map((song) => song.language).filter(Boolean))].map((name, index) => ({ id: index + 1, name, nativeName: name, iso: name === 'Telugu' ? 'te' : name === 'Hindi' ? 'hi' : 'ta', script: name === 'Telugu' ? 'Telugu' : name === 'Hindi' ? 'Devanagari' : 'Tamil', totalSongs: all.filter((song) => song.language === name).length, songCount: all.filter((song) => song.language === name).length }));
+  if (/^\/languages\/\d+$/.test(p)) {
+    const languages = [...new Set(all.map((song) => song.language).filter(Boolean))];
+    const name = languages[Number(p.split('/').pop()) - 1];
+    if (!name) return { notAvailable: true, message: 'This language is not in the local starter catalogue yet.' };
+    const songs = all.filter((song) => song.language === name).map(withPersonalState);
+    return { id: Number(p.split('/').pop()), name, nativeName: name, iso: name === 'Telugu' ? 'te' : name === 'Hindi' ? 'hi' : 'ta', script: name === 'Telugu' ? 'Telugu' : name === 'Hindi' ? 'Devanagari' : 'Tamil', totalSongs: songs.length, songs, artists: [...new Map(songs.map((song) => [song.artist.id, song.artist])).values()], films: [], regions: [] };
+  }
+  if (p === '/regions') return [];
   if (p === '/songs' || p === '/trending') {
     const limit = safeLimit(q.get('limit'), 24, 100);
     const rows = p === '/trending'
@@ -339,7 +370,13 @@ export async function demoRequest(method, path, body) {
       : 'Ranked using available archive audio features and topic labels; no liked-song seed was available.';
     return { ...listResult(rows, seed ? 'Similar sound' : 'Made for you', sourceNote), seed: seed ? withPersonalState(seed) : null, algorithm: notebookRanked.length ? 'NOTEBOOK_COSINE_CENTROID' : 'FEATURE_MATCH' };
   }
-  if (p === '/recommendations/regional') return { empty: true, message: 'This dataset contains no language or region field, so a reliable regional mix cannot be generated.' };
+  if (p === '/recommendations/regional') {
+    const languageId = Number(q.get('languageId'));
+    const languages = [...new Set(all.map((song) => song.language).filter(Boolean))];
+    const language = languages[languageId - 1] || q.get('language') || 'Telugu';
+    const rows = all.filter((song) => song.language === language);
+    return listResult(rows, `${language} songs`, `Curated ${language} starter collection. Playback opens official-provider search results.`);
+  }
   if (p === '/recommendations/recovery') {
     const stages = [
       { title: 'Quiet', target: { energy: 0.24, valence: 0.38, acousticness: 0.7 } },
@@ -429,7 +466,7 @@ export async function demoRequest(method, path, body) {
     const term = norm(q.get('q'));
     const words = term.split(' ').filter(Boolean);
     const matched = term ? all.filter((song) => {
-      const haystack = norm([song.title, song.artist.name, song.genre.name, song.topic].concat(song.moods).join(' '));
+      const haystack = norm([song.title, song.artist.name, song.genre.name, song.topic, song.language].concat(song.moods).join(' '));
       return words.every((word) => haystack.includes(word));
     }) : [];
     const limit = safeLimit(q.get('limit'), 60, 100);
@@ -441,7 +478,7 @@ export async function demoRequest(method, path, body) {
     };
     return {
       total: matched.length, songs: matched.slice(0, limit).map(withPersonalState),
-      artists: artistHits, albums: [], moods: moodHits, genres: genreHits, languages: [],
+      artists: artistHits, albums: [], moods: moodHits, genres: genreHits, languages: [...new Set(matched.map((song) => song.language).filter(Boolean))],
     };
   }
   if (/^\/songs\/\d+$/.test(p)) return getSong(catalogue, p.split('/').pop());
@@ -607,7 +644,6 @@ export async function demoRequest(method, path, body) {
   }
   if (/^\/albums\/\d+$/.test(p)) return { notAvailable: true, message: 'The supplied dataset has no album information.' };
   if (/^\/films\/\d+$/.test(p)) return { notAvailable: true, message: 'The supplied dataset has no film or soundtrack information.' };
-  if (/^\/languages\/\d+$/.test(p)) return { notAvailable: true, message: 'The supplied dataset does not contain track-language metadata.' };
   if (p.startsWith('/admin/')) return {};
   return { empty: true, notAvailable: true, message: 'This feature is not available in the metadata-only archive view.' };
 }
