@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
-import { onPlayFinished } from '../hooks/usePlayer';
 import { SongCard } from '../components/Songs';
 import { WorldArt } from '../components/Art';
 import { MoodTiles, FeelInput, HERO_MOODS } from '../components/Rec';
@@ -45,13 +44,10 @@ const MODES = [
 export default function Home() {
   const { user } = useAuth();
   const nav = useNavigate();
-  const [tick, setTick] = useState(0);
-  useEffect(() => onPlayFinished(() => setTick((t) => t + 1)), []);
   const moods = useApi(() => api.moods(), []);
   const daily = useApi(() => api.recDaily(16), [user.incognito]);
   const similar = useApi(() => api.recSimilar(undefined, 12), [user.incognito]);
   const trending = useApi(() => api.trending({ limit: 12 }), []);
-  const recent = useApi(() => api.history(12), [tick, user.incognito]);
   const genres = useApi(() => api.genres(), []);
   const world = useApi(() => api.world(), []);
   const [selected, setSelected] = useState([]);
@@ -111,11 +107,9 @@ export default function Home() {
 
       <Shelf title={similar.data && similar.data.title ? similar.data.title : 'Similar sound'} sub="Matched using the dataset audio features" state={similar} origin="HOME"
         to={similar.data && similar.data.seed ? `/mix/similar/${similar.data.seed.id}` : undefined}
-        emptyText="Rate a song 4★ or more, or like one, and LOOP will find songs that sound like it." />
+        emptyText="Explore more records matched by the measured audio features in the source dataset." />
       <Shelf title="Archive highlights" sub="Selected by energy, valence and danceability in the uploaded dataset" state={trending} origin="HOME"
         reasonOf={(s) => s.reasons?.[0]?.text || null} />
-      <Shelf title="Recently played" state={recent} origin="LIBRARY" to="/library"
-        emptyText={user.incognito ? 'Private sessions do not add to your history.' : 'Play something and it will appear here.'} />
 
       <section className="section">
         <div className="section-head"><h2 className="section-title">Genres in this dataset</h2></div>
