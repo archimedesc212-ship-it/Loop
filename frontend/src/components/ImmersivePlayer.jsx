@@ -2,8 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePlayer } from '../hooks/usePlayer';
 import * as Icon from './Icons';
 
+const audioGraphs = new WeakMap();
+
 function VisualizerCanvas({ audioElement, active }) {
   const canvasRef = useRef(null);
+  const activeRef = useRef(active);
+  activeRef.current = active;
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
@@ -12,7 +16,6 @@ function VisualizerCanvas({ audioElement, active }) {
     let frame = 0;
     let raf = 0;
     let analyser = null;
-    let source = null;
     let audioContext = null;
     let data = null;
 
@@ -22,15 +25,21 @@ function VisualizerCanvas({ audioElement, active }) {
       if (audioElement?.src && new URL(audioElement.src, window.location.href).origin === window.location.origin) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         if (AudioContextClass) {
-          audioContext = new AudioContextClass();
-          source = audioContext.createMediaElementSource(audioElement);
-          analyser = audioContext.createAnalyser();
-          analyser.fftSize = 128;
-          analyser.smoothingTimeConstant = 0.84;
-          source.connect(analyser);
-          analyser.connect(audioContext.destination);
+          let graph = audioGraphs.get(audioElement);
+          if (!graph) {
+            audioContext = new AudioContextClass();
+            const source = audioContext.createMediaElementSource(audioElement);
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 128;
+            analyser.smoothingTimeConstant = 0.84;
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            graph = { audioContext, analyser };
+            audioGraphs.set(audioElement, graph);
+          } else {
+            ({ audioContext, analyser } = graph);
+          }
           data = new Uint8Array(analyser.frequencyBinCount);
-          if (active && audioContext.state === 'suspended') audioContext.resume().catch(() => {});
         }
       }
     } catch {
@@ -48,14 +57,15 @@ function VisualizerCanvas({ audioElement, active }) {
       }
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
       context.clearRect(0, 0, width, height);
-      if (analyser && data && active) analyser.getByteFrequencyData(data);
+      if (analyser && data && activeRef.current) analyser.getByteFrequencyData(data);
+      if (audioContext && activeRef.current && audioContext.state === 'suspended') audioContext.resume().catch(() => {});
       const count = 64;
       const gap = Math.max(3, width / 180);
       const barWidth = Math.max(2, (width - gap * (count - 1)) / count);
       for (let i = 0; i < count; i += 1) {
         const measured = analyser && data ? data[Math.floor(i * data.length / count)] / 255 : 0;
         const ambient = 0.08 + (Math.sin(frame * 0.018 + i * 0.28) + 1) * 0.035;
-        const amplitude = active ? Math.max(ambient, measured) : 0.035;
+        const amplitude = activeRef.current ? Math.max(ambient, measured) : 0.035;
         const barHeight = Math.max(3, amplitude * height * 0.72);
         const x = i * (barWidth + gap);
         const y = (height - barHeight) / 2;
@@ -73,10 +83,9 @@ function VisualizerCanvas({ audioElement, active }) {
     draw();
     return () => {
       window.cancelAnimationFrame(raf);
-      try { source?.disconnect(); analyser?.disconnect(); } catch {}
-      if (audioContext && audioContext.state !== 'closed') audioContext.close().catch(() => {});
+      // Keep the one-per-element audio graph alive across overlay open/close cycles.
     };
-  }, [audioElement, active]);
+  }, [audioElement]);
   return <canvas ref={canvasRef} className="loop-visualizer-canvas" aria-hidden="true" />;
 }
 
