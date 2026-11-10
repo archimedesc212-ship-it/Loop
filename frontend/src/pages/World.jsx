@@ -36,8 +36,28 @@ export default function World() {
   if (loading) return <div className="page stack"><Skeleton h={340} r={28} /><Thinking label="Building your world" /></div>;
   if (error && error.code === 'INCOGNITO_ACTIVE') return <div className="page"><Empty title="Your world is waiting">{error.message}</Empty></div>;
   if (error) return <div className="page"><ErrorState error={error} onRetry={reload} /></div>;
-  const { world, songs, versions, history } = data;
-  const s = world.signals || {};
+  const payload = data || {};
+  const sourceWorld = payload.world || {};
+  const world = {
+    ...sourceWorld,
+    id: sourceWorld.id ?? 1,
+    title: sourceWorld.title || 'Your listening world',
+    description: sourceWorld.description || 'A world shaped by the music you enjoy.',
+    theme: sourceWorld.theme || 'calm',
+    archetype: sourceWorld.archetype || { name: 'YOUR SOUND' },
+    version: sourceWorld.version ?? 1,
+    signals: sourceWorld.signals || {},
+    batchId: sourceWorld.batchId ?? 1,
+    weekStart: sourceWorld.weekStart || new Date().toISOString(),
+    generatedAt: sourceWorld.generatedAt || new Date().toISOString(),
+    expiresAt: sourceWorld.expiresAt || new Date(Date.now() + 7 * 86400000).toISOString(),
+    totalDurationSec: sourceWorld.totalDurationSec || 0,
+    songCount: sourceWorld.songCount || 0,
+  };
+  const songs = Array.isArray(payload.songs) ? payload.songs : [];
+  const versions = Array.isArray(payload.versions) ? payload.versions : [];
+  const history = Array.isArray(payload.history) ? payload.history : [];
+  const s = world.signals;
   const canRollback = versions.some((v) => v.version < world.version && v.status === 'SUPERSEDED');
 
   return (

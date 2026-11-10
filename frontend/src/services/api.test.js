@@ -37,6 +37,34 @@ describe('demo fixtures', () => {
       expect(song.moods.every((mood) => typeof mood === 'string')).toBe(true);
     }
   });
+  it('provides complete arrays for demo pages that use array methods', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const world = await demoRequest('GET', '/worlds/current');
+    expect(Array.isArray(world.versions)).toBe(true);
+    expect(Array.isArray(world.history)).toBe(true);
+    expect(Array.isArray(world.songs)).toBe(true);
+    expect(typeof world.world.archetype.name).toBe('string');
+    const artist = await demoRequest('GET', '/artists/1');
+    const album = await demoRequest('GET', '/albums/1');
+    const film = await demoRequest('GET', '/films/1');
+    const language = await demoRequest('GET', '/languages/1');
+    expect(Array.isArray(artist.songs)).toBe(true);
+    expect(Array.isArray(artist.aliases)).toBe(true);
+    expect(Array.isArray(album.songs)).toBe(true);
+    expect(Array.isArray(album.artists)).toBe(true);
+    expect(Array.isArray(film.songs)).toBe(true);
+    expect(Array.isArray(film.albums)).toBe(true);
+    expect(Array.isArray(language.songs)).toBe(true);
+    expect(Array.isArray(language.artists)).toBe(true);
+  });
+  it('provides complete detail collections for demo songs', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const song = await demoRequest('GET', '/songs/1');
+    for (const key of ['credits', 'genres', 'moodsDetailed', 'segments', 'analyses', 'provenance', 'mergedDuplicates']) {
+      expect(Array.isArray(song[key])).toBe(true);
+    }
+  });
+
 });
 
 describe('request()', () => {
