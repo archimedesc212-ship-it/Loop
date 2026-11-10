@@ -29,7 +29,7 @@ export function MoodRatingRow({ mood, draft, error, disabled, onChange, onRemove
             <span className="num small">{formatPct(mood.community.average)}</span>
             <span className="tiny muted">{ratingCount(mood.community.count)}</span>
           </>
-        ) : <span className="tiny muted">No ratings yet</span>}
+        ) : <span className="tiny muted">No community data</span>}
       </div>
 
       <div className="mr-ai tiny muted" title="Dataset topic and audio-feature estimate, not an AI model prediction">
@@ -117,7 +117,7 @@ export default function MoodRatings({ songId, privateSession = false }) {
         <div className="stack" style={{ '--gap': '4px' }}>
           <h3 id="mr-title">How well does it fit each mood?</h3>
           <p className="tiny muted" style={{ maxWidth: '62ch' }}>
-            Rate each mood from 0 to 100 %. <b>Listeners</b> is the average of everyone's ratings; <b>Dataset</b> is an estimate from the source topic and audio-feature fields. Your ratings are kept separate from the source dataset estimates.
+            Rate each mood from 0 to 100 %. <b>Dataset</b> is an estimate from the source topic and audio-feature fields. Your own ratings are stored locally in this browser; the uploaded archive contains no community-rating data.
           </p>
         </div>
         <span className="tiny muted">{data.totals.ratings ? `${ratingCount(data.totals.ratings)} from ${data.totals.raters} listener${data.totals.raters > 1 ? 's' : ''}` : 'No mood ratings for this song yet'}</span>
@@ -125,7 +125,7 @@ export default function MoodRatings({ songId, privateSession = false }) {
 
       {paused && <div className="tiny" style={{ color: 'var(--private)' }}>Mood ratings are paused during a private session, so your profile stays unchanged.</div>}
 
-      <div className="mr-head tiny muted" aria-hidden="true"><span>Mood</span><span>Listeners</span><span>Dataset</span><span>Your rating</span></div>
+      <div className="mr-head tiny muted" aria-hidden="true"><span>Mood</span><span>Community</span><span>Dataset</span><span>Your rating</span></div>
       <div className="mr-list">
         {list.map((m) => (
           <MoodRatingRow key={m.id} mood={m} draft={drafts[m.id]} error={errors[m.id]} disabled={paused || saving}
