@@ -85,7 +85,19 @@ Onboarding answers rank-weight the picks (1, 0.85, 0.7 … min 0.4). A new liste
 `preferences decay with age` inserts a 30-day-old play and checks it has mostly faded
 from short-term (< 20 % of a fresh play) but is still strong in long-term (> 60 %).
 
-## 4. Scoring candidates — `sp_generate_recommendations` (RECOMMENDER model 3.0)
+## 4. Similar-listener collaborative refinement
+
+For Daily, Regional, Discovery and Similar mixes (never private sessions), LOOP compares the listener's completed tracks from the last 180 days with other listeners' completed tracks. A neighbour must share at least two completed tracks; at most the 100 strongest overlaps are considered. Candidate tracks completed by at least two neighbours receive a small confidence-weighted boost:
+
+```
+listener_confidence = min(1, distinct_neighbours / 5)
+boost_weight = 0.12 · listener_confidence
+final = base_score · (1 − boost_weight) + neighbour_completion_score · boost_weight
+```
+
+This is request-time collaborative filtering, not a persistent user-similarity table. It is deliberately conservative: one neighbour cannot change a ranking, and new listeners without enough shared history continue to use onboarding, regional and trend signals. The adjusted order and scores are written back only to that generated recommendation batch so the API and saved batch remain consistent.
+
+## 5. Scoring candidates — `sp_generate_recommendations` (RECOMMENDER model 3.0)
 
 Candidates are `v_recommendation_candidates` (active, analysed, with a primary genre),
 filtered by: content filter, discovery-only, seed song, chosen language,
