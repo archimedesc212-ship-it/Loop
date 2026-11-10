@@ -19,9 +19,9 @@ The root `wrangler.jsonc` is the Worker configuration. It publishes `frontend/di
 
 ## What this deployment contains
 
-The frontend currently defaults to its built-in presentation/demo mode unless the build variable `VITE_DEMO_MODE=false` is explicitly set. In demo mode, the UI uses browser-local sample data and does not require an API server or database. Do not set `VITE_DEMO_MODE=false` for this static Worker deployment.
+The frontend uses the verified, static music archive prepared at build time from the supplied 28,372-record Music Dataset (1950–2019). The root build script checksum-verifies the source CSV, excludes the lyrics column, and writes `frontend/public/data/music-catalog.json` before Vite runs. The Worker remains database-free and does not need `VITE_DEMO_MODE=false`.
 
-This is a working public UI/demo deployment, not the database-backed production API. The Express/MySQL API is not converted into a Cloudflare Worker by this configuration. Do not connect the current backend to TiDB: the application uses MySQL stored procedures, stored functions and triggers, which TiDB does not support. Use a compatible MySQL 8.0.19+ service and a separately deployed API before switching the frontend out of demo mode.
+This is a public, dataset-backed music archive, not the database-backed streaming API. The source contains track metadata and audio features, but no original recordings, track durations, language labels, album metadata or film metadata. Playback remains disabled; song pages can open an external search for a recording. The Express/MySQL API is not converted into a Cloudflare Worker by this configuration. Do not connect the current backend to TiDB: the application uses MySQL stored procedures, stored functions and triggers, which TiDB does not support. Use a compatible MySQL 8.0.19+ service and a separately deployed API before switching the frontend out of demo mode.
 
 ## Release check
 
