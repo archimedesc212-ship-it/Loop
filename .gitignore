@@ -12,3 +12,5 @@ docs/erd/.build/
 docs/phase2/.build/
 docs/phase3/.build/
 __pycache__/
+
+frontend/public/data/music-catalog.json
