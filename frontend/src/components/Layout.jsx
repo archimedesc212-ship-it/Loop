@@ -244,7 +244,7 @@ export default function Layout() {
         {user.incognito && (
           <div className="private-banner" role="status">
             <Icon.EyeOff width={18} height={18} style={{ color: 'var(--private)' }} />
-            <span className="grow">Private session. Recommendations read your taste, but plays, ratings, searches and playlists are not saved. <Link to="/private" style={{ color: 'var(--private)', fontWeight: 600 }}>See what this session remembers</Link></span>
+            <span className="grow">Private session. No listening history or audio playback is collected in this metadata-only archive view; mood ratings are paused. <Link to="/private" style={{ color: 'var(--private)', fontWeight: 600 }}>See what this session remembers</Link></span>
           </div>
         )}
         <Outlet />
