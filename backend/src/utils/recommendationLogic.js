@@ -64,12 +64,13 @@ function interpolateProfile(start, end, t) {
 
 const SIGNAL_LABELS = {
   mood_score: 'Mood fit', audio_score: 'Audio features', preference_score: 'Your taste', recency_score: 'Recent listening',
+  collaborative_score: 'Listeners with similar taste',
   trend_score: 'Current trends', context_score: 'Listening context', regional_score: 'Language and region', exploration_score: 'Discovery variety',
 };
 function recommendationEvidence(row) {
   const present = Object.entries(SIGNAL_LABELS).filter(([field]) => row[field] !== null && row[field] !== undefined);
   const keys = present.map(([field]) => field);
-  const behaviorBacked = keys.includes('preference_score') || keys.includes('recency_score');
+  const behaviorBacked = keys.includes('preference_score') || keys.includes('recency_score') || keys.includes('collaborative_score');
   let level;
   if (!behaviorBacked) level = 'NEW_USER_FALLBACK';
   else if (keys.length >= 5) level = 'STRONG_MATCH';
