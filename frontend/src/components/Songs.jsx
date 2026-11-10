@@ -171,11 +171,20 @@ export function SongCard({ song, queue, origin = 'HOME', batchId, reason }) {
       <div style={{ minWidth: 0 }}>
         <div className="title" title={song.title}>{song.title}{song.explicit && <span className="chip" style={{ height: 18, marginLeft: 6, fontSize: '0.66rem' }}>E</span>}</div>
         {!playable && <PlaybackBadge song={song} />}
-        <div className="meta"><Link to={`/artist/${song.artist.id}`}>{song.artist.name}</Link> · {song.genre ? song.genre.name : song.language.name}</div>
+        <div className="meta">
+        {song.artist?.id
+          ? <Link to={`/artist/${song.artist.id}`}>{song.artist.name || 'Unknown artist'}</Link>
+          : (song.artist?.name || 'Unknown artist')}
+        {' · '}{song.genre?.name || song.language?.name || 'Unknown language'}
+      </div>
       </div>
       {reason ? <div className="small soft" style={{ minHeight: 40 }}>{reason}</div> : (
         <div className="row" style={{ '--gap': '6px', overflow: 'hidden' }}>
-          {song.moods.slice(0, 2).map((m) => <MoodChip key={m} name={m} color={colorOf(m)} />)}
+          {(Array.isArray(song.moods) ? song.moods : [])
+            .map((m) => (typeof m === 'string' ? m : m?.name))
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((m) => <MoodChip key={m} name={m} color={colorOf(m)} />)}
         </div>
       )}
       <div className="card-actions">
@@ -244,9 +253,25 @@ export function TrackList({ songs: all, origin = 'HOME', batchId, showRank = tru
               </button>
               <div style={{ minWidth: 0 }}>
                 <Link to={`/song/${s.id}`} className="t-title" style={{ display: 'block' }}>{s.title}{s.explicit && <span className="chip" style={{ height: 18, marginLeft: 6, fontSize: '0.66rem' }}>E</span>}</Link>
-                <div className="t-sub"><Link to={`/artist/${s.artist.id}`}>{s.artist.name}</Link> · {s.language.id ? <Link to={`/language/${s.language.id}`}>{s.language.name}</Link> : s.language.name}{s.genre ? ` · ${s.genre.name}` : ''} {!playable && <PlaybackBadge song={s} />}</div>
+                <div className="t-sub">
+                  {s.artist?.id
+                    ? <Link to={`/artist/${s.artist.id}`}>{s.artist.name || 'Unknown artist'}</Link>
+                    : (s.artist?.name || 'Unknown artist')}
+                  {' · '}
+                  {s.language?.id
+                    ? <Link to={`/language/${s.language.id}`}>{s.language.name || 'Unknown language'}</Link>
+                    : (s.language?.name || 'Unknown language')}
+                  {s.genre?.name ? ` · ${s.genre.name}` : ''}
+                  {!playable && <PlaybackBadge song={s} />}
+                </div>
               </div>
-              <div className="t-tags">{s.moods.slice(0, 3).map((m) => <MoodChip key={m} name={m} color={colorOf(m)} />)}</div>
+              <div className="t-tags">
+                {(Array.isArray(s.moods) ? s.moods : [])
+                  .map((m) => (typeof m === 'string' ? m : m?.name))
+                  .filter(Boolean)
+                  .slice(0, 3)
+                  .map((m) => <MoodChip key={m} name={m} color={colorOf(m)} />)}
+              </div>
               <div className="t-actions">
                 {explain && s.score !== undefined && <span className="score-pill" title="Recommendation score">{score(s.score)}</span>}
                 {explain && (
