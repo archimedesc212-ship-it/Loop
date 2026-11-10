@@ -261,7 +261,7 @@ Latest results, the full test-case table and the browser walk-throughs are in [d
 - Audio features are pre-computed values in the seed and feed; there is no signal-processing model analysing real audio. The schema already versions analyses per model, so a real analyser could be added as a new `AUDIO_FEATURES` model.
 - External providers are implemented and tested against a local mock server, but none has been exercised against the real service in this build (no credentials were used). See [docs/STATUS.md](docs/STATUS.md).
 - Single MySQL instance; read replicas, partitioning `listening_history` by month and moving the scheduler to a separate worker are the natural next steps.
-- Collaborative filtering (listeners-like-you) is the largest missing recommendation signal; the per-user preference tables are its input.
+- Similar-listener collaborative ranking is implemented for Daily, Regional, Discovery and Similar mixes. It compares up to 100 listeners with at least two shared completed tracks from the last 180 days and applies a confidence-weighted boost capped at 12%. New/low-history users fall back to onboarding, regional and trend signals; private sessions are excluded.
 
 See [docs/STATUS.md](docs/STATUS.md) and [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) for the complete list.
 
