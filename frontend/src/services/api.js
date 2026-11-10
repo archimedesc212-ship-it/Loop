@@ -130,7 +130,7 @@ export const api = {
   // catalogue
   songs: (q) => request('GET', `/songs${qs(q)}`),
   song: (id) => request('GET', `/songs/${id}`),
-  artist: (id) => request('GET', `/artists/${id}`),
+  artistDetail: (id) => request('GET', `/artists/${id}`),
   artistArtwork: (id) => request('GET', `/artists/${id}/artwork`),
   albumArtwork: (id) => request('GET', `/albums/${id}/artwork`),
   album: (id) => request('GET', `/albums/${id}`),
