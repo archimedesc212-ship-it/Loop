@@ -95,6 +95,12 @@ requireCheck(!Object.prototype.hasOwnProperty.call(vercel, 'crons'),
 requireCheck(fs.existsSync(path.join(root, 'vercel.json'))
   && !['vercel.ts', 'vercel.yaml', 'vercel.yml'].some((file) => fs.existsSync(path.join(root, file))),
   'Only vercel.json is present as Vercel project configuration.');
+const wrangler = JSON.parse(read('wrangler.jsonc').replace(/\/\/.*$/gm, ''));
+requireCheck(wrangler.name === 'loop' && wrangler.assets?.directory === './frontend/dist'
+  && wrangler.assets?.not_found_handling === 'single-page-application',
+  'Cloudflare Workers serves the built dataset-backed frontend with SPA route fallback.');
+requireCheck(pkg.scripts.build.startsWith('node scripts/prepare-music-catalog.js && '),
+  'Both Vercel and Cloudflare builds prepare the verified music catalogue before publishing.');
 
 requireCheck(/name:\s*loop-muse-api/.test(render)
   && /runtime:\s*node/.test(render)
