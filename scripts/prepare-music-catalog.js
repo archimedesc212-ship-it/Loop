@@ -179,6 +179,14 @@ if (require.main === module) {
     // catalogue contract valid without inventing a large dataset.
     const output = path.resolve(__dirname, '../frontend/public/data/music-catalog.json');
     fs.mkdirSync(path.dirname(output), { recursive: true });
+    // Never replace a previously verified full catalogue with the 1-track stub.
+    try {
+      const existing = JSON.parse(fs.readFileSync(output, 'utf8'));
+      if (existing && !existing.source?.fallback && Array.isArray(existing.records) && existing.records.length > 1) {
+        console.warn(`LOOP: upstream catalogue unavailable (${error.message}); keeping the existing catalogue (${existing.records.length.toLocaleString()} tracks).`);
+        return;
+      }
+    } catch { /* no usable existing catalogue; fall through to the starter stub */ }
     const fallback = {
       schemaVersion: 1,
       source: { title: 'LOOP offline starter catalogue', authors: [], license: 'Metadata starter', sha256: null,

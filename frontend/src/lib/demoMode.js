@@ -1,6 +1,16 @@
 import { diaryDateKey, upsertDiaryEntry, removeDiaryEntry } from './moodDiary';
 import { recommendByFeatureCentroid } from './spotifySimilarity';
 import { regionalSeeds } from './regionalSeeds';
+
+// Fixed language table. IDs are part of the UI contract (Home requests 1=Telugu, 2=Hindi, 3=Tamil),
+// so they must never depend on the order songs happen to appear in the seed list.
+const REGIONAL_LANGUAGES = [
+  { id: 1, name: 'Telugu', iso: 'te', script: 'Telugu' },
+  { id: 2, name: 'Hindi', iso: 'hi', script: 'Devanagari' },
+  { id: 3, name: 'Tamil', iso: 'ta', script: 'Tamil' },
+];
+const languageById = (id) => REGIONAL_LANGUAGES.find((language) => language.id === Number(id)) || null;
+const languageByName = (name) => REGIONAL_LANGUAGES.find((language) => language.name.toLowerCase() === String(name || '').toLowerCase()) || null;
 // Static, dataset-backed catalogue adapter. No invented songs, play counts or audio.
 const DATA_PATH = String(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/') + 'data/music-catalog.json';
 const STORAGE_PREFIX = 'loop.catalog.v1.';
@@ -107,9 +117,13 @@ function makeCatalogue(payload) {
     return record;
   });
   // Curated multilingual starter catalogue; metadata only, playback via official-provider search.
+  const regionalArtistIds = new Map();
+  const regionalGenreIds = new Map();
   const regionalSongs = regionalSeeds.map((item) => {
-    const artistId = 900000 + item.id;
-    const genreId = 990000 + item.id;
+    if (!regionalArtistIds.has(item.artist)) regionalArtistIds.set(item.artist, 900000 + regionalArtistIds.size + 1);
+    if (!regionalGenreIds.has(item.genre)) regionalGenreIds.set(item.genre, 990000 + regionalGenreIds.size + 1);
+    const artistId = regionalArtistIds.get(item.artist);
+    const genreId = regionalGenreIds.get(item.genre);
     const palette = ['#26384A', '#83A8C9'];
     const genre = { id: genreId, name: item.genre, color: palette[1] };
     const features = { energy: 0.62, valence: 0.62, danceability: 0.62, acousticness: 0.35, instrumentalness: 0.05, loudnessIndex: 0.65 };
@@ -127,7 +141,8 @@ function makeCatalogue(payload) {
       recordingSearchUrl: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(item.artist + ' ' + item.title + ' official audio'),
     };
   });
-  for (const song of regionalSongs) if (!songById.has(song.id)) { songs.push(song); songById.set(song.id, song); }
+  const existingSongIds = new Set(songs.map((song) => song.id));
+  for (const song of regionalSongs) if (!existingSongIds.has(song.id)) songs.push(song);
   const artistSongs = new Map();
   const songById = new Map();
   const genreCounts = new Map();
@@ -143,6 +158,9 @@ function makeCatalogue(payload) {
     id: Number(id), name, color: (GENRE_COLORS[name] || ['#344052', '#91A1B6'])[1], songs: genreCounts.get(Number(id)) || 0,
   })).sort((a, b) => b.songs - a.songs);
   const artistList = payload.artists.map(([id, name]) => ({ id: Number(id), name, type: 'ARTIST', songCount: artistCounts.get(Number(id)) || 0 }));
+  for (const [name, id] of regionalArtistIds) artistList.push({ id, name, type: 'ARTIST', songCount: artistCounts.get(id) || 0 });
+  for (const [name, id] of regionalGenreIds) genreList.push({ id, name, color: '#83A8C9', songs: genreCounts.get(id) || 0 });
+  genreList.sort((a, b) => b.songs - a.songs);
   return {
     songs, songById, artistSongs, artists: artistList, genres: genreList,
     artistById: new Map(artistList.map((artist) => [artist.id, artist])),
@@ -325,13 +343,17 @@ export async function demoRequest(method, path, body) {
   if (p === '/moods') return MOODS.map((mood) => ({ ...mood, description: 'Estimated from the dataset topic and audio features.' }));
   if (p === '/genres') return catalogue.genres;
   if (p === '/contexts') return CONTEXTS;
-  if (p === '/languages') return [...new Set(all.map((song) => song.language).filter(Boolean))].map((name, index) => ({ id: index + 1, name, nativeName: name, iso: name === 'Telugu' ? 'te' : name === 'Hindi' ? 'hi' : 'ta', script: name === 'Telugu' ? 'Telugu' : name === 'Hindi' ? 'Devanagari' : 'Tamil', totalSongs: all.filter((song) => song.language === name).length, songCount: all.filter((song) => song.language === name).length }));
+  if (p === '/languages') {
+    return REGIONAL_LANGUAGES.map((language) => {
+      const count = all.filter((song) => song.language === language.name).length;
+      return { id: language.id, name: language.name, nativeName: language.name, iso: language.iso, script: language.script, totalSongs: count, songCount: count };
+    });
+  }
   if (/^\/languages\/\d+$/.test(p)) {
-    const languages = [...new Set(all.map((song) => song.language).filter(Boolean))];
-    const name = languages[Number(p.split('/').pop()) - 1];
-    if (!name) return { notAvailable: true, message: 'This language is not in the local starter catalogue yet.' };
-    const songs = all.filter((song) => song.language === name).map(withPersonalState);
-    return { id: Number(p.split('/').pop()), name, nativeName: name, iso: name === 'Telugu' ? 'te' : name === 'Hindi' ? 'hi' : 'ta', script: name === 'Telugu' ? 'Telugu' : name === 'Hindi' ? 'Devanagari' : 'Tamil', totalSongs: songs.length, songs, artists: [...new Map(songs.map((song) => [song.artist.id, song.artist])).values()], films: [], regions: [] };
+    const language = languageById(p.split('/').pop());
+    if (!language) return { notAvailable: true, message: 'This language is not in the local starter catalogue yet.' };
+    const songs = all.filter((song) => song.language === language.name).map(withPersonalState);
+    return { id: language.id, name: language.name, nativeName: language.name, iso: language.iso, script: language.script, totalSongs: songs.length, songs, artists: [...new Map(songs.map((song) => [song.artist.id, song.artist])).values()], films: [], regions: [] };
   }
   if (p === '/regions') return [];
   if (p === '/songs' || p === '/trending') {
@@ -372,8 +394,7 @@ export async function demoRequest(method, path, body) {
   }
   if (p === '/recommendations/regional') {
     const languageId = Number(q.get('languageId'));
-    const languages = [...new Set(all.map((song) => song.language).filter(Boolean))];
-    const language = languages[languageId - 1] || q.get('language') || 'Telugu';
+    const language = (languageById(languageId) || languageByName(q.get('language')) || REGIONAL_LANGUAGES[0]).name;
     const rows = all.filter((song) => song.language === language);
     return listResult(rows, `${language} songs`, `Curated ${language} starter collection. Playback opens official-provider search results.`);
   }

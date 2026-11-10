@@ -23,3 +23,11 @@
 
 ## Vercel deployment
 Use repository root, `npm ci`, `npm run build`, output `frontend/dist`, and set `VITE_DEMO_MODE=true` (or leave it unset; true is the default). Do not set `VITE_DEMO_MODE=false` unless an API and database are separately deployed.
+
+## Follow-up fixes (post-audit review)
+- **Startup crash fixed** (`frontend/src/lib/demoMode.js`): the regional seed merge read `songById` before its `const` declaration, throwing `ReferenceError: Cannot access 'songById' before initialization` and stopping the whole database-free app from loading the catalogue.
+- **Wrong language shelves fixed**: language IDs were derived from first appearance in the seed list (Tamil first), so Home's "Telugu / Hindi / Tamil hits" actually showed Tamil / Telugu / Hindi. IDs are now a fixed table (1 Telugu, 2 Hindi, 3 Tamil) used by `/languages`, `/languages/:id` and `/recommendations/regional`.
+- Regional artists and genres are now registered once per name (previously one fake artist/genre per song, and absent from artist/genre lists).
+- `scripts/prepare-music-catalog.js` no longer overwrites a valid existing catalogue with the 1-track stub when the download fails.
+
+Verified by running `demoMode.js` in Node with a stubbed fetch/localStorage: original crashes on load; fixed version returns 11 Telugu / 12 Hindi / 13 Tamil songs for ids 1/2/3. Still not run: full Vite build, ESLint, vitest, browser testing (dependencies could not be installed offline).
