@@ -337,8 +337,11 @@ export async function demoRequest(method, path, body) {
     if (!context) return { empty: true, message: 'Unknown listening mode.' };
     return listResult(choose(catalogue, context, safeLimit(q.get('limit'), 20, 100)), context.name + ' selection', context.description + ' · matched against dataset audio features.');
   }
+  if (/^\/recommendations\/batches\/\d+$/.test(p)) return { empty: true, message: 'Saved recommendation batches are not available in this local archive. Choose a new archive selection instead.' };
   if (p === '/recommendations/mood') {
-    const { selected, target, textMatch } = getMoodSelection(body || {});
+    const { selected, target: moodTarget, textMatch } = getMoodSelection(body || {});
+    const selectedContext = CONTEXTS.find((item) => item.code === (body && body.contextCode));
+    const target = selectedContext ? { ...moodTarget, ...selectedContext } : moodTarget;
     const candidates = all.filter((song) => (!selected.length || selected.some((mood) => song.moods.includes(mood.name))) && textMatch(song));
     const rows = choose(catalogue, target, safeLimit(body && body.limit, 24, 60), candidates);
     const matchedMoods = selected.length ? selected : (rows[0] ? rows[0].moodsDetailed.slice(0, 2).map((item) => MOODS.find((mood) => mood.id === item.id)).filter(Boolean) : []);
@@ -520,5 +523,5 @@ export async function demoRequest(method, path, body) {
   if (/^\/films\/\d+$/.test(p)) return { notAvailable: true, message: 'The supplied dataset has no film or soundtrack information.' };
   if (/^\/languages\/\d+$/.test(p)) return { notAvailable: true, message: 'The supplied dataset does not contain track-language metadata.' };
   if (p.startsWith('/admin/')) return {};
-  return {};
+  return { empty: true, notAvailable: true, message: 'This feature is not available in the metadata-only archive view.' };
 }
