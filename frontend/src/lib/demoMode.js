@@ -1,171 +1,476 @@
-// Self-contained presentation mode. No API server, database, guest session or credentials.
-const colors = ['#D9A7C7','#8C7BA8'];
-export const demoMoods = [
-  {id:1,name:'Calm',emoji:'🌿',color:'#78A99A',description:'Soft, unhurried sounds'},
-  {id:2,name:'Happy',emoji:'☀️',color:'#E9B95D',description:'Bright and uplifting'},
-  {id:3,name:'Sad',emoji:'🌧️',color:'#7D91B8',description:'Gentle and reflective'},
-  {id:4,name:'Romantic',emoji:'♡',color:'#D98BA7',description:'Warm and intimate'},
-  {id:5,name:'Energetic',emoji:'⚡',color:'#E58B58',description:'Bold, high-energy sounds'},
-  {id:6,name:'Focused',emoji:'◉',color:'#8C9DB8',description:'Steady sounds for focus'},
-  {id:7,name:'Nostalgic',emoji:'✦',color:'#B49ACB',description:'A familiar, wistful feeling'},
-  {id:8,name:'Dreamy',emoji:'☾',color:'#9D8BC7',description:'Airy and atmospheric'},
+// Static, dataset-backed catalogue adapter. No invented songs, play counts or audio.
+const DATA_PATH = String(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/') + 'data/music-catalog.json';
+const STORAGE_PREFIX = 'loop.catalog.v1.';
+const GENRE_COLORS = {
+  pop: ['#9B7199', '#D9A7C7'],
+  country: ['#806B50', '#D1A66D'],
+  blues: ['#334B75', '#8199C4'],
+  jazz: ['#4B466B', '#B39ABF'],
+  reggae: ['#315F50', '#90B49A'],
+  rock: ['#4B3E46', '#B7777A'],
+  'hip hop': ['#424B5A', '#9DA9BB'],
+};
+const MOODS = [
+  { id: 1, name: 'Sad', emoji: '🌧️', color: '#7D91B8', topics: ['sadness'] },
+  { id: 2, name: 'Romantic', emoji: '♡', color: '#D98BA7', topics: ['romantic'] },
+  { id: 3, name: 'Dreamy', emoji: '☾', color: '#9D8BC7', topics: ['night/time'] },
+  { id: 4, name: 'Reflective', emoji: '✦', color: '#B49ACB', topics: ['world/life'] },
+  { id: 5, name: 'Intense', emoji: '⚡', color: '#E58B58', topics: ['violence', 'obscene'] },
+  { id: 6, name: 'Focused', emoji: '◉', color: '#8C9DB8', topics: ['music'] },
+  { id: 7, name: 'Emotional', emoji: '♡', color: '#C58CA5', topics: ['feelings'] },
+  { id: 8, name: 'Energetic', emoji: '↗', color: '#E9A35D', topics: [] },
+  { id: 9, name: 'Calm', emoji: '🌿', color: '#78A99A', topics: [] },
+  { id: 10, name: 'Uplifting', emoji: '☀️', color: '#E9B95D', topics: [] },
 ];
-const names = [
-  ['Afterglow','Mira Vale','Calm',82,86],['Paper Skies','Aarav Sen','Dreamy',74,92],
-  ['City Lights','The Northbound','Energetic',91,65],['Blue Hour','Nila','Sad',35,88],
-  ['Golden Days','Mira Vale','Happy',94,78],['Soft Landing','Aarav Sen','Focused',48,72],
-  ['Little Forever','Nila','Romantic',63,95],['Old Photographs','The Northbound','Nostalgic',42,89],
-  ['Open Roads','Mira Vale','Energetic',88,54],['Quiet Rooms','Aarav Sen','Calm',28,97],
-  ['Somewhere Soon','Nila','Dreamy',67,84],['New Morning','The Northbound','Happy',96,70],
+const MOOD_BY_TOPIC = new Map(MOODS.flatMap((mood) => mood.topics.map((topic) => [topic, mood])));
+const CONTEXTS = [
+  { code: 'STUDY', name: 'Study', emoji: '📚', description: 'Lower energy, steady and acoustic', energy: 0.32, valence: 0.5 },
+  { code: 'WORKOUT', name: 'Workout', emoji: '⚡', description: 'Higher energy and danceability', energy: 0.82, valence: 0.72 },
+  { code: 'RELAX', name: 'Relax', emoji: '🌿', description: 'Gentler, more acoustic sounds', energy: 0.25, valence: 0.5 },
+  { code: 'NIGHT', name: 'Late night', emoji: '☾', description: 'Lower energy and softer moods', energy: 0.3, valence: 0.42 },
+  { code: 'TRAVEL', name: 'Road trip', emoji: '↗', description: 'Steady energy and bright sounds', energy: 0.68, valence: 0.68 },
 ];
-export const demoSongs = names.map((n, i) => {
-  const mood = demoMoods.find((item) => item.name === n[2]) || demoMoods[0];
-  return {
-    id: i + 1,
-    title: n[0],
-    durationSec: 176 + i * 13,
-    releaseYear: 2024,
-    explicit: false,
-    artist: { id: i % 4 + 1, name: n[1] },
-    album: { id: i + 1, title: 'LOOP Sessions' },
-    language: { id: 1, name: 'Telugu' },
-    genre: { id: 1, name: 'Indie Pop', color: '#C99AB2' },
-    cover: colors,
-    coverColor1: colors[0],
-    coverColor2: colors[1],
-    playback: { playable: true, type: 'GENERATED_SKETCH', source: 'MUSE_SKETCH', demo: true },
-    moods: [mood.name],
-    moodsDetailed: [{ id: mood.id, name: mood.name, emoji: mood.emoji, color: mood.color, confidence: 0.9 }],
-    credits: [],
-    genres: [{ id: 1, name: 'Indie Pop', color: '#C99AB2' }],
-    reasons: [{ text: 'Matches your selected mood' }],
-    liked: false,
-    myRating: null,
-  };
-});
-export const demoGenres = ['Indie Pop','Ambient','Alternative','Electronic','Acoustic','Film Score','R&B','Lo-fi'].map((name,i)=>({id:i+1,name,color:['#C99AB2','#9A9ACB','#D2A46F'][i%3],songs:18+i*7,plays:900-i*53}));
-export const demoContexts = [
-  {code:'STUDY',name:'Study',emoji:'📚'},{code:'WORKOUT',name:'Workout',emoji:'⚡'},
-  {code:'RELAX',name:'Relax',emoji:'🌿'},{code:'NIGHT',name:'Late night',emoji:'☾'},
-  {code:'TRAVEL',name:'Road trip',emoji:'↗'},
-];
-const read=(k,d)=>{try{return JSON.parse(localStorage.getItem('loop.demo.'+k))??d}catch{return d}};
-const write=(k,v)=>{try{localStorage.setItem('loop.demo.'+k,JSON.stringify(v))}catch{/* demo persistence is optional */}};
-let playId=1;
-const all=()=>demoSongs.map(s=>({...s,liked:read('likes',[]).includes(s.id)}));
-const result=(songs=all())=>({songs,batchId:1,title:'Made for this moment',subtitle:'A little mix, just for you'});
+const emptyArray = () => [];
+const read = (key, fallback) => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_PREFIX + key)) ?? fallback; } catch { return fallback; }
+};
+const write = (key, value) => {
+  try { localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value)); } catch { /* local persistence is optional */ }
+};
+const safeLimit = (value, fallback = 24, max = 100) => {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.min(max, Math.floor(n)) : fallback;
+};
+const norm = (value) => String(value || '').normalize('NFKD').toLowerCase()
+  .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+let cataloguePromise = null;
+let playId = 1;
 
-const withSongDetails = (song) => ({
-  ...song,
-  features: { energy: 0.62, valence: 0.58, danceability: 0.54, acousticness: 0.42, instrumentalness: 0.18, speechiness: 0.04, tempo: 112, keyName: 'C major', loudness: -8, analysisVersion: 'demo-1' },
-  stats: null,
-  credits: Array.isArray(song.credits) ? song.credits : [],
-  genres: Array.isArray(song.genres) ? song.genres : [],
-  moodsDetailed: Array.isArray(song.moodsDetailed) ? song.moodsDetailed : [],
-  segments: [], analyses: [], provenance: [], mergedDuplicates: [], videoLinks: [],
-});
-const artistsFor = (songs) => [...new Map(songs.map((song) => [song.artist.id, song.artist])).values()].map((artist) => ({ ...artist, type: 'ARTIST' }));
-const demoWorld = () => {
-  const songs = all().slice(0, 6).map(withSongDetails);
+function inferredMoods(record) {
+  const topicMood = MOOD_BY_TOPIC.get(record.topic);
+  const list = topicMood ? [topicMood] : [];
+  if (record.energy >= 0.72 && record.valence >= 0.58) list.push(MOODS[7]);
+  if (record.energy <= 0.34) list.push(MOODS[8]);
+  if (record.valence >= 0.76 && record.energy > 0.42) list.push(MOODS[9]);
+  if (record.valence <= 0.3 && record.energy < 0.58) list.push(MOODS[0]);
+  return [...new Map(list.map((mood) => [mood.id, mood])).values()].slice(0, 3);
+}
+
+function makeCatalogue(payload) {
+  if (!payload || payload.schemaVersion !== 1 || !Array.isArray(payload.records)
+      || payload.records.length !== 28372 || !Array.isArray(payload.artists) || !Array.isArray(payload.genres)) {
+    throw new Error('The music catalogue is missing or incomplete. Reload LOOP to retry the verified dataset.');
+  }
+  const artists = new Map(payload.artists.map((row) => [Number(row[0]), row[1]]));
+  const genres = new Map(payload.genres.map((row) => [Number(row[0]), row[1]]));
+  const songs = payload.records.map((row) => {
+    const id = Number(row[0]);
+    const artistId = Number(row[1]);
+    const title = String(row[2] || '');
+    const releaseYear = Number(row[3]);
+    const genreId = Number(row[4]);
+    const topic = String(row[5] || '');
+    const genreName = genres.get(genreId) || 'Unknown';
+    const artistName = artists.get(artistId) || 'Unknown artist';
+    const features = {
+      energy: Number(row[6]),
+      valence: Number(row[7]),
+      danceability: Number(row[8]),
+      acousticness: Number(row[9]),
+      instrumentalness: Number(row[10]),
+      loudnessIndex: Number(row[11]),
+    };
+    const topicScores = Array.isArray(row[12]) ? row[12].map((item) => ({ topic: item[0], score: Number(item[1]) })) : [];
+    const moods = inferredMoods({ topic, ...features });
+    const palette = GENRE_COLORS[genreName] || ['#344052', '#91A1B6'];
+    const genre = { id: genreId, name: genreName, color: palette[1] };
+    const record = {
+      id, title, releaseYear, explicit: null, durationSec: null,
+      artist: { id: artistId, name: artistName },
+      album: null, language: null, genre, genres: [genre],
+      cover: palette, coverColor1: palette[0], coverColor2: palette[1],
+      playback: { playable: false, type: 'METADATA_ONLY' },
+      features, topic, topicScores,
+      moods: moods.map((mood) => mood.name),
+      moodsDetailed: moods.map((mood) => ({
+        id: mood.id, name: mood.name, emoji: mood.emoji, color: mood.color,
+        confidence: topicMoodConfidence(topicScores, mood.topics),
+      })),
+      reasons: [{ code: 'SOURCE_TOPIC', text: 'Dataset topic: ' + topic }],
+      credits: [], segments: [], analyses: [], provenance: [], mergedDuplicates: [], videoLinks: [],
+      liked: false, myRating: null,
+      recordingSearchUrl: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(artistName + ' ' + title + ' official audio'),
+    };
+    return record;
+  });
+  const artistSongs = new Map();
+  const songById = new Map();
+  const genreCounts = new Map();
+  const artistCounts = new Map();
+  for (const song of songs) {
+    if (!artistSongs.has(song.artist.id)) artistSongs.set(song.artist.id, []);
+    artistSongs.get(song.artist.id).push(song);
+    songById.set(song.id, song);
+    genreCounts.set(song.genre.id, (genreCounts.get(song.genre.id) || 0) + 1);
+    artistCounts.set(song.artist.id, (artistCounts.get(song.artist.id) || 0) + 1);
+  }
+  const genreList = payload.genres.map(([id, name]) => ({
+    id: Number(id), name, color: (GENRE_COLORS[name] || ['#344052', '#91A1B6'])[1], songs: genreCounts.get(Number(id)) || 0,
+  })).sort((a, b) => b.songs - a.songs);
+  const artistList = payload.artists.map(([id, name]) => ({ id: Number(id), name, type: 'ARTIST', songCount: artistCounts.get(Number(id)) || 0 }));
+  return {
+    songs, songById, artistSongs, artists: artistList, genres: genreList,
+    artistById: new Map(artistList.map((artist) => [artist.id, artist])),
+    source: payload.source,
+  };
+}
+
+function topicMoodConfidence(scores, topics) {
+  if (!topics || !topics.length || !scores.length) return 0.5;
+  const match = scores.find((item) => topics.includes(item.topic));
+  return match ? Math.max(0, Math.min(1, match.score)) : 0.5;
+}
+
+async function loadCatalogue() {
+  if (!cataloguePromise) {
+    cataloguePromise = fetch(DATA_PATH, { cache: 'force-cache' })
+      .then((response) => {
+        if (!response.ok) throw new Error('Music catalogue request failed (' + response.status + ').');
+        return response.json();
+      })
+      .then(makeCatalogue)
+      .catch((error) => {
+        cataloguePromise = null;
+        throw error;
+      });
+  }
+  return cataloguePromise;
+}
+export const resetCatalogueCacheForTests = () => { cataloguePromise = null; };
+
+function withPersonalState(song) {
+  const liked = read('likes', []);
+  const ratings = read('ratings', {});
+  return { ...song, liked: liked.includes(song.id), myRating: ratings[song.id] ?? null };
+}
+function diversify(rows, limit) {
+  const out = [];
+  const artistCounts = new Map();
+  const genreCounts = new Map();
+  for (const song of rows) {
+    const artistCount = artistCounts.get(song.artist.id) || 0;
+    const genreCount = genreCounts.get(song.genre.id) || 0;
+    if (artistCount >= 2 || genreCount >= Math.ceil(limit * 0.45)) continue;
+    out.push(song);
+    artistCounts.set(song.artist.id, artistCount + 1);
+    genreCounts.set(song.genre.id, genreCount + 1);
+    if (out.length >= limit) break;
+  }
+  if (out.length < limit) {
+    const seen = new Set(out.map((song) => song.id));
+    for (const song of rows) {
+      if (seen.has(song.id)) continue;
+      out.push(song);
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
+}
+function scoreFor(song, target) {
+  let score = 0;
+  if (target.energy !== undefined) score += 1 - Math.abs(song.features.energy - target.energy);
+  if (target.valence !== undefined) score += 1 - Math.abs(song.features.valence - target.valence);
+  if (target.danceability !== undefined) score += 1 - Math.abs(song.features.danceability - target.danceability);
+  if (target.acousticness !== undefined) score += 1 - Math.abs(song.features.acousticness - target.acousticness);
+  if (target.topic && song.topic === target.topic) score += 1.5;
+  if (target.genre && song.genre.name === target.genre) score += 1.5;
+  if (target.moods && target.moods.length) {
+    const overlap = target.moods.filter((mood) => song.moods.includes(mood)).length;
+    score += overlap * 1.2;
+  }
+  return score;
+}
+function reasonFor(song) {
+  return [{ code: 'DATASET_FEATURES', text: 'Dataset topic: ' + song.topic + ' · energy ' + Math.round(song.features.energy * 100) + '/100' }];
+}
+function listResult(songs, title, subtitle) {
+  return {
+    songs: songs.map((song) => ({ ...withPersonalState(song), reasons: reasonFor(song) })),
+    batchId: null, title, subtitle, total: songs.length, empty: songs.length === 0,
+  };
+}
+function getSong(catalogue, id) {
+  const song = catalogue.songById.get(Number(id));
+  return song ? withPersonalState(song) : null;
+}
+function choose(catalogue, target, limit, candidates = catalogue.songs) {
+  const rows = candidates.map((song) => ({ song, score: scoreFor(song, target) }))
+    .sort((a, b) => b.score - a.score || a.song.id - b.song.id)
+    .map((item) => item.song);
+  return diversify(rows, limit);
+}
+function getMoodSelection(body) {
+  const ids = Array.isArray(body && body.moodIds) ? body.moodIds.map(Number) : [];
+  const selected = MOODS.filter((mood) => ids.includes(mood.id));
+  const text = norm(body && body.text);
+  const target = { moods: selected.map((mood) => mood.name) };
+  const textMatch = (song) => {
+    if (!text) return true;
+    const haystack = norm([song.title, song.artist.name, song.genre.name, song.topic].concat(song.moods).join(' '));
+    return text.split(' ').every((word) => haystack.includes(word));
+  };
+  return { selected, text, target, textMatch };
+}
+function getPlaylistSongs(catalogue, ids) {
+  return (Array.isArray(ids) ? ids : []).map((id) => getSong(catalogue, id)).filter(Boolean);
+}
+function localMoodRatings(song, ratings) {
+  const mine = ratings[String(song.id)] || {};
+  const moods = MOODS.map((mood) => {
+    const ai = song.moodsDetailed.find((item) => item.id === mood.id);
+    return {
+      id: mood.id, name: mood.name, emoji: mood.emoji, color: mood.color,
+      aiConfidence: ai ? ai.confidence : null,
+      community: null,
+      mine: mine[mood.id] === undefined ? null : { matchPercentage: mine[mood.id] },
+    };
+  });
+  const set = Object.values(mine);
+  return { moods, privateSession: read('incognito', false), totals: { ratings: set.length, raters: set.length ? 1 : 0 } };
+}
+function archiveWorld(catalogue) {
+  const songs = choose(catalogue, { energy: 0.56, valence: 0.56, danceability: 0.55 }, 18);
+  const topTopics = new Map();
+  for (const song of catalogue.songs) topTopics.set(song.topic, (topTopics.get(song.topic) || 0) + 1);
+  const mostCommon = [...topTopics.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
   return {
     world: {
-      id: 1, title: 'Your quiet corner', description: 'A changing little world of sounds picked for you.',
-      theme: 'calm', songCount: songs.length, totalDurationSec: songs.reduce((sum, song) => sum + song.durationSec, 0),
-      archetype: { name: 'QUIET CORNER' }, version: 1, batchId: 1, feedback: null,
-      weekStart: '2026-11-09T00:00:00.000Z', generatedAt: '2026-11-10T00:00:00.000Z', expiresAt: '2026-11-16T23:59:59.000Z',
-      signals: { topMoods: [{ mood: 'Calm', blended: 0.82 }], language: { name: 'Telugu', source: 'settings' }, archetypeScores: [{ archetype: 'QUIET CORNER', score: 0.82 }, { archetype: 'OPEN ROAD', score: 0.56 }], regionalTrendingMoods: [], feedback: [] },
+      id: 1, title: 'Music across 1950–2019',
+      description: 'A collection built from the 28,372 real track records in the uploaded dataset.',
+      theme: { palette: ['#182333', '#374D68', '#C8A76E'], motif: 'WAVES', seed: 19502019 },
+      songCount: catalogue.songs.length, totalDurationSec: null, archetype: { name: 'THE MUSIC ARCHIVE' },
+      version: 1, batchId: null, feedback: null,
+      weekStart: '1950-01-01', generatedAt: '2019-12-31', expiresAt: '2019-12-31',
+      signals: {
+        topMoods: mostCommon.map(([topic, count]) => ({ mood: topic, blended: count / catalogue.songs.length })),
+        archetypeScores: [], regionalTrendingMoods: [], feedback: [], language: null,
+      },
     },
-    songs,
-    versions: [{ id: 1, version: 1, title: 'Your quiet corner', generatedAt: '2026-11-10T00:00:00.000Z', status: 'ACTIVE' }],
-    history: [],
+    songs: songs.map(withPersonalState), versions: [], history: [],
   };
-};
+}
 
-export function demoRequest(method,path,body){
-  const p=path.split('?')[0], q=new URLSearchParams(path.split('?')[1]||'');
-  const user={id:1,username:'demo',displayName:'Demo Listener',email:'demo@loop.local',roleName:'Listener',role:'LISTENER',onboarded:true,permissions:[],incognito:false,regionCode:'IN',region:{code:'IN',name:'India'},languages:[{id:1,name:'Telugu',nativeName:'Telugu'}],contentFilter:'OFF',listeningHabit:'MIXED'};
-  if(p==='/auth/session'||p==='/auth/me')return Promise.resolve({authenticated:true,...user,session:{id:'demo-session',expiresAt:null}});
-  if(p==='/auth/logout'||p==='/auth/logout-all')return Promise.resolve({ok:true});
-  if(p==='/moods')return Promise.resolve(demoMoods);
-  if(p==='/genres')return Promise.resolve(demoGenres);
-  if(p==='/contexts')return Promise.resolve(demoContexts);
-  if(p==='/languages')return Promise.resolve([{id:1,name:'Telugu',code:'te'},{id:2,name:'Hindi',code:'hi'},{id:3,name:'English',code:'en'}]);
-  if(p==='/regions')return Promise.resolve([{code:'IN',name:'India'}]);
-  if(p==='/songs'||p==='/trending')return Promise.resolve(result(all()));
-  if(p==='/recommendations/daily'||p==='/recommendations/discovery'||p==='/recommendations/regional'||p==='/recommendations/similar')return Promise.resolve(result(all().slice(0,8)));
-  if(p==='/recommendations/recovery')return Promise.resolve({title:'A gentle lift',subtitle:'A demo mood-recovery mix',stages:[{batchId:1,title:'Settle in',interpretation:{summary:[{label:'Mood',value:'Calm'},{label:'Energy',value:'Gentle'}]},songs:all().slice(0,3)},{batchId:2,title:'Find your rhythm',interpretation:{summary:[{label:'Mood',value:'Dreamy'},{label:'Energy',value:'Steady'}]},songs:all().slice(3,6)},{batchId:3,title:'Lift up',interpretation:{summary:[{label:'Mood',value:'Happy'},{label:'Energy',value:'Bright'}]},songs:all().slice(6,9)}]});
-  if(p.startsWith('/recommendations/context/')||/^\/recommendations\/batches\/\d+$/.test(p))return Promise.resolve(result(all().slice(0,8)));
-  if(p==='/recommendations/mood'){
-    const chosen=(body?.moodIds||[]).map(id=>demoMoods.find(m=>m.id===id)).filter(Boolean);
-    const term=(body?.text||'').toLowerCase();
-    const picks = all().filter((song) => (
-      (!chosen.length && !term)
-      || chosen.some((mood) => song.moods.includes(mood.name))
-      || song.title.toLowerCase().includes(term)
-      || (Array.isArray(song.moods) ? song.moods : []).some((mood) => String(mood?.name || mood).toLowerCase().includes(term))
-    ));
-    const moods=chosen.length?chosen:[demoMoods.find(m=>m.name==='Calm')];
-    return Promise.resolve({...result(picks.length?picks:all().slice(0,5)),interpretation:{moods:moods.map(m=>({...m,confidence:0.9})),summary:'A sound shaped around your mood'},explanation:'Demo recommendations based on the selected mood.'});
+export async function demoRequest(method, path, body) {
+  const p = path.split('?')[0];
+  const q = new URLSearchParams(path.split('?')[1] || '');
+  const user = {
+    id: 1, username: 'listener', displayName: 'Music listener', email: 'listener@loop.local',
+    roleName: 'Listener', role: 'LISTENER', onboarded: true, permissions: [], incognito: read('incognito', false),
+    regionCode: null, region: null, languages: [], contentFilter: 'OFF', listeningHabit: 'MIXED',
+  };
+  if (p === '/auth/session' || p === '/auth/me') return { authenticated: true, ...user, session: { id: 'local-catalogue', expiresAt: null } };
+  if (p === '/auth/logout' || p === '/auth/logout-all') { write('incognito', false); return { ok: true }; }
+  if (p === '/incognito') {
+    if (method === 'POST') write('incognito', true);
+    if (method === 'DELETE') write('incognito', false);
+    const active = read('incognito', false);
+    return { active, startedAt: active ? new Date().toISOString() : null, secondsLeft: 7200, events: 0, memory: [], recentSongs: [], purged: { events: 0, lists: 0 } };
   }
-  if(p==='/recommendations/parse')return Promise.resolve({moods:[demoMoods[0]],confidence:0.8});
-  if(p==='/worlds/current')return Promise.resolve(demoWorld());
-  if(p==='/history')return Promise.resolve(read('history',[]));
-  if(p==='/likes')return Promise.resolve(all().filter(s=>s.liked));
-  if(p==='/me/dismissals'||p==='/me/sessions')return Promise.resolve([]);
-  if(p==='/me/onboarding')return Promise.resolve({languages:[{id:1,name:'Telugu',nativeName:'Telugu'},{id:2,name:'Hindi',nativeName:'Hindi'},{id:3,name:'English',nativeName:'English'}],regions:[{code:'IN',name:'India'}],genres:demoGenres,moods:demoMoods});
-  if(p==='/me/settings'&&method==='PATCH'){const ids=body?.languageIds||[1];const names={1:'Telugu',2:'Hindi',3:'English'};const languages=ids.map(id=>({id,name:names[id]||'English',nativeName:names[id]||'English'}));return Promise.resolve({...user,...body,languages,region:body?.regionCode?{code:body.regionCode,name:'India'}:null});}
-  if(p==='/playlists'&&method==='POST'){const lists=read('playlists',[]),item={id:Date.now(),name:body.name,songCount:0,kind:'MANUAL',covers:[],songs:[],totalDurationSec:0};write('playlists',[item,...lists]);return Promise.resolve(item);}
-  if(p==='/playlists')return Promise.resolve(read('playlists',[]));
-  if(p==='/playlists/smart')return Promise.resolve(['ENERGY_BOOST','CALM_MIX','LATE_NIGHT','STUDY','ROAD_TRIP','MOST_REPLAYED','DISCOVERY','REGIONAL'].map(type=>({type,name:type.replaceAll('_',' ').toLowerCase(),blurb:'A demo mix built around your listening'})));
-  if(p.startsWith('/playlists/smart/'))return Promise.resolve(result(all().slice(0,6)));
-  if(p==='/playback/start')return Promise.resolve({playId:playId++,private:false,isReplay:false,media:{demo:true,label:'Demo sketch',type:'GENERATED_SKETCH'}});
-  if(p.startsWith('/playback/')||p==='/playback/private')return Promise.resolve({ok:true,private:false});
-  if(p==='/insights/profile')return Promise.resolve({days:30,headline:null,longTerm:[],recentTrend:null,streak:{current:0,longest:0},mostReplayed:null,mostSkipped:null});
-  if(p==='/insights/activity')return Promise.resolve({daily:[],genres:[],heatmap:[],languages:[],contexts:[]});
-  if(p==='/insights/journey')return Promise.resolve({distribution:[],transitions:[],trends:[],sessionArcs:[]});
-  if(p==='/insights/preferences')return Promise.resolve({signals:[],summary:'Your demo listening profile',model:null,evidence:{behaviourShare:0,onboardingShare:100,completedPlays:0,neededForFullConfidence:10},genres:[],artists:[],moods:[]});
-  if(p==='/incognito'){if(method==='POST')write('incognito',true);if(method==='DELETE')write('incognito',false);return Promise.resolve({active:read('incognito',false),startedAt:read('incognito',false)?new Date().toISOString():null,secondsLeft:7200,events:0,memory:[],recentSongs:[],purged:{events:0,lists:0}});}
+
+  const catalogue = await loadCatalogue();
+  const all = catalogue.songs;
+  if (p === '/moods') return MOODS.map((mood) => ({ ...mood, description: 'Estimated from the dataset topic and audio features.' }));
+  if (p === '/genres') return catalogue.genres;
+  if (p === '/contexts') return CONTEXTS;
+  if (p === '/languages' || p === '/regions') return [];
+  if (p === '/songs' || p === '/trending') {
+    const limit = safeLimit(q.get('limit'), 24, 100);
+    const rows = p === '/trending'
+      ? choose(catalogue, { energy: 0.62, valence: 0.62, danceability: 0.6 }, limit)
+      : all.slice(0, limit);
+    return listResult(rows, 'From the music archive', 'Real catalogue records from the uploaded 1950–2019 dataset.');
+  }
+  if (p === '/recommendations/daily' || p === '/recommendations/discovery' || p === '/recommendations/similar') {
+    const limit = safeLimit(q.get('limit'), 24, 100);
+    const seedId = Number(q.get('seed'));
+    const seed = Number.isFinite(seedId) && seedId > 0 ? catalogue.songById.get(seedId) : null;
+    const target = seed ? seed.features : { energy: 0.56, valence: 0.56, danceability: 0.55 };
+    const rows = choose(catalogue, target, limit, seed ? all.filter((song) => song.id !== seed.id) : all);
+    return { ...listResult(rows, seed ? 'Similar sound' : 'Archive selection', 'Ranked using the dataset audio features and topic labels.'), seed: seed ? withPersonalState(seed) : null };
+  }
+  if (p === '/recommendations/regional') return { empty: true, message: 'This dataset contains no language or region field, so a reliable regional mix cannot be generated.' };
+  if (p === '/recommendations/recovery') {
+    const stages = [
+      { title: 'Quiet', target: { energy: 0.24, valence: 0.38, acousticness: 0.7 } },
+      { title: 'Steady', target: { energy: 0.5, valence: 0.55, danceability: 0.5 } },
+      { title: 'Bright', target: { energy: 0.78, valence: 0.8, danceability: 0.72 } },
+    ];
+    return {
+      title: 'A journey through the archive', subtitle: 'Three real-record selections ordered by audio features',
+      stages: stages.map((stage, i) => ({
+        batchId: null, title: stage.title, interpretation: { summary: [{ label: 'Selection', value: stage.title }] },
+        songs: choose(catalogue, stage.target, 6).map(withPersonalState),
+      })),
+    };
+  }
+  if (p.startsWith('/recommendations/context/')) {
+    const code = p.split('/').pop();
+    const context = CONTEXTS.find((item) => item.code === code);
+    if (!context) return { empty: true, message: 'Unknown listening mode.' };
+    return listResult(choose(catalogue, context, safeLimit(q.get('limit'), 20, 100)), context.name + ' selection', context.description + ' · matched against dataset audio features.');
+  }
+  if (p === '/recommendations/mood') {
+    const { selected, target, textMatch } = getMoodSelection(body || {});
+    const candidates = all.filter((song) => (!selected.length || selected.some((mood) => song.moods.includes(mood.name))) && textMatch(song));
+    const rows = choose(catalogue, target, safeLimit(body && body.limit, 24, 60), candidates);
+    const matchedMoods = selected.length ? selected : (rows[0] ? rows[0].moodsDetailed.slice(0, 2).map((item) => MOODS.find((mood) => mood.id === item.id)).filter(Boolean) : []);
+    return {
+      ...listResult(rows, 'Matches from the music archive', 'Mood labels are estimates derived from dataset topics and audio features.'),
+      interpretation: { moods: matchedMoods.map((mood) => ({ ...mood, confidence: 0.5 })), summary: 'Dataset topic and audio-feature match' },
+      explanation: 'No language, lyric or recording metadata is inferred.',
+    };
+  }
+  if (p === '/recommendations/parse') {
+    const selected = getMoodSelection({ text: body && body.text });
+    const rows = choose(catalogue, selected.target, 8, all.filter(selected.textMatch));
+    return { moods: rows[0] ? rows[0].moodsDetailed.slice(0, 2) : [], confidence: 0.5 };
+  }
+  if (p === '/worlds/current') return archiveWorld(catalogue);
+  if (p === '/history' || p === '/me/sessions') return [];
+  if (p === '/likes') return all.filter((song) => read('likes', []).includes(song.id)).map(withPersonalState);
+  if (p === '/me/dismissals') return getPlaylistSongs(catalogue, read('dismissals', []));
+  if (p === '/me/onboarding') return { languages: [], regions: [], genres: catalogue.genres, moods: MOODS };
+  if (p === '/me/settings' && method === 'PATCH') return { ...user, ...body, languages: [], region: null };
   if (p === '/search') {
-    const term = (q.get('q') || '').toLowerCase();
-    return Promise.resolve({
-      songs: all().filter((song) => (
-        `${song.title} ${song.artist.name} ${song.moods.join(' ')}`.toLowerCase().includes(term)
-      )),
+    const term = norm(q.get('q'));
+    const words = term.split(' ').filter(Boolean);
+    const matched = term ? all.filter((song) => {
+      const haystack = norm([song.title, song.artist.name, song.genre.name, song.topic].concat(song.moods).join(' '));
+      return words.every((word) => haystack.includes(word));
+    }) : [];
+    const limit = safeLimit(q.get('limit'), 60, 100);
+    const artistHits = catalogue.artists.filter((artist) => words.every((word) => norm(artist.name).includes(word))).slice(0, 20);
+    const moodHits = MOODS.filter((mood) => words.some((word) => norm(mood.name).includes(word)));
+    const genreHits = catalogue.genres.filter((genre) => words.some((word) => norm(genre.name).includes(word)));
+    return {
+      total: matched.length, songs: matched.slice(0, limit).map(withPersonalState),
+      artists: artistHits, albums: [], moods: moodHits, genres: genreHits, languages: [],
+    };
+  }
+  if (/^\/songs\/\d+$/.test(p)) return getSong(catalogue, p.split('/').pop());
+  if (/^\/songs\/\d+\/(like|rating)$/.test(p)) {
+    const id = Number(p.split('/')[2]);
+    if (p.endsWith('/like')) {
+      const likes = read('likes', []);
+      write('likes', body && body.liked ? [...new Set([...likes, id])] : likes.filter((x) => x !== id));
+    } else if (p.endsWith('/rating')) {
+      const ratings = read('ratings', {});
+      if (body && Number.isFinite(Number(body.rating))) ratings[id] = Number(body.rating);
+      write('ratings', ratings);
+    }
+    return { ok: true, previous: false };
+  }
+  if (/^\/songs\/\d+\/dismiss$/.test(p)) {
+    const id = Number(p.split('/')[2]);
+    const dismissals = read('dismissals', []);
+    write('dismissals', body && body.dismissed ? [...new Set([...dismissals, id])] : [...new Set([...dismissals, id])]);
+    return { ok: true };
+  }
+  if (/^\/songs\/\d+\/mood-ratings$/.test(p)) {
+    const id = Number(p.split('/')[2]);
+    return localMoodRatings(getSong(catalogue, id) || all[0], read('moodRatings', {}));
+  }
+  if (/^\/songs\/\d+\/mood-ratings\/\d+$/.test(p) && method === 'DELETE') {
+    const songId = Number(p.split('/')[2]);
+    const moodId = Number(p.split('/').pop());
+    const ratings = read('moodRatings', {});
+    if (ratings[songId]) { delete ratings[songId][moodId]; write('moodRatings', ratings); }
+    return { ok: true };
+  }
+  if (/^\/songs\/\d+\/mood-ratings$/.test(p) && method === 'PUT') {
+    const songId = Number(p.split('/')[2]);
+    const ratings = read('moodRatings', {});
+    const current = ratings[songId] || {};
+    const saved = (body && body.ratings || []).map((item) => {
+      const created = current[item.moodId] === undefined;
+      current[item.moodId] = Number(item.matchPercentage);
+      return { ...item, created };
     });
+    ratings[songId] = current; write('moodRatings', ratings);
+    return { saved, totals: { ratings: Object.keys(current).length, raters: Object.keys(current).length ? 1 : 0 } };
   }
-  if(/^\/songs\/\d+$/.test(p)){const song=all().find(s=>s.id===Number(p.split('/').pop()))||all()[0];return Promise.resolve(withSongDetails(song));}
-  if(/^\/songs\/\d+\/(like|rating)$/.test(p)){
-    const id=Number(p.split('/')[2]);if(p.endsWith('/like'))write('likes',body?.liked?[...new Set([...read('likes',[]),id])]:read('likes',[]).filter(x=>x!==id));return Promise.resolve({ok:true});
+  if (p === '/me/mood-ratings') return [];
+  if (/^\/moods\/\d+\/top-rated$/.test(p)) {
+    const id = Number(p.split('/')[2]);
+    const mood = MOODS.find((item) => item.id === id);
+    return listResult(mood ? choose(catalogue, { moods: [mood.name] }, safeLimit(q.get('limit'), 20, 100)) : [], 'Top-rated archive matches', 'Sorted by topic match; community rating data is not available in this dataset.');
   }
-  if(/^\/playlists\/\d+$/.test(p)){const id=Number(p.split('/')[2]);const item=read('playlists',[]).find(x=>x.id===id);return Promise.resolve(item||{id,name:'Demo playlist',kind:'MANUAL',songCount:0,songs:[],totalDurationSec:0});}
-  if(/^\/playlists\/\d+\/songs$/.test(p))return Promise.resolve({ok:true,songCount:1});
-  if(p==='/worlds/current/regenerate'||p==='/worlds/current/rollback')return Promise.resolve({...demoWorld(),ok:true});
-
-  if(/^\/artists\/\d+\/artwork$/.test(p)||/^\/albums\/\d+\/artwork$/.test(p))return Promise.resolve({});
-  if(/^\/artists\/\d+$/.test(p)){
-    const id=Number(p.split('/').pop());
-    const songs=all().filter((song)=>song.artist.id===id).map(withSongDetails);
-    const artists=artistsFor(all());
-    const artist=artists.find((item)=>item.id===id)||{id,name:'Demo artist'};
-    return Promise.resolve({id,name:artist.name,type:'ARTIST',language:'Telugu',region:'India',formedYear:2022,bio:'An independent artist from the LOOP demo catalogue.',aliases:[],songs,popularity:{plays30d:0,listeners30d:0,rank:null}});
+  if (p === '/playlists' && method === 'POST') {
+    const lists = read('playlists', []);
+    const item = { id: Date.now(), name: String(body && body.name || 'My playlist').slice(0, 80), songCount: 0, kind: 'MANUAL', covers: [], songs: [], totalDurationSec: null };
+    write('playlists', [item, ...lists]); return item;
   }
-  if(/^\/albums\/\d+$/.test(p)){
-    const id=Number(p.split('/').pop());
-    const songs=all().filter((song)=>song.album?.id===id).map(withSongDetails);
-    const artists=artistsFor(songs);
-    const first=songs[0]||all()[0];
-    return Promise.resolve({id,title:first.album?.title||'LOOP Sessions',type:'ALBUM',film:null,filmId:null,releaseYear:2024,language:'Telugu',artists,songs,cover:first.cover||colors});
+  if (p === '/playlists') return read('playlists', []);
+  if (p === '/playlists/smart') return [
+    { type: 'ENERGY_BOOST', name: 'Energy boost', blurb: 'High-energy records from the dataset' },
+    { type: 'CALM_MIX', name: 'Calm mix', blurb: 'Gentler acoustic records from the dataset' },
+    { type: 'DISCOVERY', name: 'Discovery', blurb: 'Explore more records across genres' },
+  ];
+  if (p.startsWith('/playlists/smart/')) {
+    const type = p.split('/').pop();
+    const target = type === 'ENERGY_BOOST' ? { energy: 0.82, valence: 0.7 }
+      : type === 'CALM_MIX' ? { energy: 0.25, acousticness: 0.75 } : {};
+    return listResult(choose(catalogue, target, 18), 'Smart archive selection', 'Selected from the uploaded music-feature dataset.');
   }
-  if(/^\/films\/\d+$/.test(p)){
-    const id=Number(p.split('/').pop());
-    return Promise.resolve({id,title:'A LOOP Short Story',releaseYear:2024,language:{id:1,name:'Telugu'},composers:[],songs:[],albums:[],external:null});
+  if (/^\/playlists\/\d+$/.test(p)) {
+    const id = Number(p.split('/')[2]);
+    const item = read('playlists', []).find((playlist) => playlist.id === id);
+    if (!item) return null;
+    return { ...item, songs: getPlaylistSongs(catalogue, item.songs || []) };
   }
-  if(/^\/languages\/\d+$/.test(p)){
-    const id=Number(p.split('/').pop());
-    const language={id,name:id===2?'Hindi':id===3?'English':'Telugu',iso:id===2?'hi':id===3?'en':'te',nativeName:id===1?'Telugu':id===2?'Hindi':'English',script:'Latin'};
-    const songs=all().map(withSongDetails);
-    return Promise.resolve({...language,regions:[],totalSongs:songs.length,artists:artistsFor(songs),films:[],songs});
+  if (/^\/playlists\/\d+\/songs$/.test(p) && method === 'POST') {
+    const id = Number(p.split('/')[2]);
+    const lists = read('playlists', []);
+    const item = lists.find((playlist) => playlist.id === id);
+    if (!item) return { ok: false };
+    item.songs = [...new Set([...(item.songs || []), Number(body && body.songId)])];
+    item.songCount = item.songs.length;
+    write('playlists', lists);
+    return { ok: true, songCount: item.songCount };
   }
-  if(p.startsWith('/admin/'))return Promise.resolve({});
-  return Promise.resolve({});
+  if (/^\/playlists\/\d+\/songs\/\d+$/.test(p) && method === 'DELETE') {
+    const id = Number(p.split('/')[2]);
+    const songId = Number(p.split('/').pop());
+    const lists = read('playlists', []);
+    const item = lists.find((playlist) => playlist.id === id);
+    if (item) { item.songs = (item.songs || []).filter((x) => x !== songId); item.songCount = item.songs.length; write('playlists', lists); }
+    return { ok: true };
+  }
+  if (/^\/playlists\/\d+$/.test(p) && method === 'DELETE') {
+    const id = Number(p.split('/')[2]);
+    write('playlists', read('playlists', []).filter((item) => item.id !== id));
+    return { ok: true };
+  }
+  if (/^\/playlists\/\d+$/.test(p) && method === 'PATCH') {
+    const id = Number(p.split('/')[2]);
+    const lists = read('playlists', []);
+    const item = lists.find((playlist) => playlist.id === id);
+    if (item) { item.name = body.name || item.name; write('playlists', lists); }
+    return item || { ok: false };
+  }
+  if (p === '/incognito') return { active: read('incognito', false), startedAt: null, secondsLeft: 7200, events: 0, memory: [], recentSongs: [] };
+  if (p === '/insights/profile') return { days: 30, headline: null, longTerm: [], recentTrend: null, streak: { current: 0, longest: 0 }, mostReplayed: null, mostSkipped: null };
+  if (p === '/insights/activity') return { daily: [], genres: [], heatmap: [], languages: [], contexts: [] };
+  if (p === '/insights/journey') return { distribution: [], transitions: [], trends: [], sessionArcs: [] };
+  if (p === '/insights/preferences') return {
+    signals: [], summary: 'Listening insights appear after audio playback is connected.',
+    model: null, evidence: { behaviourShare: 0, onboardingShare: 100, completedPlays: 0, neededForFullConfidence: 25 },
+    genres: [], artists: [], moods: [],
+  };
+  if (p === '/worlds/current/regenerate' || p === '/worlds/current/rollback') return archiveWorld(catalogue);
+  if (/^\/worlds\/\d+\/feedback$/.test(p)) return { ok: true };
+  if (p === '/playback/start') return { playId: playId++, private: read('incognito', false), isReplay: false, media: null };
+  if (p.startsWith('/playback/') || p === '/playback/private') return { ok: true };
+  if (p.startsWith('/admin/')) return {};
+  return {};
 }
