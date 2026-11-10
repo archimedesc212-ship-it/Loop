@@ -8,7 +8,8 @@ describe('format helpers', () => {
     expect(duration(null)).toBe('–:––');
     expect(duration(NaN)).toBe('–:––');
     expect(longDuration(3720)).toBe('1 hr 2 min');
-    expect(longDuration(undefined)).toBe('0 min');
+    expect(longDuration(undefined)).toBe('–');
+    expect(longDuration(null)).toBe('–');
   });
   it('reads calendar days as local dates and instants as instants', () => {
     const d = toDate('2026-10-05');
