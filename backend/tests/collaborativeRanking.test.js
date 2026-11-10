@@ -8,9 +8,11 @@ test('collaborative evidence boosts songs enjoyed by similar listeners and reran
     { song_id: 2, collaborative_score: 1, listener_count: 5 },
   ]);
   assert.equal(ranked[0].song_id, 2);
+  assert.equal(ranked[0].rank_position, 1);
   assert.equal(ranked[0].collaborative_listeners, 5);
   assert.ok(ranked[0].final_score > 0.74);
   assert.equal(ranked[1].song_id, 1);
+  assert.equal(ranked[1].rank_position, 2);
   assert.equal(ranked[1].final_score, 0.82);
 });
 
