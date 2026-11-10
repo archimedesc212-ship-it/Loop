@@ -36,18 +36,19 @@ export function SongPage() {
       <div className="row wrap" style={{ '--gap': '28px', alignItems: 'flex-end' }}>
         <Cover colors={s.cover} seed={s.album ? s.album.id * 31 + s.id : s.id} size={220} className="" />
         <div className="stack grow" style={{ '--gap': '10px', minWidth: 260 }}>
-          <div className="soft small">{s.album ? <Link className="link" to={`/album/${s.album.id}`}>{s.album.title}</Link> : 'Single'}{s.album && s.album.film ? <> · from the film <Link className="link" to={`/film/${s.album.filmId}`}>{s.album.film}</Link></> : ''} · {s.releaseYear}</div>
+          <div className="soft small">Archive record · {s.releaseYear}</div>
           <h1 className="display">{s.title}{s.version ? <span className="soft"> ({s.version})</span> : null}</h1>
           <div className="soft"><Link className="link" to={`/artist/${s.artist.id}`}>{s.artist.name}</Link>
             {credits.filter((c) => c.role === 'FEATURED').map((c) => <span key={c.id}> feat. <Link className="link" to={`/artist/${c.id}`}>{c.name}</Link></span>)}
-            {' · '}{s.language.id ? <Link className="link" to={`/language/${s.language.id}`}>{s.language.name}</Link> : s.language.name} · {genres.map((g) => g.name).join(', ')} · {duration(s.durationSec)}{s.explicit ? ' · Explicit' : ''}</div>
+            {' · '}{s.language?.id ? <Link className="link" to={`/language/${s.language.id}`}>{s.language.name}</Link> : 'Language unknown'} · {genres.map((g) => g.name).join(', ')} · {duration(s.durationSec)}</div>
           <div className="row wrap" style={{ '--gap': '6px' }}>{moodsDetailed.map((m) => <MoodChip key={m.id} name={m.name} emoji={m.emoji} color={m.color} weight={m.confidence} />)}</div>
           <div className="row wrap">
             {isPlayable(s)
               ? <button className="btn primary" onClick={() => (player.isCurrent(s.id) ? player.toggle() : player.play(s, { origin: 'LIBRARY' }))}>{playing ? <Pause /> : <Play />}{playing ? 'Pause' : 'Play'}</button>
               : <button className="btn primary" disabled title="No permitted audio source is available for this song">Not playable</button>}
             <PlaybackBadge song={s} verbose />
-            <Link className="btn" to={`/mix/similar/${s.id}`}>Songs like this</Link>
+            <Link className="btn" to={`/mix/similar/${s.id}`}>Similar sound</Link>
+            {s.recordingSearchUrl && <a className="btn" href={s.recordingSearchUrl} target="_blank" rel="noreferrer">Find recording</a>}
             <LikeButton song={s} /><AddToPlaylist song={s} />
             <Stars song={s} />
           </div>
@@ -68,10 +69,10 @@ export function SongPage() {
       <div className="grid-2" style={{ alignItems: 'start' }}>
         {f && (
           <div className="card stack" style={{ '--gap': '10px' }}>
-            <div className="row between"><h3>Sound</h3><span className="tiny muted">analysis {f.analysisVersion}</span></div>
-            <Meter label="Energy" value={f.energy} /><Meter label="Positivity" value={f.valence} /><Meter label="Danceable" value={f.danceability} />
-            <Meter label="Acoustic" value={f.acousticness} /><Meter label="Instrumental" value={f.instrumentalness} /><Meter label="Speech" value={f.speechiness} />
-            <div className="small soft">{Math.round(f.tempo)} BPM · {f.keyName} · {f.loudness} dB</div>
+            <div className="row between"><h3>Dataset audio features</h3><span className="tiny muted">Source metadata</span></div>
+            <Meter label="Energy" value={f.energy} /><Meter label="Valence" value={f.valence} /><Meter label="Danceability" value={f.danceability} />
+            <Meter label="Acousticness" value={f.acousticness} /><Meter label="Instrumentalness" value={f.instrumentalness} /><Meter label="Loudness index" value={f.loudnessIndex} />
+            <p className="tiny muted">The source does not include BPM, musical key or track duration.</p>
           </div>
         )}
         <div className="card stack" style={{ '--gap': '12px' }}>
@@ -91,13 +92,11 @@ export function SongPage() {
 
       <div className="grid-2" style={{ alignItems: 'start' }}>
         <div className="card stack" style={{ '--gap': '10px' }}>
-          <h3>Analysis versions</h3>
-          <p className="tiny muted">Re-analysis adds a version; history is never overwritten.</p>
-          <div className="table-wrap"><table className="data">
-            <thead><tr><th>Model</th><th>Energy</th><th>Positivity</th><th>Tempo</th><th>When</th><th /></tr></thead>
-            <tbody>{analyses.map((a) => (
-              <tr key={a.feature_id}><td>{a.model} {a.version}</td><td className="num">{a.energy}</td><td className="num">{a.valence}</td><td className="num">{Math.round(a.tempo_bpm)}</td><td>{dateTime(a.analyzed_at)}</td><td>{a.is_current ? <span className="status ok">current</span> : null}</td></tr>
-            ))}</tbody></table></div>
+          <h3>Source record</h3>
+          <p className="small soft">Music Dataset: 1950 to 2019 · CC BY 4.0</p>
+          <p className="small soft">Topic label: <b>{s.topic}</b></p>
+          {Array.isArray(s.topicScores) && s.topicScores.length > 0 && <p className="tiny muted">Other topic signals: {s.topicScores.map((item) => item.topic).join(', ')}</p>}
+          <p className="tiny muted">The upload contains metadata and audio features only. It does not contain the original recording, lyrics, BPM, key, duration, language, album or film details.</p>
         </div>
         <div className="card stack" style={{ '--gap': '10px' }}>
           <h3>Where this data came from</h3>
@@ -112,11 +111,7 @@ export function SongPage() {
             </dl>
           ))}
           {mergedDuplicates.length > 0 && <p className="small soft">Merged duplicates: {mergedDuplicates.map((d) => d.title).join(', ')}</p>}
-          <p className="tiny muted">
-            {!isPlayable(s) ? 'This song has metadata only: no permitted audio source is configured, so LOOP does not play it.'
-              : s.playback && s.playback.demo ? 'Playback is a demo sketch synthesised in your browser from the analysis — not the recording. LOOP stores no recordings or lyrics.'
-                : 'Playback comes from a licensed source; see the attribution in the player.'}
-          </p>
+          <p className="tiny muted">Find recording opens a YouTube search for the artist and title. It does not confirm that a result is the same recording or provide a licensed audio stream.</p>
           {s.videoLinks && s.videoLinks.length > 0 && (
             <div className="stack" style={{ '--gap': '6px' }}>
               <h3>Watch elsewhere</h3>
@@ -141,8 +136,7 @@ export function ArtistPage() {
   if (error) return <div className="page"><ErrorState error={error} onRetry={reload} /></div>;
   const songs = Array.isArray(a?.songs) ? a.songs : [];
   const aliases = Array.isArray(a?.aliases) ? a.aliases : [];
-  const popularity = a?.popularity || {};
-  return (
+    return (
     <div className="page stack" style={{ '--gap': '24px' }}>
       {(artwork?.banner || artwork?.fanart || artwork?.thumbnail) && (
         <div
@@ -171,7 +165,7 @@ export function ArtistPage() {
         {aliases.length > 0 && <p className="small muted">Also written as {aliases.map((x) => x.alias).join(', ')}</p>}
         <div className="row wrap">
           {songs.some(isPlayable) && <button className="btn primary" onClick={() => player.play(songs.find(isPlayable), { queue: songs, origin: 'LIBRARY' })}><Play />Play</button>}
-          <span className="small soft">{n((popularity.plays30d ?? 0))} plays · {n((popularity.listeners30d ?? 0))} listeners in 30 days{popularity.rank ? ` · #${popularity.rank} on LOOP` : ''}</span>
+          <span className="small soft">{songs.length.toLocaleString('en-IN')} matching records in the dataset</span>
         </div>
       </div>
       <TrackList songs={songs} origin="LIBRARY" />
@@ -187,6 +181,7 @@ export function AlbumPage() {
   const player = usePlayer();
   if (loading) return <Loading />;
   if (error) return <div className="page"><ErrorState error={error} onRetry={reload} /></div>;
+  if (a?.notAvailable) return <div className="page"><Empty title="Album details are not in this dataset">{a.message}</Empty></div>;
   const songs = Array.isArray(a?.songs) ? a.songs : [];
   const artists = Array.isArray(a?.artists) ? a.artists : [];
   return (
@@ -214,6 +209,7 @@ export function FilmPage() {
   const player = usePlayer();
   if (loading) return <Loading />;
   if (error) return <div className="page"><ErrorState error={error} onRetry={reload} /></div>;
+  if (f?.notAvailable) return <div className="page"><Empty title="Film details are not in this dataset">{f.message}</Empty></div>;
   const filmSongs = Array.isArray(f?.songs) ? f.songs : [];
   const composers = Array.isArray(f?.composers) ? f.composers : [];
   const albums = Array.isArray(f?.albums) ? f.albums : [];
@@ -256,6 +252,7 @@ export function LanguagePage() {
   const player = usePlayer();
   if (loading) return <Loading />;
   if (error) return <div className="page"><ErrorState error={error} onRetry={reload} /></div>;
+  if (l?.notAvailable) return <div className="page"><Empty title="Language data is not available">{l.message}</Empty></div>;
   const languageSongs = Array.isArray(l?.songs) ? l.songs : [];
   const artists = Array.isArray(l?.artists) ? l.artists : [];
   const films = Array.isArray(l?.films) ? l.films : [];
