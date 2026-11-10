@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { useToast } from '../hooks/useToast';
 import { useAuth } from '../hooks/useAuth';
-import { usePlayer } from '../hooks/usePlayer';
+import { usePlayer, isPlayable } from '../hooks/usePlayer';
 import { Cover } from '../components/Art';
 import { TrackList } from '../components/Songs';
 import { ErrorState, ListSkeleton, Empty, Modal, Field, PageHead } from '../components/ui';
@@ -71,7 +71,7 @@ export default function Library() {
 
       {tab === 'smart' && smart.data && (
         <div className="stack" style={{ '--gap': '14px' }}>
-          <p className="soft" style={{ maxWidth: 680 }}>Each smart playlist is generated from your own listening, ratings and likes — open one to see it, then save it if you want to keep it.</p>
+          <p className="soft" style={{ maxWidth: 680 }}>Smart lists are selected from the real track metadata and audio features in your music archive.</p>
           <div className="grid-4">
             {smart.data.map((s) => (
               <Link key={s.type} to={`/mix/smart/${s.type}`} className="card stack" style={{ '--gap': '4px' }}>
@@ -114,7 +114,7 @@ export function PlaylistPage() {
   const remove = async (s) => {
     try {
       await api.removeFromPlaylist(p.id, s.id);
-      setData({ ...p, songs: p.songs.filter((x) => x.id !== s.id), songCount: p.songCount - 1, totalDurationSec: p.totalDurationSec - s.durationSec });
+      setData({ ...p, songs: p.songs.filter((x) => x.id !== s.id), songCount: p.songCount - 1, totalDurationSec: p.totalDurationSec === null ? null : p.totalDurationSec - (s.durationSec || 0) });
       toast.info(`Removed “${s.title}”`);
     } catch (e) { toast.error(e); }
   };
@@ -126,7 +126,7 @@ export function PlaylistPage() {
     <div className="page stack" style={{ '--gap': '22px' }}>
       <PageHead kicker={p.kind === 'MANUAL' ? 'Playlist' : p.kind === 'SMART' ? 'Smart playlist' : p.kind === 'WORLD' ? 'Saved LOOP World' : 'Saved mix'} title={p.name}
         actions={<>
-          {p.songs.length > 0 && <button className="btn primary" onClick={() => player.play(p.songs[0], { queue: p.songs, origin: 'PLAYLIST' })}><Play />Play</button>}
+          {p.songs.some(isPlayable) && <button className="btn primary" onClick={() => player.play(p.songs.find(isPlayable), { queue: p.songs, origin: 'PLAYLIST' })}><Play />Play available audio</button>}
           {p.sourceBatchId && <Link className="btn" to={`/mix/batch/${p.sourceBatchId}`}>Original mix</Link>}
           <button className="btn ghost danger" onClick={del}><X />Delete</button>
         </>}>
