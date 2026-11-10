@@ -11,6 +11,7 @@ import { duration } from '../lib/format';
 import { buildSearchSuggestions } from '../lib/searchSuggestions';
 import { formatSleepRemaining } from '../lib/sleepTimer';
 import { registerMoodColors, LikeButton } from './Songs';
+import ImmersivePlayer from './ImmersivePlayer';
 
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
@@ -262,7 +263,7 @@ function mediaNote(media, incognito) {
   return `${media.label}${media.attribution ? ` · ${media.attribution}` : ''}${where}`;
 }
 
-function PlayerBar() {
+function PlayerBar({ onOpenImmersive }) {
   const p = usePlayer();
   const { user } = useAuth();
   const [queueOpen, setQueueOpen] = useState(false);
@@ -400,6 +401,7 @@ export function OfflineBanner() {
 export default function Layout() {
   const { user } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem('loop.sidebarCollapsed') === 'true'; } catch { return false; } });
+  const [immersiveOpen, setImmersiveOpen] = useState(false);
   useEffect(() => { try { localStorage.setItem('loop.sidebarCollapsed', String(sidebarCollapsed)); } catch { /* preference storage is optional */ } }, [sidebarCollapsed]);
   const nav = useNavigate();
   useEffect(() => { api.moods().then(registerMoodColors).catch(() => {}); }, []);
