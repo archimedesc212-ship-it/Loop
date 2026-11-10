@@ -269,6 +269,35 @@ function PlayerBar({ onOpenImmersive }) {
   const [queueOpen, setQueueOpen] = useState(false);
   const [sleepOpen, setSleepOpen] = useState(false);
   const closeQueue = useCallback(() => setQueueOpen(false), []);
+
+  // Desktop-friendly playback shortcuts. Ignore typing fields and editable controls.
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target;
+      const tag = target?.tagName?.toLowerCase();
+      if (target?.isContentEditable || ['input', 'textarea', 'select', 'button'].includes(tag)) return;
+      if (event.code === 'Space') {
+        event.preventDefault();
+        p.toggle();
+      } else if (event.key === 'ArrowLeft' && p.current && !p.externalPlayback) {
+        event.preventDefault();
+        p.seek(Math.max(0, p.position - 10));
+      } else if (event.key === 'ArrowRight' && p.current && !p.externalPlayback) {
+        event.preventDefault();
+        p.seek(Math.min(p.length || p.position + 10, p.position + 10));
+      } else if (event.key.toLowerCase() === 'n' && p.current) {
+        p.next();
+      } else if (event.key.toLowerCase() === 'p' && p.current) {
+        p.prev();
+      } else if (event.key.toLowerCase() === 'm' && p.current) {
+        p.toggleMute();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [p.toggle, p.seek, p.next, p.prev, p.toggleMute, p.current, p.externalPlayback, p.position, p.length]);
+
   const s = p.current;
   if (!s) return null;
   return (
@@ -288,18 +317,18 @@ function PlayerBar({ onOpenImmersive }) {
         </div>
         {p.externalPlayback ? (
           <div className="center external-player-center">
-            <div className="controls">
+            <div className="controls" title="Keyboard: Space play/pause · ←/→ seek 10s · N next · P previous · M mute">
               <button className={`icon-btn${p.shuffle ? ' on' : ''}`} onClick={p.setShuffle} aria-label="Toggle shuffle" aria-pressed={p.shuffle}>⤨</button>
               <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
               <button className="play-btn" onClick={p.toggle} aria-label={p.status === 'playing' ? 'Pause' : 'Play'}>{p.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}</button>
               <button className="icon-btn" onClick={p.next} aria-label="Next"><Icon.Next /></button>
               <button className={`icon-btn${p.repeat !== 'off' ? ' on' : ''}`} onClick={p.setRepeat} aria-label={`Repeat ${p.repeat}`} aria-pressed={p.repeat !== 'off'}>{p.repeat === 'one' ? '↻¹' : '↻'}</button>
             </div>
-            <button className="player-expand-btn" onClick={onOpenImmersive} aria-label="Open Now Playing">Open Now Playing</button>
+            <button className="player-expand-btn" onClick={onOpenImmersive} aria-label="Open Now Playing" title="Open full-screen player">Open Now Playing</button>
           </div>
         ) : (
           <div className="center">
-            <div className="controls">
+            <div className="controls" title="Keyboard: Space play/pause · ←/→ seek 10s · N next · P previous · M mute">
               <button className={`icon-btn${p.shuffle ? ' on' : ''}`} onClick={p.setShuffle} aria-label="Toggle shuffle" aria-pressed={p.shuffle}>⤨</button>
               <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
               <button className="play-btn" onClick={p.toggle} aria-label={p.status === 'playing' ? 'Pause' : 'Play'} disabled={p.status === 'loading'}>
@@ -311,7 +340,7 @@ function PlayerBar({ onOpenImmersive }) {
             <div className="progress">
               <span style={{ textAlign: 'right' }}>{duration(p.position)}</span>
               <input type="range" min="0" max={Math.max(1, Math.floor(p.length))} value={Math.round(p.position)} onChange={(e) => p.seek(Number(e.target.value))}
-                aria-label="Seek" aria-valuetext={`${duration(p.position)} of ${duration(p.length)}`} />
+                aria-label="Seek playback position" aria-valuetext={`${duration(p.position)} of ${duration(p.length)}`} title="Use arrow keys to seek 10 seconds" />
               <span>{duration(p.length)}</span>
             </div>
           </div>
