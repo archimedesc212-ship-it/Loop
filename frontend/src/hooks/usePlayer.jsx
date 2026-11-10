@@ -39,6 +39,7 @@ export function PlayerProvider({ children }) {
   const [status, setStatus] = useState('idle');          // idle | loading | playing | paused | external
   const [position, setPosition] = useState(0);
   const [media, setMedia] = useState(null);              // what is sounding: { type, label, demo, attribution, … }
+  const [audioElement, setAudioElement] = useState(null);
   const [speed, setSpeedState] = useState(() => stored(SPEED_KEY, 1));
   const [volume, setVolumeState] = useState(() => Math.min(1, Math.max(0, stored(VOLUME_KEY, 0.8))));
   const [muted, setMuted] = useState(false);
@@ -71,6 +72,7 @@ export function PlayerProvider({ children }) {
   const stopAudio = useCallback(() => {
     sketch.current.stop();
     if (audio.current) { audio.current.pause(); audio.current.src = ''; audio.current = null; }
+    setAudioElement(null);
   }, []);
 
   /** Report the current play to the API exactly once. */
@@ -145,6 +147,7 @@ export function PlayerProvider({ children }) {
           a.addEventListener('ended', () => { document.dispatchEvent(new CustomEvent('muse:ended')); });
           a.addEventListener('error', () => toast.error({ message: 'Apple Music could not load this preview. Try the embedded player or another track.' }));
           audio.current = a;
+          setAudioElement(a);
           setMedia({ type: 'APPLE_MUSIC_PREVIEW', label: 'Apple Music preview', attribution: 'Official 30-second preview', uri: match.previewUri, ...match });
           try {
             await a.play();
@@ -179,6 +182,7 @@ export function PlayerProvider({ children }) {
         a.addEventListener('ended', () => { document.dispatchEvent(new CustomEvent('muse:ended')); });
         a.addEventListener('error', () => toast.error({ message: 'This audio file could not be loaded.' }));
         audio.current = a;
+          setAudioElement(a);
         await a.play();
       } else {
         const ok = await sketch.current.start(song);
@@ -343,13 +347,13 @@ export function PlayerProvider({ children }) {
 
   const length = audio.current && Number.isFinite(audio.current.duration) ? audio.current.duration : (current ? current.durationSec : 0);
   const value = useMemo(() => ({
-    current, queue, index, status, position, length, speed, volume, muted, media, lastResult, sleepRemaining,
+    current, queue, index, status, position, length, speed, volume, muted, media, audioElement, lastResult, sleepRemaining,
     play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset,
     realAudio: !!(media && media.uri),
     externalPlayback: !!(media && ((media.type === 'APPLE_MUSIC_EMBED' && media.embedUri) || (media.type === 'YOUTUBE_EMBED' && media.embedUrl))),
     isCurrent: (id) => current && current.id === id,
     isPlaying: (id) => current && current.id === id && status === 'playing',
-  }), [current, queue, index, status, position, length, speed, volume, muted, media, lastResult, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);
+  }), [current, queue, index, status, position, length, speed, volume, muted, media, audioElement, lastResult, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);
 
   return <PlayerCtx.Provider value={value}>{children}</PlayerCtx.Provider>;
 }
