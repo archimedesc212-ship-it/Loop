@@ -20,9 +20,15 @@ separate adapters that stay off until configured — see [docs/PROVIDERS.md](doc
 
 > **Moods describe music, not people.** LOOP maps words and audio features to musical moods. It never claims to diagnose how anyone feels.
 > **Region is a signal, not a stereotype.** A listener's region adds a small, configurable weight; it never decides their taste.
-> **No copyrighted audio, lyrics or artwork.** The catalogue is a fictional, project-authored dataset (CC0). Playback of demo songs is a labelled **demo sketch** synthesised in the browser from each song's stored audio features — never presented as the recording. Songs without a permitted source are shown as *metadata only* and are not played.
+> **The public static archive uses the real uploaded music dataset.** It contains 28,372 track-metadata records from 1950–2019 (CC BY 4.0); the lyrics column is excluded. The upload contains no recordings, streaming URLs, track durations, language labels, albums or film metadata, so static archive playback is disabled and no fake songs or recordings are shown. The separate MySQL development seed remains fictional test data.
 
 ---
+
+## Public static archive
+
+Cloudflare Workers and Vercel static builds run the dataset-backed archive adapter. The root `npm run build` first verifies the supplied CSV by its pinned SHA-256, then generates `frontend/public/data/music-catalog.json` for the Vite build. It publishes 28,372 actual track records, 5,426 artists and seven genres. Search, catalogue browsing, audio-feature matching, mood exploration and local playlists use those records. Mood names are estimates from the source topic/audio features, not predictions from a trained AI model. No audio is bundled; playback controls are disabled and song pages offer an external recording search.
+
+The Express/MySQL development and integration-test path remains a separate profile with a fictional seed catalogue. It is not what the public static archive reads. Its Kaggle staging importer is also separate from the static catalogue generator.
 
 ## Contents
 
