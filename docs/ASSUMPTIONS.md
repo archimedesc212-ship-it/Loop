@@ -38,9 +38,10 @@ documented rule, so it can be changed without redesign.
 
 ## Data and media
 
-- **Catalogue**: fictional and project-authored (CC0) — titles, artists, albums, films, aliases and audio-feature values. Names were generated to sound plausible in each language; any resemblance to real works is unintended.
+- **MySQL development seed**: fictional and project-authored (CC0) — titles, artists, albums, films, aliases and audio-feature values. Names were generated to sound plausible in each language; any resemblance to real works is unintended. This seed remains for the database-backed development and integration-test profile.
+- **Public static archive**: uses the actual 28,372-record CC BY 4.0 music-feature dataset supplied with the project. The build is checksum-pinned, omits lyrics, and publishes only metadata/features. It does not contain recordings, stream URLs, duration, language, album or film metadata.
 - **Audio features** are supplied values (in the seed and the partner feed), not computed from audio. The schema keeps analyses per model version, so a real analyser would be added as a new `AUDIO_FEATURES` model.
-- **Playback**: demo songs play a synthesised "demo sketch" generated in the browser from tempo, key, mode, energy and valence (Web Audio). It is labelled "Demo sketch (not the recording)". Licensed local files and a licensed preview provider are supported and take priority when present; six seed songs are deliberately metadata-only.
+- **Database-backed development profile playback**: demo seed songs can play a synthesised "demo sketch" generated in the browser from seed tempo/key/mode/energy/valence and labelled as not the recording. Licensed local files and a licensed preview provider are supported by that separate backend profile. The public static archive sets every supplied dataset record to metadata-only and disables playback because the upload has no audio files or stream URLs.
 - **Demo speed**: the player can run sketches at 10× so a full play can be demonstrated quickly; listened seconds are still counted in song time, never wall-clock time.
 - **External sources**: MusicBrainz, TMDB, YouTube Data API, a vendor-neutral licensed preview contract and an optional AI helper are implemented as separate adapters, all disabled by default; they are tested against a local mock server only (see [PROVIDERS.md](PROVIDERS.md)). If no source is reachable the ingest job is `SKIPPED` and the existing catalogue keeps serving — nothing is marked as live.
 
