@@ -10,6 +10,12 @@ The uploaded archive contains `tcc_ceds_music.csv` with 28,372 records spanning 
 
 The dataset is published under **CC BY 4.0**. Preserve attribution to the Kaggle dataset and its stated upstream sources when using the imported feature data. Review the dataset card and attribution requirements before public/commercial use.
 
+## Public static archive build
+
+The current Cloudflare Workers / Vercel static frontend uses this actual dataset directly, rather than the fictional MySQL development seed. `npm run build` runs `scripts/prepare-music-catalog.js` first. That script downloads the CSV from the upstream source and refuses to continue unless its SHA-256 matches the uploaded CSV: `046b8e714bb037b5960429a9a4bdfc205530c81e0617ef39a328307c9f9e1173`. The matching upload is 27,655,251 bytes and the ZIP contains that same CSV. The script verifies all 28,372 rows and generates a compact JSON catalogue for the frontend.
+
+Only metadata and numerical features are published; the `lyrics` column is not copied. Mood labels are estimates derived from topic/audio features. The upload has no audio recordings, preview URLs, durations, language, albums or film metadata, so these remain unavailable and playback is disabled.
+
 ## What the import does
 
 - Creates/uses the separate MySQL table `kaggle_ceds_music_features` through migration `0005_theaudiodb_kaggle_features.sql`.
