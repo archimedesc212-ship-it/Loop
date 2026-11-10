@@ -44,7 +44,7 @@ test('backup client config uses TLS identity verification when SSL is enabled', 
   const config = common.buildClientDefaults({ host: 'db.example', port: 3306, user: 'backup', password: 'secret', ssl: true, sslCa: '/tmp/ca.pem' });
   assert.match(config, /ssl-mode=VERIFY_IDENTITY/);
   assert.match(config, /ssl-ca=/);
-  assert.match(config, /password=\"secret\"/);
+  assert.match(config, /password="secret"/);
 });
 
 test('restore drills only allow a separate loop_restore_ schema', () => {
