@@ -34,19 +34,14 @@ function Sidebar() {
           <NavLink to="/admin" className="nav-link"><Icon.Shield />Admin</NavLink>
         </>
       )}
-      <NavLink to={user.role === 'ARTIST' ? '/artist/studio' : '/artist/apply'} className="nav-link">{user.role === 'ARTIST' ? <Icon.Music /> : <Icon.Mic />} {user.role === 'ARTIST' ? 'Artist Studio' : 'Become an artist'}</NavLink>
       <div className="sidebar-foot stack" style={{ '--gap': '10px' }}>
         <div className="row" style={{ '--gap': '10px' }}>
           <span className="avatar">{user.displayName.slice(0, 1)}</span>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.displayName}</div>
-            <div className="tiny muted">{user.email?.endsWith('@guest.loop.invalid') ? 'Guest listener' : (user.roleName || 'Listener')}</div>
+            <div className="tiny muted">Guest listener</div>
           </div>
         </div>
-        {user.email?.endsWith('@guest.loop.invalid') && <div className="row" style={{ '--gap': '4px' }}>
-          <Link to="/login" className="btn ghost sm grow">Sign in</Link>
-          <Link to="/register" className="btn primary sm grow">Create account</Link>
-        </div>}
         <div className="row" style={{ '--gap': '4px' }}>
           <Link to="/settings" className="btn ghost sm grow"><Icon.Settings />Settings</Link>
         </div>

@@ -7,8 +7,6 @@ import { demoRequest } from '../lib/demoMode';
 // readable `muse_csrf` cookie (double-submit, verified server-side with an HMAC).
 // No token is ever stored in localStorage.
 
-export const isDemoMode = import.meta.env.VITE_DEMO_MODE !== 'false';
-
 export class ApiError extends Error {
   constructor(status, code, message, details) {
     super(message);
@@ -54,7 +52,7 @@ const QUIET_401 = new Set(['/auth/me', '/auth/login', '/auth/register']);
 
 export async function request(method, path, body) {
   // Presentation mode is intentionally database-free: all demo data stays in this browser.
-  if (isDemoMode) return demoRequest(method, path, body);
+  if (import.meta.env.VITE_DEMO_MODE !== 'false') return demoRequest(method, path, body);
   let res;
   let text;
   const controller = new AbortController();
@@ -110,8 +108,6 @@ export const api = {
   // auth & profile
   me: () => request('GET', '/auth/me'),
   session: () => request('GET', '/auth/session'),
-  register: (b) => request('POST', '/auth/register', b),
-  login: (b) => request('POST', '/auth/login', b),
   createGuestSession,
   logout: () => request('POST', '/auth/logout', {}),
   logoutAll: () => request('POST', '/auth/logout-all', {}),
@@ -185,35 +181,6 @@ export const api = {
   activity: () => request('GET', '/insights/activity'),
   journey: (period) => request('GET', `/insights/journey${qs({ period })}`),
   preferences: () => request('GET', '/insights/preferences'),
-  // independent artist onboarding and private audio upload
-  artist: {
-    profile: () => request('GET', '/artist/me'),
-    apply: (b) => request('POST', '/artist/applications', b),
-    createUpload: (b) => request('POST', '/artist/uploads', b),
-    withdraw: (id) => request('POST', `/artist/uploads/${id}/withdraw`, {}),
-    report: (id, b) => request('POST', `/artist/uploads/${id}/reports`, b),
-    uploadFile: async (id, file) => {
-      if (isDemoMode) throw new ApiError(400, 'DEMO_MODE', 'Artist uploads require the connected LOOP API. Set VITE_DEMO_MODE=false to use server-backed features.');
-      let response;
-      try {
-        response = await fetch(`/api/artist/uploads/${id}/content`, {
-          method: 'PUT', credentials: 'same-origin',
-          headers: { ...buildHeaders('PUT', false), 'Content-Type': file.type || 'application/octet-stream' },
-          body: file,
-        });
-      } catch {
-        throw new ApiError(0, 'NETWORK', 'The upload connection was interrupted. The private upload intent can be retried only if it is still open.');
-      }
-      const raw = await response.text();
-      let data = null;
-      try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
-      if (!response.ok) {
-        const e = data?.error || { code: `HTTP_${response.status}`, message: 'The upload could not be completed.' };
-        throw new ApiError(response.status, e.code, e.message, e.details);
-      }
-      return data;
-    },
-  },
   // private sessions & worlds
   incognito: () => request('GET', '/incognito'),
   startIncognito: (moodId) => request('POST', '/incognito', moodId ? { moodId } : {}),
@@ -266,13 +233,5 @@ export const api = {
     media: () => request('GET', '/admin/media'),
     checkMedia: () => request('POST', '/admin/media/check', {}),
     registerMedia: (songId, b) => request('POST', `/admin/songs/${songId}/media`, b),
-    artistApplications: (status = 'PENDING') => request('GET', `/admin/artist-applications${qs({ status })}`),
-    decideArtistApplication: (id, b) => request('POST', `/admin/artist-applications/${id}/decision`, b),
-    artistUploads: (status = 'ALL') => request('GET', `/admin/artist-uploads${qs({ status })}`),
-    scanArtistUpload: (id) => request('POST', `/admin/artist-uploads/${id}/scan`, {}),
-    decideArtistUpload: (id, b) => request('POST', `/admin/artist-uploads/${id}/decision`, b),
-    publishArtistUpload: (id) => request('POST', `/admin/artist-uploads/${id}/publish`, {}),
-    artistRightsReports: (status = 'OPEN') => request('GET', `/admin/artist-rights-reports${qs({ status })}`),
-    resolveArtistRightsReport: (id, b) => request('POST', `/admin/artist-rights-reports/${id}/decision`, b),
   },
 };
