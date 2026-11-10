@@ -1,106 +1,164 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePlayer } from '../hooks/usePlayer';
+import { api } from '../services/api';
+import { getAccentTheme } from '../lib/theme';
 import * as Icon from './Icons';
 
 const audioGraphs = new WeakMap();
 
-function VisualizerCanvas({ audioElement, active }) {
+function VisualizerCanvas({ audioElement, active, enabled, palette = [] }) {
   const canvasRef = useRef(null);
-  const activeRef = useRef(active);
-  activeRef.current = active;
+  const [available, setAvailable] = useState(false);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
     const context = canvas.getContext('2d');
     if (!context) return undefined;
-    let frame = 0;
     let raf = 0;
     let analyser = null;
     let audioContext = null;
-    let data = null;
-
-    // Only analyse same-origin LOOP audio. External embeds/previews are isolated
-    // by browser security and must never be intercepted or muted.
+    let frequency = null;
+    let waveform = null;
+    let attached = false;
     try {
-      if (audioElement?.src && new URL(audioElement.src, window.location.href).origin === window.location.origin) {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (AudioContextClass) {
-          let graph = audioGraphs.get(audioElement);
-          if (!graph) {
-            audioContext = new AudioContextClass();
-            const source = audioContext.createMediaElementSource(audioElement);
-            analyser = audioContext.createAnalyser();
-            analyser.fftSize = 128;
-            analyser.smoothingTimeConstant = 0.84;
-            source.connect(analyser);
-            analyser.connect(audioContext.destination);
-            graph = { audioContext, analyser };
-            audioGraphs.set(audioElement, graph);
-          } else {
-            ({ audioContext, analyser } = graph);
-          }
-          data = new Uint8Array(analyser.frequencyBinCount);
-        }
+      const src = audioElement?.currentSrc || audioElement?.src;
+      const sameOrigin = !!src && new URL(src, window.location.href).origin === window.location.origin;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (sameOrigin && AudioContextClass) {
+        let graph = audioGraphs.get(audioElement);
+        if (!graph) {
+          audioContext = new AudioContextClass();
+          const source = audioContext.createMediaElementSource(audioElement);
+          analyser = audioContext.createAnalyser();
+          analyser.fftSize = 512;
+          analyser.smoothingTimeConstant = 0.86;
+          source.connect(analyser);
+          analyser.connect(audioContext.destination);
+          graph = { audioContext, analyser };
+          audioGraphs.set(audioElement, graph);
+        } else ({ audioContext, analyser } = graph);
+        frequency = new Uint8Array(analyser.frequencyBinCount);
+        waveform = new Uint8Array(analyser.fftSize);
+        attached = true;
       }
-    } catch {
-      // A media element can only be attached to one AudioContext. Keep the
-      // visual treatment graceful when another player already owns the source.
-    }
-
+    } catch { /* CORS or an existing media-element graph prevents safe analysis. */ }
+    setAvailable(attached);
+    let tick = 0;
     const draw = () => {
-      const width = canvas.clientWidth || 1;
-      const height = canvas.clientHeight || 1;
+      const w = canvas.clientWidth || 1;
+      const h = canvas.clientHeight || 1;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+        canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
       }
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
-      context.clearRect(0, 0, width, height);
-      if (analyser && data && activeRef.current) analyser.getByteFrequencyData(data);
-      if (audioContext && activeRef.current && audioContext.state === 'suspended') audioContext.resume().catch(() => {});
-      const count = 64;
-      const gap = Math.max(3, width / 180);
-      const barWidth = Math.max(2, (width - gap * (count - 1)) / count);
-      for (let i = 0; i < count; i += 1) {
-        const measured = analyser && data ? data[Math.floor(i * data.length / count)] / 255 : 0;
-        const ambient = 0.08 + (Math.sin(frame * 0.018 + i * 0.28) + 1) * 0.035;
-        const amplitude = activeRef.current ? Math.max(ambient, measured) : 0.035;
-        const barHeight = Math.max(3, amplitude * height * 0.72);
-        const x = i * (barWidth + gap);
-        const y = (height - barHeight) / 2;
-        const gradient = context.createLinearGradient(0, y, 0, y + barHeight);
-        gradient.addColorStop(0, 'rgba(130, 240, 180, 0.78)');
-        gradient.addColorStop(1, 'rgba(30, 215, 96, 0.12)');
-        context.fillStyle = gradient;
+      context.clearRect(0, 0, w, h);
+      if (enabled && analyser && frequency && waveform && active) {
+        if (audioContext?.state === 'suspended') audioContext.resume().catch(() => {});
+        analyser.getByteFrequencyData(frequency);
+        analyser.getByteTimeDomainData(waveform);
+        const bass = frequency.slice(0, 12).reduce((a, b) => a + b, 0) / (12 * 255);
+        const mid = frequency.slice(12, 72).reduce((a, b) => a + b, 0) / (60 * 255);
+        const treble = frequency.slice(72, 180).reduce((a, b) => a + b, 0) / (108 * 255);
+        const centerY = h * 0.5;
+        const colors = palette.length ? palette : ['#73beff', '#ca94ff', '#ffbe87'];
+        const gradient = context.createLinearGradient(0, 0, w, h);
+        gradient.addColorStop(0, colors[0]);
+        gradient.addColorStop(.5, colors[1] || colors[0]);
+        gradient.addColorStop(1, colors[2] || colors[0]);
+        context.globalAlpha = .28 + mid * .48;
+        context.lineWidth = 2 + bass * 3;
+        context.strokeStyle = gradient;
+        context.shadowBlur = 16 + bass * 24;
+        context.shadowColor = 'rgba(170,170,255,.45)';
         context.beginPath();
-        context.roundRect(x, y, barWidth, barHeight, barWidth / 2);
-        context.fill();
+        for (let i = 0; i < waveform.length; i += 1) {
+          const x = (i / (waveform.length - 1)) * w;
+          const y = centerY + ((waveform[i] - 128) / 128) * h * (.12 + mid * .24);
+          if (i === 0) context.moveTo(x, y); else context.lineTo(x, y);
+        }
+        context.stroke();
+        context.globalAlpha = 1;
+        context.shadowBlur = 0;
+        const bars = 72;
+        const gap = Math.max(2, w / 300);
+        const bw = Math.max(1, (w - gap * (bars - 1)) / bars);
+        for (let i = 0; i < bars; i += 1) {
+          const value = frequency[Math.floor(i * frequency.length / bars)] / 255;
+          const bh = Math.max(2, value * h * .24);
+          context.globalAlpha = .12 + value * .42;
+          context.fillStyle = colors[1] || colors[0];
+          context.beginPath();
+          context.roundRect(i * (bw + gap), centerY - bh / 2, bw, bh, bw);
+          context.fill();
+        }
+        context.globalAlpha = 1;
+        // Low-density drifting particles whose size and speed follow measured bass.
+        for (let i = 0; i < 18; i += 1) {
+          const x = ((i * 83 + tick * (.12 + bass * .6)) % (w + 20)) - 10;
+          const y = h * (.18 + ((i * 37) % 64) / 100);
+          context.beginPath();
+          context.fillStyle = colors[2] || colors[0];
+          context.globalAlpha = .08 + treble * .18;
+          context.arc(x, y, 1 + bass * 2, 0, Math.PI * 2);
+          context.fill();
+        }
+        context.globalAlpha = 1;
       }
-      frame += 1;
-      raf = window.requestAnimationFrame(draw);
+      tick += 1;
+      if (enabled) raf = window.requestAnimationFrame(draw);
     };
-    draw();
-    return () => {
-      window.cancelAnimationFrame(raf);
-      // Keep the one-per-element audio graph alive across overlay open/close cycles.
-    };
-  }, [audioElement]);
-  return <canvas ref={canvasRef} className="loop-visualizer-canvas" aria-hidden="true" />;
+    if (enabled) draw();
+    return () => window.cancelAnimationFrame(raf);
+  }, [audioElement, active, enabled]);
+  return <><canvas ref={canvasRef} className="loop-visualizer-canvas" aria-hidden="true" />{enabled && !available && <span className="loop-visualizer-unavailable">Live audio analysis is unavailable for this provider. YouTube and cross-origin embeds do not expose audio samples to LOOP.</span>}</>;
+}
+
+function clock(seconds) {
+  const n = Math.max(0, Math.floor(Number(seconds) || 0));
+  return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
 }
 
 export default function ImmersivePlayer({ open, onClose }) {
   const player = usePlayer();
   const [artworkVisible, setArtworkVisible] = useState(true);
+  const [visualizerEnabled, setVisualizerEnabled] = useState(true);
   const [annotationsVisible, setAnnotationsVisible] = useState(true);
+  const [lyricsData, setLyricsData] = useState({ lyric: null, lines: [], note: null, favourite: false });
+  const [selectedLine, setSelectedLine] = useState(null);
+  const [annotationText, setAnnotationText] = useState('');
+  const [noteText, setNoteText] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
   const current = player.current;
   const artwork = current?.artworkUrl || player.media?.artworkUrl;
-  const annotations = useMemo(() => {
-    if (Array.isArray(current?.annotations)) return current.annotations;
-    if (typeof current?.annotation === 'string' && current.annotation.trim()) return [current.annotation];
-    return [];
-  }, [current]);
-  const lyrics = Array.isArray(current?.lyrics) ? current.lyrics : [];
+  const palette = Array.isArray(current?.cover) ? current.cover.filter((color) => typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color)).slice(0, 3) : [getAccentTheme().color, '#BDA6FF', '#F8D5A8'];
+  const activeLine = useMemo(() => {
+    if (player.externalPlayback) return null;
+    const ms = player.position * 1000;
+    const lines = lyricsData.lines || [];
+    let found = null;
+    for (const line of lines) {
+      if (line.startMs <= ms) found = line;
+      else break;
+    }
+    return found?.id ?? null;
+  }, [lyricsData.lines, player.position, player.externalPlayback]);
+
+  useEffect(() => {
+    if (!open || !current?.id) return undefined;
+    let cancelled = false;
+    setSelectedLine(null); setMessage('');
+    api.lyrics(current.id).then((data) => {
+      if (!cancelled) {
+        setLyricsData(data || { lyric: null, lines: [], note: null, favourite: false });
+        setNoteText(data?.note?.text || '');
+      }
+    }).catch((error) => {
+      if (!cancelled) setMessage(error.message || 'Could not load saved lyrics.');
+    });
+    return () => { cancelled = true; };
+  }, [open, current?.id]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -113,16 +171,56 @@ export default function ImmersivePlayer({ open, onClose }) {
     };
   }, [open, onClose]);
 
+  const addAnnotation = async () => {
+    if (!selectedLine || !annotationText.trim() || !current?.id) return;
+    setSaving(true);
+    try {
+      const result = await api.addLyricAnnotation(current.id, { lineId: selectedLine, text: annotationText.trim() });
+      setLyricsData((old) => ({ ...old, lines: old.lines.map((line) => line.id === selectedLine ? { ...line, annotations: [...(line.annotations || []), result] } : line) }));
+      setAnnotationText(''); setMessage('Annotation saved privately.');
+    } catch (error) { setMessage(error.message || 'Could not save annotation.'); }
+    finally { setSaving(false); }
+  };
+  const toggleFavourite = async () => {
+    if (!current?.id) return;
+    setSaving(true);
+    try {
+      await api.like(current.id, !lyricsData.favourite);
+      setLyricsData((old) => ({ ...old, favourite: !old.favourite }));
+      setMessage(lyricsData.favourite ? 'Removed from your favourites.' : 'Added to your favourites.');
+    } catch (error) { setMessage(error.message || 'Could not update favourite.'); }
+    finally { setSaving(false); }
+  };
+  const saveNote = async () => {
+    if (!current?.id) return;
+    setSaving(true);
+    try {
+      const result = await api.saveSongNote(current.id, noteText);
+      setLyricsData((old) => ({ ...old, note: result.note }));
+      setMessage('Your listening note was saved.');
+    } catch (error) { setMessage(error.message || 'Could not save note.'); }
+    finally { setSaving(false); }
+  };
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) await document.querySelector('.loop-immersive-player')?.requestFullscreen?.();
+      else await document.exitFullscreen?.();
+    } catch { setMessage('Fullscreen is not available in this browser.'); }
+  };
   if (!open || !current) return null;
+  const selected = lyricsData.lines.find((line) => line.id === selectedLine);
   const external = player.externalPlayback;
   return (
-    <section className={`loop-immersive-player${artworkVisible ? ' artwork-on' : ' visualizer-only'}`} role="dialog" aria-modal="true" aria-label="Immersive music player">
+    <section className={`loop-immersive-player${artworkVisible && artwork ? ' artwork-on' : ' visualizer-only'}${visualizerEnabled ? ' visualizer-enabled' : ''}`} role="dialog" aria-modal="true" aria-label="Immersive music player">
       {artworkVisible && artwork && <div className="loop-immersive-art" style={{ backgroundImage: `url("${artwork}")` }} />}
       <div className="loop-immersive-shade" />
-      <div className="loop-immersive-visualizer"><VisualizerCanvas audioElement={player.audioElement} active={player.status === 'playing'} /></div>
+      <div className="loop-immersive-visualizer"><VisualizerCanvas audioElement={player.audioElement} active={player.status === 'playing'} enabled={visualizerEnabled} palette={palette} /></div>
       <header className="loop-immersive-top">
         <div><span className="loop-immersive-kicker">NOW PLAYING</span><div className="loop-immersive-provider">{player.media?.label || 'LOOP MUSIC'}</div></div>
-        <button className="icon-btn loop-immersive-close" onClick={onClose} aria-label="Close immersive player"><Icon.X /></button>
+        <div className="loop-immersive-top-actions">
+          <button className="loop-immersive-action" onClick={toggleFullscreen}>Fullscreen</button>
+          <button className="icon-btn loop-immersive-close" onClick={onClose} aria-label="Close immersive player"><Icon.X /></button>
+        </div>
       </header>
       <div className="loop-immersive-content">
         <div className="loop-immersive-track">
@@ -134,28 +232,41 @@ export default function ImmersivePlayer({ open, onClose }) {
         </div>
         <div className="loop-immersive-lower">
           <div className="loop-immersive-controls">
-            <div className="loop-immersive-buttons">
-              <button className="icon-btn" onClick={player.prev} aria-label="Previous track"><Icon.Prev /></button>
-              {!external && <button className="play-btn" onClick={player.toggle} aria-label={player.status === 'playing' ? 'Pause' : 'Play'}>{player.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}</button>}
-              <button className="icon-btn" onClick={player.next} aria-label="Next track"><Icon.Next /></button>
-            </div>
             {!external && <div className="loop-immersive-progress">
-              <span>{Math.floor(player.position / 60)}:{String(Math.floor(player.position % 60)).padStart(2, '0')}</span>
-              <input type="range" min="0" max={Math.max(1, Math.floor(player.length))} value={Math.round(player.position)} onChange={(event) => player.seek(Number(event.target.value))} aria-label="Seek song" />
-              <span>{Math.floor(player.length / 60)}:{String(Math.floor(player.length % 60)).padStart(2, '0')}</span>
+              <span>{clock(player.position)}</span>
+              <input type="range" min="0" max={Math.max(1, Math.floor(player.length))} value={Math.min(Math.floor(player.length), Math.round(player.position))} onChange={(event) => player.seek(Number(event.target.value))} aria-label="Seek song" />
+              <span>{clock(player.length)}</span>
             </div>}
+            <div className="loop-immersive-buttons">
+              <button className="icon-btn" onClick={player.setShuffle} aria-label="Toggle shuffle" aria-pressed={player.shuffle}>⇄</button>
+              <button className="icon-btn" onClick={player.prev} aria-label="Previous track"><Icon.Prev /></button>
+              <button className="play-btn" onClick={player.toggle} aria-label={player.status === 'playing' ? 'Pause' : 'Play'}>{player.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}</button>
+              <button className="icon-btn" onClick={player.next} aria-label="Next track"><Icon.Next /></button>
+              <button className="icon-btn" onClick={player.setRepeat} aria-label="Toggle repeat" aria-pressed={player.repeat !== 'off'}>↻</button>
+            </div>
             <div className="loop-immersive-toggles">
-              <button className={artworkVisible ? 'active' : ''} onClick={() => setArtworkVisible((value) => !value)}>{artworkVisible ? 'Hide artwork' : 'Show artwork'}</button>
-              <button className={annotationsVisible ? 'active' : ''} onClick={() => setAnnotationsVisible((value) => !value)}>{annotationsVisible ? 'Hide annotations' : 'Show annotations'}</button>
+              <button className={lyricsData.favourite ? 'active' : ''} onClick={toggleFavourite} aria-pressed={lyricsData.favourite}>{lyricsData.favourite ? '♥ Favourited' : '♡ Favourite'}</button>
+              <button className={artworkVisible ? 'active' : ''} onClick={() => setArtworkVisible((v) => !v)}>{artworkVisible ? 'Hide artwork' : 'Show artwork'}</button>
+              <button className={visualizerEnabled ? 'active' : ''} onClick={() => setVisualizerEnabled((v) => !v)}>{visualizerEnabled ? 'Visualizer on' : 'Visualizer off'}</button>
+              <button className={annotationsVisible ? 'active' : ''} onClick={() => setAnnotationsVisible((v) => !v)}>{annotationsVisible ? 'Hide lyrics' : 'Show lyrics'}</button>
             </div>
           </div>
-          {annotationsVisible && <aside className="loop-annotation-panel" aria-live="polite">
-            <div className="loop-annotation-heading"><span>LYRICS & ANNOTATIONS</span><span className="loop-annotation-dot" /></div>
-            {annotations.length > 0 ? annotations.map((note, index) => <p key={index} className="loop-annotation-item">{typeof note === 'string' ? note : note.text || note.content || 'Annotation'}</p>) : lyrics.length > 0 ? lyrics.map((line, index) => <p key={index} className="loop-annotation-item">{typeof line === 'string' ? line : line.text || line.lyric || ''}</p>) : <p className="loop-annotation-empty">Annotations for this track will appear here when verified track notes are available. They stay in this same panel in both background modes.</p>}
+          {annotationsVisible && <aside className="loop-annotation-panel" aria-label="Lyrics and annotations">
+            <div className="loop-annotation-heading"><span>LYRICS & YOUR ANNOTATIONS</span><span className="loop-annotation-dot" /></div>
+            {lyricsData.lyric && <p className="loop-lyric-source">Lyrics: {lyricsData.lyric.sourceLabel} · {lyricsData.lyric.sourceType === 'LICENSED' ? 'licensed' : 'user provided'}</p>}
+            {lyricsData.lines.length ? <div className="loop-lyrics-list">
+              {lyricsData.lines.map((line) => <div key={line.id} className={`loop-lyric-line${activeLine === line.id ? ' active' : ''}${selectedLine === line.id ? ' selected' : ''}`}>
+                <button onClick={() => setSelectedLine(line.id)}>{line.text}</button>
+                {line.annotations?.map((annotation) => <div className="loop-lyric-annotation" key={annotation.id}><span>{annotation.text}</span>{annotation.mine && <button onClick={async () => { try { await api.deleteLyricAnnotation(annotation.id); setLyricsData((old) => ({ ...old, lines: old.lines.map((l) => l.id === line.id ? { ...l, annotations: l.annotations.filter((a) => a.id !== annotation.id) } : l) })); } catch (e) { setMessage(e.message); } }}>Delete</button>}</div>)}
+              </div>)}
+            </div> : <p className="loop-annotation-empty">No licensed or user-provided lyrics are saved for this song yet. LOOP will not invent lyrics.</p>}
+            {selected && <div className="loop-annotation-compose"><label htmlFor="loop-annotation-text">Add a private note to this lyric</label><textarea id="loop-annotation-text" value={annotationText} onChange={(e) => setAnnotationText(e.target.value)} maxLength={2000} placeholder="Meaning, context, slang, personal interpretation…" /><button disabled={saving || !annotationText.trim()} onClick={addAnnotation}>{saving ? 'Saving…' : 'Save annotation'}</button></div>}
+            <div className="loop-note-compose"><label htmlFor="loop-song-note">Your song note</label><textarea id="loop-song-note" value={noteText} onChange={(e) => setNoteText(e.target.value)} maxLength={5000} placeholder="Save what this song means to you…" /><button disabled={saving} onClick={saveNote}>{saving ? 'Saving…' : 'Save note'}</button></div>
+            {message && <p className="loop-player-message" role="status">{message}</p>}
           </aside>}
         </div>
       </div>
-      {external && <p className="loop-immersive-provider-note">This provider controls its own playback. Audio visualisation is available only when LOOP has direct access to the audio stream.</p>}
+      {external && <p className="loop-immersive-provider-note">Playback is provided by the official YouTube embed. Browser security prevents LOOP from reading YouTube's audio samples or playback clock, so live visualization and synchronized lyric highlighting are unavailable for this source. Lyrics and your saved annotations remain available.</p>}
     </section>
   );
 }
