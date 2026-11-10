@@ -131,7 +131,7 @@ export function PlaylistPage() {
           <button className="btn ghost danger" onClick={del}><X />Delete</button>
         </>}>
         {p.description && <p className="soft">{p.description}</p>}
-        <p className="small muted">{plural(p.songCount, 'song')} · {longDuration(p.totalDurationSec)} · count and length kept by database triggers</p>
+        <p className="small muted">{plural(p.songCount, 'song')} · track duration is not included in the supplied dataset</p>
       </PageHead>
       {p.songs.length ? <TrackList songs={p.songs} origin="PLAYLIST" onRemove={p.kind === 'MANUAL' || p.kind === 'SAVED_MIX' ? remove : undefined} />
         : <Empty title="This playlist is empty">Use the + button on any song to add it here.</Empty>}
