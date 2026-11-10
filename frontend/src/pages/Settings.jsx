@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
-import { Field, PageHead, ErrorState } from '../components/ui';
+import { Field, PageHead, ErrorState, ListSkeleton } from '../components/ui';
 
 export default function Settings() {
   const { user, setUser } = useAuth();
@@ -32,7 +33,8 @@ export default function Settings() {
       {opts.error && <ErrorState error={opts.error} onRetry={opts.reload} />}
       <form className="stack" style={{ '--gap': '18px' }} onSubmit={save}>
         <Field label="Display name"><input className="input" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} maxLength={60} /></Field>
-        <div className="field"><span>Languages (in order of preference, up to five)</span>
+        <div className="field"><span>Languages</span>
+          {opts.data && opts.data.languages.length === 0 && <p className="small muted">The supplied dataset has no language column. LOOP leaves language unknown rather than guessing it from the artist or title.</p>}
           <div className="row wrap" style={{ '--gap': '8px' }}>
             {opts.data && opts.data.languages.map((l) => {
               const at = form.languageIds.indexOf(l.id);
@@ -41,7 +43,7 @@ export default function Settings() {
           </div>
         </div>
         <div className="grid-2">
-          <Field label="Region" hint="A light signal for regional discovery — never used to assume your taste.">
+          <Field label="Region" hint="Regional metadata was not included in the supplied dataset, so LOOP does not infer it.">
             <select className="select" value={form.regionCode} onChange={(e) => setForm({ ...form, regionCode: e.target.value })}>
               <option value="">Prefer not to say</option>{opts.data && opts.data.regions.map((r) => <option key={r.code} value={r.code}>{r.name}</option>)}
             </select>
@@ -59,9 +61,10 @@ export default function Settings() {
 
       <div className="card stack section" style={{ '--gap': '6px' }} id="credits">
         <h3>About and credits</h3>
-        <p className="small soft">LOOP’s demo catalogue is fictional and written for this project. Playback of demo songs is a sound sketch synthesised in your browser — not a recording.</p>
-        <p className="small soft">When film details are shown, they come from TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
-        <p className="small soft">Imported recording metadata comes from MusicBrainz; video links come from the YouTube Data API and open on YouTube. Each source is shown on the song or film page it was used for.</p>
+        <p className="small soft">LOOP uses the 28,372-record Music Dataset: 1950 to 2019, supplied for this project. It includes track title, artist, year, genre, topic labels and audio features.</p>
+        <p className="small soft">Creators: Luan Moura, Emanuel Fontelles, Vinicius Sampaio and Mardônio França. Licensed under CC BY 4.0.</p>
+        <p className="small soft">Lyrics are excluded. The uploaded files contain no original recordings, track durations, language labels, album metadata or film metadata. Songs are shown as catalogue records only; audio playback is not available from this dataset.</p>
+        <div className="row wrap small"><a className="link" href="https://www.kaggle.com/datasets/saurabhshahane/music-dataset-1950-to-2019" target="_blank" rel="noreferrer">Kaggle source</a><a className="link" href="https://doi.org/10.17632/3t9vbwxgr5.3" target="_blank" rel="noreferrer">Mendeley Data</a></div>
       </div>
     </div>
   );
