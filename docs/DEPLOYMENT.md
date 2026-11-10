@@ -1,9 +1,8 @@
-# Deployment, backup and recovery
+# Deployment, backup and recovery (persistent Node host)
 
-MUSE is one Node.js process (API + scheduler + built web app on the same origin) and
-one MySQL 8 database. This page describes a single-server deployment, which is what
-the project has been built and tested for. It has **not** been load-tested or run
-behind a production load balancer.
+> This document is for an optional persistent Node.js host. The active deployment target for the current project is Vercel; follow [DEPLOYMENT_VERCEL.md](DEPLOYMENT_VERCEL.md) for the checked-in `vercel.json` architecture. Do not mix the two deployment topologies.
+
+The persistent-host alternative runs one Node.js process (API + scheduler + built web app on the same origin) and one MySQL 8 database. It has **not** been load-tested or run behind a production load balancer.
 
 ## Requirements
 

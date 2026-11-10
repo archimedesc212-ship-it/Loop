@@ -1,3 +1,5 @@
+> **Latest audit (10 November 2026):** See [RELEASE_AUDIT_2026-11-10.md](RELEASE_AUDIT_2026-11-10.md) for the checks run in the current hand-off and remaining external blockers. The active setup instructions are in [DEPLOYMENT_VERCEL.md](DEPLOYMENT_VERCEL.md).
+
 # LOOP Vercel-only deployment refactor
 
 Status: **Vercel routing/code migration committed; frontend verification passes. MySQL provisioning/configuration and production API verification remain blocked.**

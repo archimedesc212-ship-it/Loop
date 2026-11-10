@@ -9,9 +9,10 @@ LOOP is being kept as a straightforward music discovery/listening application ra
 1. **Account** — register, sign in, sign out and edit basic preferences.
 2. **Home** — see a daily recommendation mix, popular catalogue entries and quick links.
 3. **Discover** — select up to three moods, optionally describe a request and choose a simple activity context.
-4. **Search** — find songs, artists, albums and genres in LOOP plus multiple international Apple Music storefronts; browse Bollywood, K-pop, Afrobeats, Latin, Arabic, Japanese and global selections.
-5. **Player** — play licensed/local recordings and official Apple 30-second previews directly in LOOP using the persistent player; tracks without a preview use Apple's official inline embed. No popup is required. Tracks without a permitted match stay unavailable rather than using generated fake audio.
-6. **Library** — create and delete playlists, add/remove songs, view liked songs and recent listening history.
+4. **Assistant** — describe a musical mood or listening moment in a chat-style interface; LOOP sends the prompt to its existing mood-aware recommendation engine and returns a ranked mix. This is music discovery, not a general-purpose chatbot.
+5. **Search** — find songs, artists, albums and genres in LOOP plus multiple international Apple Music storefronts; browse Bollywood, K-pop, Afrobeats, Latin, Arabic, Japanese and global selections.
+6. **Player** — play licensed/local recordings and official Apple 30-second previews directly in LOOP using the persistent player; tracks without a preview use Apple's official inline embed. No popup is required. Tracks without a permitted match stay unavailable rather than using generated fake audio.
+7. **Library** — create and delete playlists, add/remove songs, view liked songs and recent listening history.
 
 ## Creator and admin essentials
 
@@ -22,7 +23,7 @@ LOOP is being kept as a straightforward music discovery/listening application ra
 
 ## Design and navigation
 
-- The regular navigation is limited to **Home, Discover, Search, Library and Settings**.
+- The regular navigation includes **Home, Discover, Assistant, Search and Library**, with Settings in the account area. The left navigation can collapse to an icon rail; mobile navigation remains fixed at the bottom.
 - Artist and admin areas appear only where the signed-in role allows them.
 - The Mana Universal Icon Kit supplied with the project is integrated through `frontend/src/components/mana/Icon.jsx` and `lucide-react`.
 - Icon components in `frontend/src/components/Icons.jsx` are compatibility aliases backed by Lucide so existing pages use the same icon system.
@@ -36,6 +37,8 @@ Mood Diary, LOOP World, personal analytics, Mood Dial, Mood Journey, database ex
 
 - [ ] A listener can register/sign in and see Home.
 - [ ] A listener can choose a mood or describe a request and receive recommendations.
+- [ ] The Assistant accepts a free-text music request and returns ranked recommendations with save/play actions.
+- [ ] The Home featured banner rotates through available YouTube search results and can start the selected item in the official embedded player.
 - [ ] Search returns curated catalogue results and worldwide Apple catalogue results with artwork where supplied.
 - [ ] A listener can play an Apple-provided short preview directly in the LOOP player; tracks without previews show the official Apple embed inline.
 - [ ] A listener can like a song and create/edit/delete a playlist.

@@ -39,7 +39,11 @@
     "deploy:check": "node scripts/deployment-preflight.js",
     "dataset:import": "node backend/scripts/import-kaggle-features.js",
     "db:reset:unsafe": "npm run db:seed:generate && node backend/scripts/setup-db.js --allow-destructive",
-    "artist:scan": "npm run artist:scan --workspace backend --"
+    "artist:scan": "npm run artist:scan --workspace backend --",
+    "deploy:smoke": "node scripts/vercel-smoke-test.js",
+    "db:backup": "node scripts/mysql-backup.js",
+    "db:restore:drill": "node scripts/mysql-restore-drill.js",
+    "ui:audit": "node scripts/ui-release-audit.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

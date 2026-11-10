@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import MoodPage from './pages/Mood';
 import Mix from './pages/Mix';
 import Search from './pages/Search';
+import Assistant from './pages/Assistant';
 import { SongPage, ArtistPage, AlbumPage, FilmPage, LanguagePage } from './pages/Catalog';
 import Library, { PlaylistPage } from './pages/Library';
 import Settings from './pages/Settings';
@@ -60,6 +61,7 @@ export default function App() {
         <Route path="mix/:kind/:arg" element={<Mix />} />
         <Route path="world" element={<Navigate to="/" replace />} />
         <Route path="search" element={<Search />} />
+        <Route path="assistant" element={<Assistant />} />
         <Route path="song/:id" element={<SongPage />} />
         <Route path="artist/:id" element={<ArtistPage />} />
         <Route path="album/:id" element={<AlbumPage />} />

@@ -31,6 +31,26 @@ Cloudflare Workers and Vercel static builds run the dataset-backed archive adapt
 
 The Express/MySQL development and integration-test path remains a separate profile with a fictional seed catalogue. It is not what the public static archive reads. Its Kaggle staging importer is also separate from the static catalogue generator.
 
+## Latest production-readiness audit
+
+See [docs/RELEASE_AUDIT_2026-11-10.md](docs/RELEASE_AUDIT_2026-11-10.md) for exact checks passed, limitations, serverless media safety and required owner-side release actions.
+
+## Production deployment
+
+The active Vercel deployment runbook, required environment variables, database release gates, production smoke checks, media-upload restrictions and monitoring setup are documented in [docs/DEPLOYMENT_VERCEL.md](docs/DEPLOYMENT_VERCEL.md). Run `npm run deploy:smoke` against the deployed URL after configuring `LOOP_PRODUCTION_URL`.
+
+## Latest UI release
+
+The latest UI/assistant implementation and its actual verification boundary are recorded in [docs/RELEASE_UI_ASSISTANT_2026-11-10.md](docs/RELEASE_UI_ASSISTANT_2026-11-10.md).
+
+## Visual theme
+
+The listener interface uses LOOP's own Spotify-inspired dark visual system: black app canvas, charcoal navigation/content surfaces, white typography and LOOP green actions. The active stylesheet is `frontend/src/styles/spotify-dark.css`, loaded after `global.css`. The former light-theme override has been removed; this changes presentation only and preserves the existing routes and provider/player behaviour.
+
+## Expansion roadmap
+
+The curated LOOP roadmap contains 102 music-focused features across 12 categories. Eighteen low-fit or unsupported proposals were removed from the active scope. See [docs/LOOP_FEATURE_ROADMAP.md](docs/LOOP_FEATURE_ROADMAP.md) and [docs/LOOP_FEATURE_SCOPE_REVIEW_2026-11-10.md](docs/LOOP_FEATURE_SCOPE_REVIEW_2026-11-10.md). This is a scoped plan, not a claim that every retained feature is already implemented.
+
 ## Contents
 
 - [Features](#features)
@@ -139,6 +159,8 @@ muse/
 ```
 
 ## Scripts
+
+Operational additions: `npm run ui:audit` checks the responsive/accessibility source contract; `npm run db:backup` creates a verified compressed MySQL backup; `npm run db:restore:drill` restores only into a separate, empty schema whose name begins `loop_restore_`. See [docs/PRODUCTION_OPERATIONS.md](docs/PRODUCTION_OPERATIONS.md).
 
 | Command | What it does |
 |---|---|

@@ -8,7 +8,7 @@ import { PlayerProvider } from './hooks/usePlayer';
 import '@fontsource-variable/fraunces/opsz.css';
 import '@fontsource-variable/hanken-grotesk';
 import './styles/global.css';
-import './styles/rewear-inspired.css';
+import './styles/spotify-dark.css';
 
 class AppErrorBoundary extends React.Component {
   constructor(props) {

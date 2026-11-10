@@ -126,6 +126,9 @@ async function decideApplication(actor, applicationId, action, note = null) {
 }
 
 async function createUploadIntent(userId, ip, data) {
+  if (localMedia.check().state === 'disabled') {
+    throw new ApiError(503, 'ARTIST_UPLOAD_STORAGE_UNAVAILABLE', 'Artist audio uploads are disabled on this serverless deployment until durable private object storage and a scanning worker are configured.');
+  }
   if (data.rightsAccepted !== true) throw ApiError.badRequest('You must accept the current LOOP Artist Rights Declaration before creating an upload.');
   if (data.fileSize > maxBytes()) throw new ApiError(413, 'UPLOAD_TOO_LARGE', `The maximum file size is ${Math.round(maxBytes() / 1024 / 1024)} MB.`);
   const declaredMime = String(data.mimeType || '').split(';')[0].toLowerCase();
@@ -172,6 +175,9 @@ async function createUploadIntent(userId, ip, data) {
 }
 
 async function storeUpload(userId, id, req) {
+  if (localMedia.check().state === 'disabled') {
+    throw new ApiError(503, 'ARTIST_UPLOAD_STORAGE_UNAVAILABLE', 'Artist audio uploads are disabled because this deployment has no persistent private media storage.');
+  }
   if (!safeUploadId(id)) throw ApiError.notFound('Upload');
   const upload = await one('SELECT * FROM artist_uploads WHERE upload_id = ? AND user_id = ?', [id, userId]);
   if (!upload) throw ApiError.notFound('Upload');

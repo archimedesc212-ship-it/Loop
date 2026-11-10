@@ -69,7 +69,7 @@ any change**. Invalid numeric values stop the API with a clear message.
 | `EXTERNAL_PREVIEW_BASE_URL` | — | base URL implementing `GET /previews?isrc=` |
 | `EXTERNAL_PREVIEW_API_KEY` | — | bearer key for that service |
 | `EXTERNAL_PREVIEW_MEDIA_ORIGIN` | — | `https://host[:port]` the audio is served from; added to the CSP `media-src` |
-| `LOCAL_MEDIA_ENABLED` | `true` | serve licensed local files |
+| `LOCAL_MEDIA_ENABLED` | `true` on persistent hosts; forced `false` on Vercel/serverless | serve licensed local files. Serverless filesystems are ephemeral, so artist upload intents are rejected until durable object storage and a worker are configured. |
 | `LOCAL_MEDIA_DIR` | `<repo>/media` | folder holding those files |
 | `AI_PROVIDER` | `none` | `none` or `anthropic` |
 | `AI_API_KEY` | — | Anthropic API key |
@@ -78,4 +78,4 @@ any change**. Invalid numeric values stop the API with a clear message.
 | `AI_TIMEOUT_MS` | `10000` | timeout for the AI call |
 
 The current state of every provider (never the values) is shown at start-up, at
-`GET /api/ready` and in **Admin › Providers & media**.
+`GET /api/ready` and in **Admin › Providers & media**. For Vercel-specific runtime behaviour, see [DEPLOYMENT_VERCEL.md](DEPLOYMENT_VERCEL.md).

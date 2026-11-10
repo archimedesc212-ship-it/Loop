@@ -48,8 +48,12 @@ const apiClient = read('frontend/src/services/api.js');
 const appEntry = read('frontend/src/App.jsx');
 const authHook = read('frontend/src/hooks/useAuth.jsx');
 const apiFunction = read('api/index.js');
+const providerConfig = read('backend/src/providers/config.js');
+const runtimeCapabilities = read('backend/src/providers/runtimeCapabilities.js');
+const artistService = read('backend/src/services/artistService.js');
 const gitignore = read('.gitignore');
 const hybridDocs = read('docs/DEPLOYMENT_HYBRID.md');
+const vercelDocs = read('docs/DEPLOYMENT_VERCEL.md');
 
 const catalogueBuild = read('scripts/prepare-music-catalog.js');
 requireCheck(pkg.scripts && pkg.scripts.build === 'node scripts/prepare-music-catalog.js && npm run build --workspace frontend',
@@ -91,7 +95,13 @@ requireCheck(validApiRewrite
 requireCheck(rewrites.some((rule) => rule && rule.source === '/(.*)' && rule.destination === '/index.html'),
   'Vercel routes client-side pages to the SPA entry point.');
 requireCheck(!Object.prototype.hasOwnProperty.call(vercel, 'crons'),
-  'Vercel does not define duplicate scheduled jobs.');
+  'Vercel does not define unreviewed duplicate scheduled jobs.');
+requireCheck(vercelDocs.includes('serverless mode') && vercelDocs.includes('DB_APP_USER') && vercelDocs.includes('/api/ready'),
+  'The active Vercel release runbook documents runtime credentials, readiness and serverless media limits.');
+requireCheck(fs.existsSync(path.join(root, 'scripts/vercel-smoke-test.js')) && pkg.scripts['deploy:smoke'] === 'node scripts/vercel-smoke-test.js',
+  'A dependency-free production smoke test is available.');
+requireCheck(fs.existsSync(path.join(root, '.github/workflows/production-smoke.yml')),
+  'A scheduled production smoke-monitor workflow is available.');
 requireCheck(fs.existsSync(path.join(root, 'vercel.json'))
   && !['vercel.ts', 'vercel.yaml', 'vercel.yml'].some((file) => fs.existsSync(path.join(root, file))),
   'Only vercel.json is present as Vercel project configuration.');
@@ -119,6 +129,10 @@ requireCheck(/key:\s*TRUST_PROXY\s*\n\s*value:\s*["']?1/.test(render)
 requireCheck(!/(?:buildCommand|startCommand):[^\n]*(?:db:setup|npm run setup)/.test(render),
   'Render build/start commands never run destructive database setup.');
 
+requireCheck(providerConfig.includes('localMediaEnabled({ isServerless: runtime.isServerless')
+  && runtimeCapabilities.includes('if (isServerless) return false;')
+  && artistService.includes('ARTIST_UPLOAD_STORAGE_UNAVAILABLE'),
+  'Local filesystem uploads fail closed in serverless deployments until durable storage is configured.');
 requireCheck(/app\.use\('\/api',\s*cors\(/.test(app)
   && /sameOriginOnly\(corsOrigins\)/.test(app),
   'Express applies the configured CORS allowlist and Origin guard.');
@@ -148,19 +162,35 @@ requireCheck(/^\s*\.env\s*$/m.test(gitignore)
   && /^\s*\.env\.\*\s*$/m.test(gitignore)
   && /^\s*!\.env\.example\s*$/m.test(gitignore),
   'Live environment files are ignored while .env.example stays tracked.');
-requireCheck(/Never run.*db:reset:unsafe/.test(hybridDocs)
-  && /JOBS_ENABLED/.test(hybridDocs)
-  && /vercel\.json/.test(hybridDocs),
-  'The hybrid runbook documents database safety, scheduler and the Vercel JSON config.');
+requireCheck(hybridDocs.includes('Not the active production runbook')
+  && /Never run.*db:reset:unsafe/.test(vercelDocs)
+  && /JOBS_ENABLED/.test(vercelDocs)
+  && /vercel\.json/.test(vercelDocs),
+  'The Vercel runbook documents database safety, scheduler boundaries and the active deployment config.');
 requireCheck(appEntry.includes('path="/login"')
   && authHook.includes('api.session()')
   && authHook.includes('api.createGuestSession()')
   && !/Varsha@27|Admin@123|Quick access|Demo account/.test(appEntry + authHook),
   'The current app entry and session hook handle legacy routes and bootstrap guests without exposing shared test credentials.');
 
+requireCheck(pkg.scripts['db:backup'] === 'node scripts/mysql-backup.js'
+  && pkg.scripts['db:restore:drill'] === 'node scripts/mysql-restore-drill.js'
+  && fs.existsSync(path.join(root, 'scripts/mysql-backup.js'))
+  && fs.existsSync(path.join(root, 'scripts/mysql-restore-drill.js')),
+  'Verified MySQL backup and isolated restore-drill scripts are available.');
+requireCheck(fs.existsSync(path.join(root, 'scripts/lib/mysqlBackupCommon.js'))
+  && fs.existsSync(path.join(root, 'backend/tests/mysqlBackupScripts.test.js')),
+  'Backup scripts share tested configuration/identifier safeguards.');
+requireCheck(pkg.scripts['ui:audit'] === 'node scripts/ui-release-audit.js'
+  && fs.existsSync(path.join(root, 'scripts/ui-release-audit.js')),
+  'A dependency-free responsive/accessibility source audit is available.');
+requireCheck(fs.existsSync(path.join(root, '.github/workflows/production-smoke.yml'))
+  && read('.github/workflows/production-smoke.yml').includes('LOOP_ALERT_WEBHOOK'),
+  'Production smoke monitoring can send an optional secret-backed failure notification.');
+
 passes.push('The same-origin API rewrite is validated from vercel.json; no API-origin secret is required.');
 
-console.log('\nLOOP hybrid deployment preflight');
+console.log('\nLOOP deployment contract preflight');
 console.log('--------------------------------');
 for (const message of passes) console.log('PASS  ' + message);
 for (const message of failures) console.error('FAIL  ' + message);

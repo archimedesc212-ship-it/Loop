@@ -1,0 +1,227 @@
+/*
+ * LOOP dark listening experience
+ * Spotify-inspired visual language, not a copy of Spotify branding or assets.
+ * Loaded after global.css so every existing component keeps its behaviour.
+ */
+:root {
+  --bg: #000000;
+  --bg-2: #0b0b0b;
+  --surface: #121212;
+  --surface-2: #1e1e1e;
+  --surface-3: #2a2a2a;
+  --glass: rgba(18, 18, 18, 0.92);
+  --glass-strong: rgba(12, 12, 12, 0.97);
+  --line: rgba(255, 255, 255, 0.075);
+  --line-2: rgba(255, 255, 255, 0.16);
+  --text: #ffffff;
+  --text-2: #b3b3b3;
+  --muted: #a7a7a7;
+  --accent: #1ed760;
+  --accent-ink: #06150b;
+  --accent-soft: rgba(30, 215, 96, 0.13);
+  --good: #1ed760;
+  --warn: #f3c969;
+  --bad: #f15e6c;
+  --radius-s: 6px;
+  --radius: 8px;
+  --radius-l: 12px;
+  --sidebar: 232px;
+  --player: 82px;
+  color-scheme: dark;
+}
+
+html, body, #root { min-height: 100%; background: #000; }
+body { color: var(--text); background: #000; }
+::selection { background: var(--accent); color: #000; }
+
+/* Spotify-like app frame: separated navigation, content canvas and docked player. */
+.app {
+  min-height: 100vh;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 8px calc(var(--player) + 18px);
+  background: #000;
+}
+.sidebar {
+  top: 8px;
+  height: calc(100vh - var(--player) - 26px);
+  padding: 22px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #121212;
+  overflow-y: auto;
+}
+.brand { padding-bottom: 24px; color: #fff; }
+.brand-mark { color: var(--accent); }
+.nav-link { border-radius: 6px; color: #b3b3b3; padding: 11px 12px; }
+.nav-link:hover { color: #fff; background: #1b1b1b; }
+.nav-link.active { color: #fff; background: #242424; box-shadow: inset 3px 0 0 var(--accent); }
+.nav-label { color: #a7a7a7; }
+.sidebar-foot { background: #1b1b1b; border: 1px solid rgba(255,255,255,.04); }
+
+.main {
+  min-height: calc(100vh - 16px);
+  padding: 18px clamp(18px, 3vw, 38px) calc(var(--player) + 46px);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #242424 0, #181818 270px, #121212 560px, #121212 100%);
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 4px 0 16px;
+  margin: -2px 0 20px;
+  background: linear-gradient(180deg, rgba(36,36,36,.98), rgba(36,36,36,.86) 78%, rgba(36,36,36,0));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.search-box { max-width: 560px; }
+.search-box input {
+  height: 46px;
+  color: #fff;
+  background: #fff;
+  border: 1px solid transparent;
+  border-radius: 999px;
+}
+.search-box input::placeholder { color: #555; }
+.search-box input:focus { background: #fff; border-color: var(--accent); }
+.search-box svg { color: #333; }
+
+/* Simple, high-contrast cards with a subtle lift on hover. */
+.card, .panel { background: #181818; border-color: rgba(255,255,255,.07); }
+.glass { background: rgba(18,18,18,.88); border-color: rgba(255,255,255,.08); }
+.section { margin-top: 34px; }
+.section-head { margin-bottom: 16px; }
+.section-title { color: #fff; font-size: clamp(1.25rem, 2vw, 1.55rem); }
+.song-card {
+  padding: 13px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+}
+.song-card:hover, .song-card:focus-within {
+  background: #1f1f1f;
+  border-color: rgba(255,255,255,.045);
+  transform: translateY(-2px);
+}
+.song-card .cover { border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.28); }
+.song-card .title { color: #fff; }
+.song-card .meta { color: #b3b3b3; }
+.shelf { gap: 14px; }
+
+.hero, .online-feature-banner {
+  border: 0;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.hero { background: linear-gradient(115deg, #25362b 0%, #17251d 45%, #121212 100%); }
+.hero::before { background: linear-gradient(90deg, rgba(0,0,0,.32), rgba(0,0,0,.05)); }
+.hero .display, .hero h1 { color: #fff; }
+.online-feature-banner {
+  min-height: 300px;
+  background: linear-gradient(110deg, #263b30, #121212 75%);
+}
+.online-feature-image { opacity: .62; }
+.online-feature-shade {
+  background: linear-gradient(90deg, rgba(0,0,0,.96) 0%, rgba(0,0,0,.72) 42%, rgba(0,0,0,.08) 100%), linear-gradient(0deg, rgba(0,0,0,.45), transparent 60%);
+}
+.online-feature-content { padding: clamp(24px, 4vw, 42px); }
+.online-feature-kicker { color: var(--accent); }
+
+/* Buttons, form controls and selected states use LOOP green. */
+.btn { border-radius: 999px; background: #242424; border-color: rgba(255,255,255,.12); color: #fff; }
+.btn:hover { background: #333; }
+.btn.primary, .play-btn, .assistant-send { background: var(--accent); color: #000; }
+.btn.primary:hover { background: #3be477; }
+.icon-btn { color: #b3b3b3; }
+.icon-btn:hover { color: #fff; background: #292929; }
+.input, .select, .textarea, input:not([type="range"]), select, textarea {
+  color: #fff;
+}
+.input, .select, .textarea {
+  background: #242424;
+  border-color: rgba(255,255,255,.12);
+}
+.input:focus, .select:focus, .textarea:focus { border-color: var(--accent); }
+.chip { background: #242424; color: #ddd; border-color: rgba(255,255,255,.08); }
+.chip.accent { background: rgba(30,215,96,.14); color: #6be99a; }
+.toggle-group { background: #121212; border-color: rgba(255,255,255,.08); }
+.toggle-group button.on { background: #333; color: #fff; }
+
+/* Docked player, consistent with the desktop and mobile content frame. */
+.player {
+  left: calc(var(--sidebar) + 16px);
+  right: 8px;
+  bottom: 8px;
+  height: var(--player);
+  padding: 0 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px;
+  background: rgba(18,18,18,.97);
+  box-shadow: 0 -8px 28px rgba(0,0,0,.28);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.progress input[type="range"], .player input[type="range"] { accent-color: var(--accent); }
+
+/* Chat assistant remains a music tool, styled as a native LOOP dark surface. */
+.assistant-starter { background: #1c1c1c; border-color: rgba(255,255,255,.08); }
+.assistant-starter:hover { background: #292929; border-color: rgba(30,215,96,.3); }
+.assistant-message.user .assistant-message-body {
+  width: fit-content;
+  max-width: 100%;
+  padding: 12px 15px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 16px;
+  background: #242424;
+}
+.assistant-message.assistant .assistant-message-body { background: transparent; }
+.assistant-result { background: #181818; border-color: rgba(255,255,255,.08); border-radius: 12px; }
+.assistant-starter { background: #1b1b1b; border-color: rgba(255,255,255,.08); border-radius: 8px; }
+.assistant-composer { background: #242424; border-color: rgba(255,255,255,.12); border-radius: 24px; }
+.assistant-orb { background: radial-gradient(circle at 30% 25%, rgba(30,215,96,.32), rgba(30,215,96,.04) 72%), #181818; }
+
+.auth { background: #000; }
+.auth-art { background: linear-gradient(145deg, #17271e, #0b0b0b 80%); }
+.auth-form { background: #121212; }
+.modal, .queue-panel { background: #181818; border-color: rgba(255,255,255,.1); }
+.mobile-nav { background: rgba(18,18,18,.98); border-color: rgba(255,255,255,.1); }
+.mobile-nav a { color: #a7a7a7; }
+.mobile-nav a.active { color: var(--accent); }
+
+/* Keep the black shell usable on tablets and phones. */
+@media (max-width: 900px) {
+  .app { display: block; padding: 8px 8px 150px; }
+  .main { min-height: calc(100vh - 16px); padding: 14px 16px calc(var(--player) + 150px); border-radius: 8px; }
+  .topbar { top: 0; margin-bottom: 18px; }
+  .player {
+    left: 8px;
+    right: 8px;
+    bottom: calc(68px + env(safe-area-inset-bottom));
+    height: var(--player);
+    border-radius: 8px;
+    grid-template-columns: minmax(0,1fr) auto auto;
+  }
+  .mobile-nav {
+    left: 8px;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    height: 60px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 8px;
+  }
+}
+@media (max-width: 560px) {
+  .main { padding-inline: 12px; }
+  .hero { border-radius: 8px; }
+  .online-feature-banner { min-height: 280px; }
+  .song-card { padding: 9px; }
+  .player { padding: 0 10px; }
+}
+
+/* Dark scrollbars on desktop Chromium/WebKit. */
+* { scrollbar-color: #5a5a5a #121212; scrollbar-width: thin; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: #121212; }
+*::-webkit-scrollbar-thumb { background: #5a5a5a; border: 2px solid #121212; border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: #777; }

@@ -37,6 +37,7 @@ import {
   Music as MusicIcon,
   Mic as MicIcon,
   BookOpen as BookOpenIcon,
+  Menu as MenuIcon,
 } from 'lucide-react';
 import { AppIcon } from './mana/Icon';
 
@@ -81,6 +82,7 @@ export const Arrow = wrap(ArrowRight);
 export const Music = wrap(MusicIcon);
 export const Mic = wrap(MicIcon);
 export const BookOpen = wrap(BookOpenIcon);
+export const Menu = wrap(MenuIcon);
 
 // Product mark is deliberately custom artwork, not a third-party provider logo.
 export const BrandMark = (props) => (

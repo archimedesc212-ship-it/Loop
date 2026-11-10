@@ -1,5 +1,7 @@
 # Feature status
 
+> This is a historical feature inventory (last edited 11 October 2026). For the current 10 November 2026 code and production-readiness audit, see [RELEASE_AUDIT_2026-11-10.md](RELEASE_AUDIT_2026-11-10.md).
+
 Status as of 11 October 2026, schema version 0005. "Tested" means covered by an
 automated test or browser check that passed in the run recorded in
 [TESTING.md](TESTING.md); the column names the evidence.

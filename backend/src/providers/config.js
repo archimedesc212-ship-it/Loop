@@ -1,7 +1,8 @@
 // Provider configuration contract, read from the environment once. Every provider
 // is OFF unless its *_ENABLED flag is "true" AND its required settings are present.
 // The object is mutable only so tests can point adapters at a local mock server.
-require('../config/env');   // loads .env
+const runtime = require('../config/env'); // loads .env and detects Vercel/serverless runtime
+const { localMediaEnabled } = require('./runtimeCapabilities');
 const e = process.env;
 const on = (v) => String(v || '').toLowerCase() === 'true';
 const int = (v, d) => (Number.isFinite(Number(v)) && v !== '' && v !== undefined ? Number(v) : d);
@@ -42,7 +43,9 @@ module.exports = {
     minIntervalMs: 2200, // stays below the documented 30 requests/minute free limit
   },
   localMedia: {
-    enabled: e.LOCAL_MEDIA_ENABLED === undefined || e.LOCAL_MEDIA_ENABLED === '' ? true : on(e.LOCAL_MEDIA_ENABLED),
+    // Serverless filesystems are ephemeral. Never accept artist uploads or claim
+    // local media is durable on Vercel; use a persistent media host/object-store adapter.
+    enabled: localMediaEnabled({ isServerless: runtime.isServerless, configured: e.LOCAL_MEDIA_ENABLED }),
     dir: e.LOCAL_MEDIA_DIR || '',        // resolved in localMedia.js (default: <repo>/media)
   },
   ai: {

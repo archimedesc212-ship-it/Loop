@@ -14,26 +14,27 @@ import { registerMoodColors, LikeButton } from './Songs';
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
   { to: '/mood', label: 'Discover', short: 'Discover', icon: Icon.Mood },
+  { to: '/assistant', label: 'Assistant', short: 'Assistant', icon: Icon.Spark },
   { to: '/search', label: 'Search', short: 'Search', icon: Icon.Search },
   { to: '/library', label: 'Library', short: 'Library', icon: Icon.Library },
 ];
 
-function Sidebar() {
+function Sidebar({ collapsed = false }) {
   const { user, can } = useAuth();
   const admin = ['health.view', 'catalog.write', 'pipeline.view', 'users.manage', 'artist.review'].some((permission) => can(permission));
   return (
-    <aside className="sidebar" aria-label="Main">
-      <Link to="/" className="brand"><Icon.BrandMark className="brand-mark" />LOOP</Link>
+    <aside className={`sidebar${collapsed ? ' collapsed' : ''}`} aria-label="Main">
+      <Link to="/" className="brand" title={collapsed ? 'LOOP' : undefined}><Icon.BrandMark className="brand-mark" /><span className="nav-text">LOOP</span></Link>
       {NAV.map(({ to, label, icon: Ico, end }) => (
-        <NavLink key={to} to={to} end={end} className="nav-link"><Ico />{label}</NavLink>
+        <NavLink key={to} to={to} end={end} className="nav-link" title={collapsed ? label : undefined}><Ico /><span className="nav-text">{label}</span></NavLink>
       ))}
       {admin && (
         <>
           <div className="nav-label">{user.roleName}</div>
-          <NavLink to="/admin" className="nav-link"><Icon.Shield />Admin</NavLink>
+          <NavLink to="/admin" className="nav-link" title={collapsed ? 'Admin' : undefined}><Icon.Shield /><span className="nav-text">Admin</span></NavLink>
         </>
       )}
-      <NavLink to={user.role === 'ARTIST' ? '/artist/studio' : '/artist/apply'} className="nav-link">{user.role === 'ARTIST' ? <Icon.Music /> : <Icon.Mic />} {user.role === 'ARTIST' ? 'Artist Studio' : 'Become an artist'}</NavLink>
+      <NavLink to={user.role === 'ARTIST' ? '/artist/studio' : '/artist/apply'} className="nav-link" title={collapsed ? (user.role === 'ARTIST' ? 'Artist Studio' : 'Become an artist') : undefined}>{user.role === 'ARTIST' ? <Icon.Music /> : <Icon.Mic />}<span className="nav-text">{user.role === 'ARTIST' ? 'Artist Studio' : 'Become an artist'}</span></NavLink>
       <div className="sidebar-foot stack" style={{ '--gap': '10px' }}>
         <div className="row" style={{ '--gap': '10px' }}>
           <span className="avatar">{user.displayName.slice(0, 1)}</span>
@@ -93,7 +94,7 @@ function PrivateToggle() {
   );
 }
 
-function TopBar() {
+function TopBar({ onToggleSidebar, sidebarCollapsed }) {
   const nav = useNavigate();
   const loc = useLocation();
   const [q, setQ] = useState(new URLSearchParams(loc.search).get('q') || '');
@@ -102,6 +103,7 @@ function TopBar() {
   const { user } = useAuth();
   return (
     <div className="topbar">
+      <button type="button" className="icon-btn sidebar-toggle hide-sm" onClick={onToggleSidebar} aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-pressed={sidebarCollapsed} title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}><Icon.Menu /></button>
       <form className="search-box" onSubmit={submit} role="search">
         <Icon.Search />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search songs, artists, albums worldwide…" aria-label="Search" />
@@ -290,15 +292,17 @@ export function OfflineBanner() {
 
 export default function Layout() {
   const { user } = useAuth();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem('loop.sidebarCollapsed') === 'true'; } catch { return false; } });
+  useEffect(() => { try { localStorage.setItem('loop.sidebarCollapsed', String(sidebarCollapsed)); } catch { /* preference storage is optional */ } }, [sidebarCollapsed]);
   const nav = useNavigate();
   useEffect(() => { api.moods().then(registerMoodColors).catch(() => {}); }, []);
   useEffect(() => { if (user && !user.onboarded) nav('/welcome'); }, [user, nav]);
   return (
-    <div className="app">
+    <div className={`app${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
       <a className="skip-link" href="#main">Skip to content</a>
-      <Sidebar />
+      <Sidebar collapsed={sidebarCollapsed} />
       <main className="main" id="main" tabIndex={-1}>
-        <TopBar />
+        <TopBar onToggleSidebar={() => setSidebarCollapsed((value) => !value)} sidebarCollapsed={sidebarCollapsed} />
         <OfflineBanner />
         {user.incognito && (
           <div className="private-banner" role="status">

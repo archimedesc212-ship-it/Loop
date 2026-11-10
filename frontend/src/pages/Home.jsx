@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
@@ -6,7 +6,8 @@ import { useAuth } from '../hooks/useAuth';
 import { SongCard } from '../components/Songs';
 import { MoodTiles, FeelInput, HERO_MOODS } from '../components/Rec';
 import { ShelfSkeleton, Empty, ErrorState } from '../components/ui';
-import { Arrow } from '../components/Icons';
+import { Arrow, Prev, Next, Spark, Play } from '../components/Icons';
+import { usePlayer } from '../hooks/usePlayer';
 
 function Shelf({ title, sub, to, state, origin = 'HOME' }) {
   const { data, error, loading, reload } = state;
@@ -30,12 +31,46 @@ function Shelf({ title, sub, to, state, origin = 'HOME' }) {
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const player = usePlayer();
   const moods = useApi(() => api.moods(), []);
   const daily = useApi(() => api.recDaily(12), [user.incognito]);
   const popular = useApi(() => api.trending({ limit: 12 }), []);
   const recent = useApi(() => api.history(10), [user.incognito]);
   const [selected, setSelected] = useState([]);
   const [text, setText] = useState('');
+  const [featuredVideos, setFeaturedVideos] = useState([]);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
+  const featuredVideo = featuredVideos[featuredIndex] || null;
+  useEffect(() => {
+    let active = true;
+    api.youtubeSearch('global music hits official music video', 8)
+      .then((result) => {
+        if (!active) return;
+        const videos = (result?.videos || []).filter((video) => video.thumbnailUrl && video.externalId);
+        if (videos.length) { setFeaturedVideos(videos); setFeaturedIndex(0); }
+      })
+      .catch(() => {})
+      .finally(() => { if (active) setFeaturedLoading(false); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    if (featuredVideos.length < 2) return undefined;
+    const timer = window.setInterval(() => setFeaturedIndex((index) => (index + 1) % featuredVideos.length), 8500);
+    return () => window.clearInterval(timer);
+  }, [featuredVideos.length]);
+  const playFeatured = () => {
+    if (!featuredVideo) return;
+    const queue = featuredVideos.map((video) => ({
+      id: `yt-${video.externalId}`, title: video.title, artist: { name: video.channel || 'YouTube' },
+      album: { title: 'Featured videos' }, durationSec: 240, artworkUrl: video.thumbnailUrl,
+      cover: ['#263d38', '#1a2228'], playback: { playable: true, type: 'YOUTUBE_EMBED' },
+      youtube: { embedUrl: video.embedUrl, watchUrl: video.sourceUrl },
+    }));
+    const song = queue[featuredIndex];
+    if (song?.youtube?.embedUrl) player.play(song, { queue, origin: 'WORLD' });
+    else navigate(`/search?q=${encodeURIComponent(featuredVideo.title)}`);
+  };
   const hour = new Date().getHours();
   const greeting = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const openDiscover = () => navigate('/mood', { state: { text: text.trim(), moodIds: selected } });
@@ -59,6 +94,27 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="online-feature-banner" aria-label="Featured music from YouTube">
+        {featuredVideo?.thumbnailUrl && <img className="online-feature-image" src={featuredVideo.thumbnailUrl} alt="" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />}
+        <div className="online-feature-shade" />
+        <div className="online-feature-content">
+          <span className="online-feature-kicker">{featuredLoading ? 'DISCOVERING MUSIC' : 'FEATURED FROM AROUND THE WEB'}</span>
+          <h2>{featuredVideo?.title || 'Discover your next favourite song'}</h2>
+          <p>{featuredVideo?.channel ? `Featured video from ${featuredVideo.channel}` : 'Explore new sounds, artists and music from around the world.'}</p>
+          <div className="row wrap">
+            {featuredVideo && <button className="btn primary" type="button" onClick={playFeatured}><Play />Play featured</button>}
+            <Link className="btn ghost" to={featuredVideo ? `/search?q=${encodeURIComponent(featuredVideo.title)}` : '/search?q=global%20music'}>Explore this sound</Link>
+            <Link className="btn ghost" to="/assistant">Ask LOOP <Spark /></Link>
+          </div>
+          {featuredVideos.length > 1 && <div className="featured-controls" aria-label="Featured music carousel controls">
+            <button className="icon-btn" type="button" onClick={() => setFeaturedIndex((index) => (index - 1 + featuredVideos.length) % featuredVideos.length)} aria-label="Previous featured video"><Prev /></button>
+            <div className="featured-dots" role="group" aria-label="Choose featured video">{featuredVideos.map((video, index) => <button key={video.externalId} type="button" className={index === featuredIndex ? 'active' : ''} onClick={() => setFeaturedIndex(index)} aria-label={`Show featured item ${index + 1}`} aria-pressed={index === featuredIndex} />)}</div>
+            <button className="icon-btn" type="button" onClick={() => setFeaturedIndex((index) => (index + 1) % featuredVideos.length)} aria-label="Next featured video"><Next /></button>
+          </div>}
+          <small className="online-feature-note">Featured video details and thumbnails are supplied by YouTube. Playback uses its official embedded player.</small>
+        </div>
+      </section>
+
       <Shelf title="Made for you" sub="A daily mix based on your listening and mood preferences." to="/mix/daily" state={daily} />
       <Shelf title="Recently played" sub="Pick up where you left off." state={recent} />
       <Shelf title="Popular in LOOP" sub="Popular songs from the curated recommendation catalogue." to="/search?q=popular" state={popular} />
@@ -79,6 +135,7 @@ export default function Home() {
           <Link to="/library" className="card stack"><strong>Playlists</strong><span className="small muted">Create and manage your music lists.</span></Link>
           <Link to="/library" state={{ tab: 'liked' }} className="card stack"><strong>Liked songs</strong><span className="small muted">Keep the tracks you love in one place.</span></Link>
           <Link to="/search" className="card stack"><strong>Find something new</strong><span className="small muted">Search tracks, artists and genres.</span></Link>
+          <Link to="/assistant" className="card stack"><strong>Ask LOOP</strong><span className="small muted">Describe a moment and get a personalised mix.</span></Link>
         </div>
       </section>
     </div>
