@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* global process, console, fetch, AbortSignal */
 'use strict';
 
 // Dependency-free production smoke test for a deployed LOOP Vercel project.

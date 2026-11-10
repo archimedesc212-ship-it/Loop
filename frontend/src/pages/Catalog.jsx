@@ -128,7 +128,7 @@ export function SongPage() {
 
 export function ArtistPage() {
   const { id } = useParams();
-  const { data: a, error, loading, reload } = useApi(() => api.artist(id), [id]);
+  const { data: a, error, loading, reload } = useApi(() => api.artistDetail(id), [id]);
   const { data: artwork } = useApi(() => api.artistArtwork(id), [id]);
   const player = usePlayer();
   if (loading) return <Loading />;

@@ -37,6 +37,7 @@ test('journey interpolation starts at the source profile, ends at the target and
 test('recommendation confidence is labelled from available evidence rather than score-as-probability', () => {
   assert.equal(recommendationEvidence({ mood_score: 0.9, audio_score: 0.8 }).level, 'NEW_USER_FALLBACK');
   assert.equal(recommendationEvidence({ mood_score: 0.9, audio_score: 0.8, preference_score: 0.7 }).level, 'PARTIAL_MATCH');
+  assert.equal(recommendationEvidence({ mood_score: 0.9, audio_score: 0.8, collaborative_score: 0.7 }).level, 'PARTIAL_MATCH');
   assert.equal(recommendationEvidence({ mood_score: 0.9, audio_score: 0.8, preference_score: 0.7,
     recency_score: 0.6, trend_score: 0.4, context_score: 0.8 }).level, 'STRONG_MATCH');
 });

@@ -339,6 +339,7 @@ function PlayerBar({ onOpenImmersive }) {
                 onChange={(e) => p.setVolume(Number(e.target.value) / 100)} aria-label="Volume" aria-valuetext={`${Math.round(p.volume * 100)}%`} />
             </div>
           </>}
+          <button className="btn ghost sm" onClick={onOpenImmersive} aria-label="Open immersive player" title="Open immersive player">Immersive</button>
           <button className={`icon-btn${queueOpen ? ' on' : ''}`} onClick={() => setQueueOpen((o) => !o)} aria-label="Show play queue" aria-expanded={queueOpen}>
             <Icon.List /><span className="badge-count">{p.queue.length}</span>
           </button>
@@ -421,7 +422,8 @@ export default function Layout() {
         )}
         <Outlet />
       </main>
-      <PlayerBar />
+      <PlayerBar onOpenImmersive={() => setImmersiveOpen(true)} />
+      <ImmersivePlayer open={immersiveOpen} onClose={() => setImmersiveOpen(false)} />
       <LearnedNote />
       <MobileNav />
     </div>

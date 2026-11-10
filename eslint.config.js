@@ -10,7 +10,7 @@ module.exports = [
   { ignores: ['**/node_modules/**', 'frontend/dist/**', 'e2e/screenshots/**', 'database/**'] },
   js.configs.recommended,
   {
-    files: ['backend/**/*.js', 'eslint.config.js'],
+    files: ['backend/**/*.js', 'scripts/**/*.js', 'eslint.config.js'],
     languageOptions: { ecmaVersion: 2023, sourceType: 'commonjs', globals: { ...globals.node } },
     rules: { 'no-unused-vars': ['error', { args: 'none', caughtErrors: 'none' }] },
   },

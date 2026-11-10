@@ -353,7 +353,7 @@ export function PlayerProvider({ children }) {
     externalPlayback: !!(media && ((media.type === 'APPLE_MUSIC_EMBED' && media.embedUri) || (media.type === 'YOUTUBE_EMBED' && media.embedUrl))),
     isCurrent: (id) => current && current.id === id,
     isPlaying: (id) => current && current.id === id && status === 'playing',
-  }), [current, queue, index, status, position, length, speed, volume, muted, media, audioElement, lastResult, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);
+  }), [current, queue, index, status, position, length, speed, volume, muted, media, audioElement, lastResult, sleepRemaining, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);
 
   return <PlayerCtx.Provider value={value}>{children}</PlayerCtx.Provider>;
 }

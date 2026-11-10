@@ -2,7 +2,7 @@
   "name": "loop",
   "version": "1.0.0",
   "private": true,
-  "description": "LOOP \u2014 mood-aware music discovery and listening platform",
+  "description": "LOOP — mood-aware music discovery and listening platform",
   "workspaces": [
     "backend",
     "frontend"
@@ -24,7 +24,7 @@
     "db:workbench": "node backend/scripts/build-workbench-sql.js && node backend/scripts/build-erd-sql.js && node backend/scripts/build-er-simple-sql.js && node backend/scripts/build-er-simple-sql.js --plain && node backend/scripts/build-er-simple-sql.js --all --plain && node backend/scripts/build-data-sql.js",
     "lint": "eslint .",
     "check": "npm run lint && npm test && npm run test:web && npm run test:sql && npm run build",
-    "test:web": "npm test --workspace frontend",
+    "test:web": "node scripts/prepare-music-catalog.js && VITE_DEMO_MODE=false npm test --workspace frontend",
     "docs:erd": "node backend/scripts/erd/extract-schema.js && python3 backend/scripts/erd/build_erd.py && python3 backend/scripts/erd/render.py && python3 backend/scripts/erd/check_docs.py && python3 backend/scripts/erd/build_core.py && python3 backend/scripts/erd/build_chen.py && python3 backend/scripts/erd/build_korth.py && python3 backend/scripts/erd/build_eer.py && python3 backend/scripts/erd/build_phase1_report.py",
     "db:phase2": "node backend/scripts/build-phase2-sql.js && node backend/scripts/test-phase2-sql.js && python3 backend/scripts/erd/build_phase2_report.py && node backend/scripts/export-table-structure.js --load",
     "phase3:test": "python3 phase3/run_query_tests.py",

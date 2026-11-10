@@ -33,7 +33,7 @@ export function scoreAppleMusicMatch(song, result) {
 const slug = (value) => normaliseMusicText(value).replace(/\s+/g, '-').slice(0, 100) || 'song';
 
 export function buildAppleMusicEmbed(result, country = 'us') {
-  if (!result || !Number.isInteger(Number(result.trackId)) || !result.trackViewUrl) return null;
+  if (!result || result.trackId === null || result.trackId === undefined || String(result.trackId).trim() === '' || !Number.isInteger(Number(result.trackId)) || Number(result.trackId) <= 0 || !result.trackViewUrl) return null;
   const trackId = Number(result.trackId);
   const storeUrl = String(result.trackViewUrl);
   let source;
@@ -83,7 +83,12 @@ function mapResult(item, country) {
     collectionName: item.collectionName || null,
     previewUri: safePreviewUrl(item.previewUrl),
     durationSec: Number.isFinite(Number(item.trackTimeMillis)) ? Math.round(Number(item.trackTimeMillis) / 1000) : null,
-    storefront: country,
+    storefront: (() => {
+      try {
+        const countryCode = new URL(links.storeUrl).pathname.split('/').filter(Boolean)[0];
+        return /^[a-z]{2}$/i.test(countryCode || '') ? countryCode.toLowerCase() : country;
+      } catch { return country; }
+    })(),
   };
 }
 

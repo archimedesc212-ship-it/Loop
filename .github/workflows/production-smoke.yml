@@ -1,0 +1,68 @@
+name: Production smoke monitor
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: loop-production-smoke
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Check production homepage and API readiness
+    if: ${{ vars.LOOP_PRODUCTION_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run production smoke checks
+        env:
+          LOOP_PRODUCTION_URL: ${{ vars.LOOP_PRODUCTION_URL }}
+        run: node scripts/vercel-smoke-test.js
+
+      - name: Send optional failure notification
+        if: ${{ failure() }}
+        continue-on-error: true
+        env:
+          LOOP_ALERT_WEBHOOK: ${{ secrets.LOOP_ALERT_WEBHOOK }}
+          ALERT_TEXT: "LOOP production smoke check failed. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          node --input-type=module <<'NODE'
+          const webhook = process.env.LOOP_ALERT_WEBHOOK;
+          if (!webhook) {
+            console.log('LOOP_ALERT_WEBHOOK is not configured; GitHub Actions remains the alert channel.');
+            process.exit(0);
+          }
+          let parsed;
+          try { parsed = new URL(webhook); } catch {
+            console.error('LOOP_ALERT_WEBHOOK must be a valid HTTPS URL.');
+            process.exit(1);
+          }
+          if (parsed.protocol !== 'https:') {
+            console.error('LOOP_ALERT_WEBHOOK must use HTTPS.');
+            process.exit(1);
+          }
+          const response = await fetch(parsed, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ text: process.env.ALERT_TEXT }),
+            signal: AbortSignal.timeout(10000),
+          });
+          if (!response.ok) {
+            console.error('Alert endpoint returned HTTP ' + response.status + '.');
+            process.exit(1);
+          }
+          console.log('Failure notification sent.');
+          NODE

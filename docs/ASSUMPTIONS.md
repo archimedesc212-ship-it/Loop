@@ -61,7 +61,7 @@ documented rule, so it can be changed without redesign.
 
 | Limitation | Impact | Next step |
 |---|---|---|
-| No collaborative filtering | recommendations use the listener's own behaviour, catalogue features and global trends only | weekly user–user similarity table from preference vectors |
+| Collaborative matching requires ≥2 shared completed tracks and ≥2 similar listeners | low-history users receive no social boost and rely on onboarding, regional and trend signals; private sessions are excluded | consider a cached user-similarity table if request-time matching becomes expensive |
 | No email verification or password reset | demo scope | token table + mail provider |
 | Generative world art and covers are abstract | no real artwork by design | — |
 | Trend snapshots are hourly | "24H" trends can lag by up to an hour | more frequent snapshots if needed |

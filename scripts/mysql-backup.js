@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* global process, console, Buffer */
 'use strict';
 
 const fs = require('node:fs');
