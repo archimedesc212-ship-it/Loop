@@ -13,7 +13,7 @@ export default function PrivateSession() {
   const { user, refresh } = useAuth();
   const toast = useToast();
   const player = usePlayer();
-  const { data, error, loading, reload } = useApi(() => api.incognito(), [user.incognito]);
+  const { data, error, loading, reload } = useApi(() => api.incognito(), [user?.incognito]);
   const toggle = async () => {
     try {
       await player.reset();

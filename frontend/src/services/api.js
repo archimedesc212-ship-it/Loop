@@ -7,7 +7,8 @@ import { demoRequest } from '../lib/demoMode';
 // readable `muse_csrf` cookie (double-submit, verified server-side with an HMAC).
 // No token is ever stored in localStorage.
 
-export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+// Vercel static hosting is database-free by default. Opt into the Express/MySQL API only when explicitly configured.
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE !== 'false';
 
 export class ApiError extends Error {
   constructor(status, code, message, details) {

@@ -77,7 +77,7 @@ function PrivateToggle() {
     setBusy(true);
     try {
       await player.reset();
-      if (user.incognito) {
+      if (user?.incognito) {
         const r = await api.endIncognito();
         toast.success(`Private session ended — ${r.purged.events} plays and ${r.purged.lists} mixes deleted`);
       } else {
@@ -88,10 +88,10 @@ function PrivateToggle() {
     } catch (e) { toast.error(e); } finally { setBusy(false); }
   };
   return (
-    <button className={`btn sm${user.incognito ? '' : ' ghost'}`} onClick={flip} disabled={busy}
-      style={user.incognito ? { background: 'rgba(169,148,240,0.18)', color: 'var(--private)', borderColor: 'transparent' } : undefined}
-      aria-pressed={user.incognito} title="Private session: listening is not saved to your profile">
-      {user.incognito ? <Icon.EyeOff /> : <Icon.Eye />}<span>{user.incognito ? 'Private on' : 'Private'}</span>
+    <button className={`btn sm${user?.incognito ? '' : ' ghost'}`} onClick={flip} disabled={busy}
+      style={user?.incognito ? { background: 'rgba(169,148,240,0.18)', color: 'var(--private)', borderColor: 'transparent' } : undefined}
+      aria-pressed={user?.incognito} title="Private session: listening is not saved to your profile">
+      {user?.incognito ? <Icon.EyeOff /> : <Icon.Eye />}<span>{user?.incognito ? 'Private on' : 'Private'}</span>
     </button>
   );
 }
@@ -302,15 +302,15 @@ function PlayerBar({ onOpenImmersive }) {
   if (!s) return null;
   return (
     <>
-      <div className={`player${user.incognito ? ' private' : ''}`} role="region" aria-label="Player">
+      <div className={`player${user?.incognito ? ' private' : ''}`} role="region" aria-label="Player">
         <div className="now">
           {s.artworkUrl || p.media?.artworkUrl ? <img className="cover player-artwork" src={s.artworkUrl || p.media.artworkUrl} alt="" /> : <Cover colors={s.cover} seed={s.album ? (Number(s.album.id) || 1) * 31 + (Number(s.id) || 1) : (Number(s.id) || 1)} />}
           <div className="player-open-now" role="button" tabIndex={0} onClick={onOpenImmersive} style={{ minWidth: 0 }}>
             {(String(s.id).startsWith('yt-'))
               ? <strong style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</strong>
               : <Link to={`/song/${s.id}`} style={{ fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</Link>}
-            <div className="tiny muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={mediaNote(p.media, user.incognito)}>
-              {s.artist.name} · {mediaNote(p.media, user.incognito)}
+            <div className="tiny muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={mediaNote(p.media, user?.incognito)}>
+              {s.artist.name} · {mediaNote(p.media, user?.incognito)}
             </div>
           </div>
           {!(String(s.id).startsWith('yt-')) && <span className="hide-sm"><LikeButton song={s} /></span>}
@@ -446,7 +446,7 @@ export default function Layout() {
       <main className="main" id="main" tabIndex={-1}>
         <TopBar onToggleSidebar={() => setSidebarCollapsed((value) => !value)} sidebarCollapsed={sidebarCollapsed} />
         <OfflineBanner />
-        {user.incognito && (
+        {user?.incognito && (
           <div className="private-banner" role="status">
             <Icon.EyeOff width={18} height={18} style={{ color: 'var(--private)' }} />
             <span className="grow">Private session. No listening history or audio playback is collected in this metadata-only archive view; mood ratings are paused. <Link to="/private" style={{ color: 'var(--private)', fontWeight: 600 }}>See what this session remembers</Link></span>

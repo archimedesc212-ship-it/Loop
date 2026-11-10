@@ -33,9 +33,9 @@ export default function Home() {
   const navigate = useNavigate();
   const player = usePlayer();
   const moods = useApi(() => api.moods(), []);
-  const daily = useApi(() => api.recDaily(12), [user.incognito]);
+  const daily = useApi(() => api.recDaily(12), [user?.incognito]);
   const popular = useApi(() => api.trending({ limit: 12 }), []);
-  const recent = useApi(() => api.history(10), [user.incognito]);
+  const recent = useApi(() => api.history(10), [user?.incognito]);
   const [selected, setSelected] = useState([]);
   const [text, setText] = useState('');
   const [featuredVideos, setFeaturedVideos] = useState([]);

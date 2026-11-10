@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
     try {
       let r = await api.session();
       if (!r.authenticated) r = await api.createGuestSession();
-      const u = r.authenticated ? r : null;
+      const u = r?.authenticated ? { ...r, incognito: !!r.incognito, permissions: Array.isArray(r.permissions) ? r.permissions : [] } : null;
       setUser(u);
       return u;
     } catch (e) {
@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
     refresh().catch((e) => setSessionNote(e.message));
   }, [refresh]);
 
-  const can = useCallback((perm) => !!user && user.permissions.includes(perm), [user]);
+  const can = useCallback((perm) => !!user && Array.isArray(user.permissions) && user.permissions.includes(perm), [user]);
 
   const value = useMemo(() => ({ user, ready, refresh, can, setUser, sessionNote }),
     [user, ready, refresh, can, sessionNote]);

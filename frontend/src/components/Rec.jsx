@@ -60,7 +60,7 @@ export function SaveListButton({ list, defaultName }) {
   };
   return (
     <>
-      <button className="btn" onClick={() => setOpen(true)} disabled={user.incognito} title={user.incognito ? 'Saving is paused in a private session' : undefined}><Save />Save as playlist</button>
+      <button className="btn" onClick={() => setOpen(true)} disabled={user?.incognito} title={user?.incognito ? 'Saving is paused in a private session' : undefined}><Save />Save as playlist</button>
       {open && (
         <Modal title="Save as playlist" onClose={() => setOpen(false)}>
           <div className="stack">

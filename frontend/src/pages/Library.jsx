@@ -45,7 +45,7 @@ export default function Library() {
 
   return (
     <div className="page">
-      <PageHead title="Your Library" actions={<button className="btn primary" onClick={() => setCreating(true)} disabled={user.incognito}><Plus />New playlist</button>}>
+      <PageHead title="Your Library" actions={<button className="btn primary" onClick={() => setCreating(true)} disabled={user?.incognito}><Plus />New playlist</button>}>
         <div className="toggle-group" role="tablist" aria-label="Library sections">
           {[
             ['playlists', 'Playlists'],
