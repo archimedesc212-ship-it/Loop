@@ -209,15 +209,33 @@ function choose(catalogue, target, limit, candidates = catalogue.songs) {
     .map((item) => item.song);
   return diversify(rows, limit);
 }
+const TEXT_MOOD_KEYWORDS = [
+  { id: 1, words: ['sad', 'sadness', 'heartbroken', 'down', 'blue', 'rough'] },
+  { id: 2, words: ['romantic', 'romance', 'love', 'date', 'intimate'] },
+  { id: 3, words: ['dreamy', 'dream', 'night', 'sleep', 'late'] },
+  { id: 4, words: ['reflective', 'nostalgic', 'memories', 'thoughtful'] },
+  { id: 5, words: ['intense', 'angry', 'aggressive', 'powerful'] },
+  { id: 6, words: ['focus', 'focused', 'study', 'studying', 'work', 'concentrate'] },
+  { id: 7, words: ['emotional', 'feelings', 'sensitive'] },
+  { id: 8, words: ['energetic', 'energy', 'workout', 'gym', 'hype', 'dance', 'running'] },
+  { id: 9, words: ['calm', 'peaceful', 'relaxed', 'relax', 'gentle', 'soft', 'quiet'] },
+  { id: 10, words: ['happy', 'happier', 'positive', 'uplifting', 'cheerful', 'bright', 'motivation', 'motivational'] },
+];
 function getMoodSelection(body) {
   const ids = Array.isArray(body && body.moodIds) ? body.moodIds.map(Number) : [];
-  const selected = MOODS.filter((mood) => ids.includes(mood.id));
   const text = norm(body && body.text);
+  const words = text.split(' ').filter(Boolean);
+  const detected = TEXT_MOOD_KEYWORDS.filter((entry) => entry.words.some((word) => words.includes(word))).map((entry) => entry.id);
+  const selected = MOODS.filter((mood) => ids.includes(mood.id) || detected.includes(mood.id));
   const target = { moods: selected.map((mood) => mood.name) };
+  const stopWords = new Set(['i', 'need', 'something', 'for', 'the', 'a', 'an', 'with', 'want', 'some', 'to', 'my', 'me', 'please', 'music', 'song', 'songs', 'and', 'or', 'of']);
+  const contentWords = words.filter((word) => !stopWords.has(word) && !TEXT_MOOD_KEYWORDS.some((entry) => entry.words.includes(word)));
   const textMatch = (song) => {
     if (!text) return true;
-    const haystack = norm([song.title, song.artist.name, song.genre.name, song.topic].concat(song.moods).join(' '));
-    return text.split(' ').every((word) => haystack.includes(word));
+    const moodHit = selected.some((mood) => song.moods.includes(mood.name));
+    const haystack = norm([song.title, song.artist.name, song.genre.name, song.topic].join(' '));
+    const titleHit = contentWords.length > 0 && contentWords.every((word) => haystack.includes(word));
+    return moodHit || titleHit || (!selected.length && !contentWords.length);
   };
   return { selected, text, target, textMatch };
 }
@@ -326,7 +344,14 @@ export async function demoRequest(method, path, body) {
     const matchedMoods = selected.length ? selected : (rows[0] ? rows[0].moodsDetailed.slice(0, 2).map((item) => MOODS.find((mood) => mood.id === item.id)).filter(Boolean) : []);
     return {
       ...listResult(rows, 'Matches from the music archive', 'Mood labels are estimates derived from dataset topics and audio features.'),
-      interpretation: { moods: matchedMoods.map((mood) => ({ ...mood, confidence: 0.5 })), summary: 'Dataset topic and audio-feature match' },
+      interpretation: {
+        moods: matchedMoods.map((mood) => ({ ...mood, confidence: 0.5, weight: 0.5 })),
+        summary: [
+          { label: 'Energy', score: null, value: 'Compared with dataset audio features' },
+          { label: 'Mood', score: null, value: 'Estimated from topic labels and features' },
+        ],
+        parse: { matches: [], source: 'DATASET' },
+      },
       explanation: 'No language, lyric or recording metadata is inferred.',
     };
   }
@@ -373,12 +398,13 @@ export async function demoRequest(method, path, body) {
   if (/^\/songs\/\d+\/dismiss$/.test(p)) {
     const id = Number(p.split('/')[2]);
     const dismissals = read('dismissals', []);
-    write('dismissals', body && body.dismissed ? [...new Set([...dismissals, id])] : [...new Set([...dismissals, id])]);
+    write('dismissals', method === 'DELETE' ? dismissals.filter((value) => value !== id) : [...new Set([...dismissals, id])]);
     return { ok: true };
   }
-  if (/^\/songs\/\d+\/mood-ratings$/.test(p)) {
+  if (/^\/songs\/\d+\/mood-ratings$/.test(p) && method === 'GET') {
     const id = Number(p.split('/')[2]);
-    return localMoodRatings(getSong(catalogue, id) || all[0], read('moodRatings', {}));
+    const song = getSong(catalogue, id);
+    return song ? localMoodRatings(song, read('moodRatings', {})) : { moods: [], privateSession: false, totals: { ratings: 0, raters: 0 } };
   }
   if (/^\/songs\/\d+\/mood-ratings\/\d+$/.test(p) && method === 'DELETE') {
     const songId = Number(p.split('/')[2]);
@@ -407,7 +433,8 @@ export async function demoRequest(method, path, body) {
   }
   if (p === '/playlists' && method === 'POST') {
     const lists = read('playlists', []);
-    const item = { id: Date.now(), name: String(body && body.name || 'My playlist').slice(0, 80), songCount: 0, kind: 'MANUAL', covers: [], songs: [], totalDurationSec: null };
+    const songs = [...new Set((body && body.songIds || []).map(Number).filter((id) => catalogue.songById.has(id)))];
+    const item = { id: Date.now(), name: String(body && body.name || 'My playlist').slice(0, 80), songCount: songs.length, kind: 'MANUAL', covers: [], songs, totalDurationSec: null };
     write('playlists', [item, ...lists]); return item;
   }
   if (p === '/playlists') return read('playlists', []);
@@ -416,16 +443,24 @@ export async function demoRequest(method, path, body) {
     { type: 'CALM_MIX', name: 'Calm mix', blurb: 'Gentler acoustic records from the dataset' },
     { type: 'DISCOVERY', name: 'Discovery', blurb: 'Explore more records across genres' },
   ];
-  if (p.startsWith('/playlists/smart/')) {
+  if (p.startsWith('/playlists/smart/') && method === 'GET') {
     const type = p.split('/').pop();
     const target = type === 'ENERGY_BOOST' ? { energy: 0.82, valence: 0.7 }
       : type === 'CALM_MIX' ? { energy: 0.25, acousticness: 0.75 } : {};
     return listResult(choose(catalogue, target, 18), 'Smart archive selection', 'Selected from the uploaded music-feature dataset.');
   }
-  if (/^\/playlists\/\d+$/.test(p)) {
+  if (p.startsWith('/playlists/smart/') && method === 'POST') {
+    const type = p.split('/').pop();
+    const lists = read('playlists', []);
+    const target = type === 'ENERGY_BOOST' ? { energy: 0.82, valence: 0.7 } : type === 'CALM_MIX' ? { energy: 0.25, acousticness: 0.75 } : {};
+    const songs = choose(catalogue, target, 18).map((song) => song.id);
+    const item = { id: Date.now(), name: String(body && body.name || 'Archive mix').slice(0, 80), songCount: songs.length, kind: 'SAVED_MIX', covers: [], songs, totalDurationSec: null };
+    write('playlists', [item, ...lists]); return item;
+  }
+  if (/^\/playlists\/\d+$/.test(p) && method === 'GET') {
     const id = Number(p.split('/')[2]);
     const item = read('playlists', []).find((playlist) => playlist.id === id);
-    if (!item) return null;
+    if (!item) return { id, name: 'Playlist not found', kind: 'MANUAL', songCount: 0, covers: [], songs: [], totalDurationSec: null };
     return { ...item, songs: getPlaylistSongs(catalogue, item.songs || []) };
   }
   if (/^\/playlists\/\d+\/songs$/.test(p) && method === 'POST') {
@@ -467,10 +502,22 @@ export async function demoRequest(method, path, body) {
     model: null, evidence: { behaviourShare: 0, onboardingShare: 100, completedPlays: 0, neededForFullConfidence: 25 },
     genres: [], artists: [], moods: [],
   };
+  if (p === '/playlists/from-batch' && method === 'POST') return { ok: false, message: 'Archive lists can be saved through a local playlist.' };
   if (p === '/worlds/current/regenerate' || p === '/worlds/current/rollback') return archiveWorld(catalogue);
   if (/^\/worlds\/\d+\/feedback$/.test(p)) return { ok: true };
   if (p === '/playback/start') return { playId: playId++, private: read('incognito', false), isReplay: false, media: null };
   if (p.startsWith('/playback/') || p === '/playback/private') return { ok: true };
+  if (/^\/artists\/\d+\/artwork$/.test(p) || /^\/albums\/\d+\/artwork$/.test(p)) return {};
+  if (/^\/artists\/\d+$/.test(p)) {
+    const id = Number(p.split('/').pop());
+    const artist = catalogue.artistById.get(id);
+    const songs = catalogue.artistSongs.get(id) || [];
+    if (!artist) return { id, name: 'Artist not found', type: 'ARTIST', aliases: [], songs: [], popularity: { plays30d: 0, listeners30d: 0, rank: null } };
+    return { id, name: artist.name, type: 'ARTIST', language: null, region: null, formedYear: null, bio: null, aliases: [], songs: songs.map(withPersonalState), popularity: { plays30d: 0, listeners30d: 0, rank: null } };
+  }
+  if (/^\/albums\/\d+$/.test(p)) return { notAvailable: true, message: 'The supplied dataset has no album information.' };
+  if (/^\/films\/\d+$/.test(p)) return { notAvailable: true, message: 'The supplied dataset has no film or soundtrack information.' };
+  if (/^\/languages\/\d+$/.test(p)) return { notAvailable: true, message: 'The supplied dataset does not contain track-language metadata.' };
   if (p.startsWith('/admin/')) return {};
   return {};
 }
