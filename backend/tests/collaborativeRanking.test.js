@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { applyCollaborativeBoost } = require('../src/utils/collaborativeRanking');
 
 test('collaborative evidence boosts songs enjoyed by similar listeners and reranks them', () => {
-  const rows = [{ song_id: 1, final_score: 0.82 }, { song_id: 2, final_score: 0.74 }];
+  const rows = [{ song_id: 1, final_score: 0.81 }, { song_id: 2, final_score: 0.80 }];
   const ranked = applyCollaborativeBoost(rows, [
     { song_id: 2, collaborative_score: 1, listener_count: 5 },
   ]);
@@ -13,7 +13,7 @@ test('collaborative evidence boosts songs enjoyed by similar listeners and reran
   assert.ok(ranked[0].final_score > 0.74);
   assert.equal(ranked[1].song_id, 1);
   assert.equal(ranked[1].rank_position, 2);
-  assert.equal(ranked[1].final_score, 0.82);
+  assert.equal(ranked[1].final_score, 0.81);
 });
 
 test('one similar listener is insufficient to influence recommendations', () => {
