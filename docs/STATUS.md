@@ -42,7 +42,8 @@ automated test or browser check that passed in the run recorded in
 
 | Feature | Status | Evidence / note |
 |---|---|---|
-| Local, explainable engine (8 signals, configurable weights, stored reasons, cold start) | Done | `02`, `06-admin` (weights) |
+| Local, explainable engine (8 configurable base signals, stored reasons, cold start) | Done | `02`, `06-admin` (weights) |
+| Similar-listener collaborative boost for Daily, Regional, Discovery and Similar mixes | Implemented | 180-day completed-play overlap; requires ≥2 similar listeners; confidence-weighted boost capped at 12%; private sessions excluded |
 | Recommends playable songs only | Done | `10-product` 1 |
 | "Not for me" feedback, undo | Done | `10-product` 3, browser checks, component test |
 | Free-text mood parsing (local, deterministic) | Done | `02` |
@@ -108,7 +109,7 @@ automated test or browser check that passed in the run recorded in
 
 - Audio features are pre-computed values in the seed and feed; no signal-processing model analyses real audio.
 - Public static archive mode now uses the uploaded 28,372-record CC BY 4.0 dataset for real track metadata and audio-feature matching; its lyrics column is excluded. The archive has no audio recordings or stream URLs, so playback remains disabled. The separate MySQL development/integration seed is still fictional and is not served by the static archive.
-- No collaborative filtering ("listeners like you").
+- Collaborative matching is request-time and requires at least two completed shared tracks plus at least two similar listeners; new/low-history users continue to rely on onboarding, regional and trend signals.
 - Single process and single MySQL instance; rate limits are per process; no load testing.
 - Chromium only in browser tests.
 - Provider integrations are untested against the real services until credentials are supplied — follow the checklist in [PROVIDERS.md](PROVIDERS.md).
