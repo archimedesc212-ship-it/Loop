@@ -23,13 +23,16 @@ async function register({ username, email, password, displayName }, client = {})
 
 /** Login by username or email. Five wrong passwords lock the account for 15 minutes. */
 async function login({ login: id, password }, client = {}) {
+  const loginValue = String(id || '').trim();
   const u = await one(
     `SELECT user_id, password_hash, is_active, failed_login_count, locked_until,
             locked_until IS NOT NULL AND locked_until > NOW() AS is_locked,
             CEIL(TIMESTAMPDIFF(SECOND, NOW(), locked_until) / 60) AS minutes_left
-       FROM users WHERE username = ? OR email = ?`, [id.toLowerCase(), id.toLowerCase()]);
+       FROM users
+      WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?)`, [loginValue, loginValue]);
   // same message whether the account exists or not, so accounts cannot be enumerated
   const invalid = new ApiError(401, 'INVALID_LOGIN', 'That username or password is not right.');
+  if (!loginValue) throw invalid;
   if (!u) { await bcrypt.compare(password, DUMMY_HASH); throw invalid; }   // equal timing for unknown accounts
   if (!u.is_active) throw new ApiError(403, 'ACCOUNT_DISABLED', 'This account has been deactivated. Contact an administrator.');
   if (u.is_locked) {

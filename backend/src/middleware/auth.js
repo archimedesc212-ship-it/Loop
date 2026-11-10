@@ -116,6 +116,7 @@ const requireSelfOr = (perm, param = 'id') => (req, res, next) => {
  * an Origin header, it must be this site or an allowed origin.
  */
 function sameOriginOnly(allowed) {
+  const allowList = new Set((Array.isArray(allowed) ? allowed : []).filter(Boolean));
   return (req, res, next) => {
     if (SAFE.has(req.method)) return next();
     const origin = req.headers.origin;
@@ -124,7 +125,7 @@ function sameOriginOnly(allowed) {
     // http while the browser reports https.
     let host = null;
     try { host = new URL(origin).host; } catch { /* "null" or malformed origin */ }
-    if ((host && host === req.get('host')) || allowed.includes(origin)) return next();
+    if ((host && host === req.get('host')) || allowList.has(origin)) return next();
     return next(new ApiError(403, 'ORIGIN_REJECTED', 'Requests from other sites are not accepted.'));
   };
 }
