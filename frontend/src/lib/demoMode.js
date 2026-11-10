@@ -30,7 +30,6 @@ const CONTEXTS = [
   { code: 'NIGHT', name: 'Late night', emoji: '☾', description: 'Lower energy and softer moods', energy: 0.3, valence: 0.42 },
   { code: 'TRAVEL', name: 'Road trip', emoji: '↗', description: 'Steady energy and bright sounds', energy: 0.68, valence: 0.68 },
 ];
-const emptyArray = () => [];
 const read = (key, fallback) => {
   try { return JSON.parse(localStorage.getItem(STORAGE_PREFIX + key)) ?? fallback; } catch { return fallback; }
 };
@@ -58,7 +57,8 @@ function inferredMoods(record) {
 
 function makeCatalogue(payload) {
   if (!payload || payload.schemaVersion !== 1 || !Array.isArray(payload.records)
-      || payload.records.length !== 28372 || !Array.isArray(payload.artists) || !Array.isArray(payload.genres)) {
+      || payload.records.length < 1 || payload.source?.recordCount !== payload.records.length
+      || !Array.isArray(payload.artists) || !Array.isArray(payload.genres)) {
     throw new Error('The music catalogue is missing or incomplete. Reload LOOP to retry the verified dataset.');
   }
   const artists = new Map(payload.artists.map((row) => [Number(row[0]), row[1]]));
@@ -390,7 +390,8 @@ export async function demoRequest(method, path, body) {
       write('likes', body && body.liked ? [...new Set([...likes, id])] : likes.filter((x) => x !== id));
     } else if (p.endsWith('/rating')) {
       const ratings = read('ratings', {});
-      if (body && Number.isFinite(Number(body.rating))) ratings[id] = Number(body.rating);
+      if (method === 'DELETE') delete ratings[id];
+      else if (body && Number.isFinite(Number(body.rating))) ratings[id] = Number(body.rating);
       write('ratings', ratings);
     }
     return { ok: true, previous: false };
