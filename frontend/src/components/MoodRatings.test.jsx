@@ -26,7 +26,7 @@ describe('MoodRatings', () => {
     expect(screen.getByText('No ratings yet')).toBeTruthy();       // Happy has no listener ratings
     expect(screen.getByText('81.00%')).toBeTruthy();               // Sad's average
     expect(screen.getByText('3 ratings')).toBeTruthy();
-    expect(screen.getByText(/AI 72%/)).toBeTruthy();               // AI prediction, labelled separately
+    expect(screen.getByText(/Dataset 72%/)).toBeTruthy();         // source-feature estimate, not an AI model
     expect(screen.getByRole('button', { name: 'Save ratings' }).disabled).toBe(true);
   });
 
