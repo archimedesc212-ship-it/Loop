@@ -52,13 +52,14 @@ describe('uploaded music catalogue', () => {
     const { demoRequest } = await import('../lib/demoMode');
     const result = await demoRequest('GET', '/recommendations/daily');
     expect(result.songs.length).toBeGreaterThan(0);
-    expect(result.songs[0].title).toBe('mohabbat bhi jhoothi');
-    expect(result.songs[0].artist.name).toBe('mukesh');
-    expect(result.songs[0].genre.name).toBe('pop');
-    expect(result.songs[0].language).toBeNull();
-    expect(result.songs[0].durationSec).toBeNull();
-    expect(result.songs[0].playback.playable).toBe(false);
-    expect(result.songs[0].topic).toBe('sadness');
+    const song = await demoRequest('GET', '/songs/1');
+    expect(song.title).toBe('mohabbat bhi jhoothi');
+    expect(song.artist.name).toBe('mukesh');
+    expect(song.genre.name).toBe('pop');
+    expect(song.language).toBeNull();
+    expect(song.durationSec).toBeNull();
+    expect(song.playback.playable).toBe(false);
+    expect(song.topic).toBe('sadness');
     expect(result.songs.every((song) => song.title !== 'Afterglow')).toBe(true);
   });
 
