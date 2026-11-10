@@ -25,46 +25,86 @@ describe('cookies and CSRF headers', () => {
   });
 });
 
-describe('demo fixtures', () => {
-  it('match the song shape used by the real catalogue API', async () => {
+const catalogueFixture = {
+  schemaVersion: 1,
+  source: { recordCount: 2, lyricsIncluded: false, audioIncluded: false },
+  artists: [[1, 'mukesh'], [2, 'frankie laine']],
+  genres: [[1, 'pop'], [2, 'country']],
+  records: [
+    [1, 1, 'mohabbat bhi jhoothi', 1950, 1, 'sadness', 0.137, 0.352, 0.357, 0.998, 0.901, 0.454,
+      [['sadness', 0.38], ['feelings', 0.11], ['communication', 0.26]]],
+    [2, 2, 'i believe', 1950, 2, 'world/life', 0.263, 0.325, 0.331, 0.955, 0, 0.648,
+      [['world/life', 0.44], ['light/visual perceptions', 0.21], ['music', 0.12]]],
+  ],
+};
+
+describe('uploaded music catalogue', () => {
+  beforeEach(async () => {
+    const { resetCatalogueCacheForTests } = await import('../lib/demoMode');
+    resetCatalogueCacheForTests();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(catalogueFixture), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+    ));
+  });
+  afterAll(() => vi.unstubAllGlobals());
+
+  it('uses the supplied real catalogue records and never pretends audio exists', async () => {
     const { demoRequest } = await import('../lib/demoMode');
     const result = await demoRequest('GET', '/recommendations/daily');
     expect(result.songs.length).toBeGreaterThan(0);
-    for (const song of result.songs) {
-      expect(song.artist.name).toBeTruthy();
-      expect(song.language.name).toBeTruthy();
-      expect(Array.isArray(song.moods)).toBe(true);
-      expect(song.moods.every((mood) => typeof mood === 'string')).toBe(true);
-    }
+    expect(result.songs[0].title).toBe('mohabbat bhi jhoothi');
+    expect(result.songs[0].artist.name).toBe('mukesh');
+    expect(result.songs[0].genre.name).toBe('pop');
+    expect(result.songs[0].language).toBeNull();
+    expect(result.songs[0].durationSec).toBeNull();
+    expect(result.songs[0].playback.playable).toBe(false);
+    expect(result.songs[0].topic).toBe('sadness');
+    expect(result.songs.every((song) => song.title !== 'Afterglow')).toBe(true);
   });
-  it('provides complete arrays for demo pages that use array methods', async () => {
+
+  it('provides safe, complete route collections from the real dataset', async () => {
     const { demoRequest } = await import('../lib/demoMode');
     const world = await demoRequest('GET', '/worlds/current');
-    expect(Array.isArray(world.versions)).toBe(true);
-    expect(Array.isArray(world.history)).toBe(true);
-    expect(Array.isArray(world.songs)).toBe(true);
-    expect(typeof world.world.archetype.name).toBe('string');
     const artist = await demoRequest('GET', '/artists/1');
     const album = await demoRequest('GET', '/albums/1');
     const film = await demoRequest('GET', '/films/1');
     const language = await demoRequest('GET', '/languages/1');
-    expect(Array.isArray(artist.songs)).toBe(true);
+    expect(Array.isArray(world.songs)).toBe(true);
+    expect(Array.isArray(world.versions)).toBe(true);
+    expect(Array.isArray(world.history)).toBe(true);
+    expect(artist.name).toBe('mukesh');
+    expect(artist.songs[0].title).toBe('mohabbat bhi jhoothi');
     expect(Array.isArray(artist.aliases)).toBe(true);
-    expect(Array.isArray(album.songs)).toBe(true);
-    expect(Array.isArray(album.artists)).toBe(true);
-    expect(Array.isArray(film.songs)).toBe(true);
-    expect(Array.isArray(film.albums)).toBe(true);
-    expect(Array.isArray(language.songs)).toBe(true);
-    expect(Array.isArray(language.artists)).toBe(true);
+    expect(album.notAvailable).toBe(true);
+    expect(film.notAvailable).toBe(true);
+    expect(language.notAvailable).toBe(true);
   });
-  it('provides complete detail collections for demo songs', async () => {
+
+  it('keeps all song detail collections safe for UI array methods', async () => {
     const { demoRequest } = await import('../lib/demoMode');
     const song = await demoRequest('GET', '/songs/1');
-    for (const key of ['credits', 'genres', 'moodsDetailed', 'segments', 'analyses', 'provenance', 'mergedDuplicates']) {
+    for (const key of ['credits', 'genres', 'moods', 'moodsDetailed', 'segments', 'analyses', 'provenance', 'mergedDuplicates', 'videoLinks']) {
       expect(Array.isArray(song[key])).toBe(true);
     }
   });
 
+  it('searches track title, artist, genre and topic without reading lyrics', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const result = await demoRequest('GET', '/search?q=mukesh');
+    expect(result.total).toBe(1);
+    expect(result.songs[0].title).toBe('mohabbat bhi jhoothi');
+    expect(Array.isArray(result.artists)).toBe(true);
+    expect(Array.isArray(result.albums)).toBe(true);
+    expect(Array.isArray(result.languages)).toBe(true);
+  });
+
+  it('maps natural mood requests into dataset feature matches', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const result = await demoRequest('POST', '/recommendations/mood', { text: 'I need something calm for studying' });
+    expect(Array.isArray(result.songs)).toBe(true);
+    expect(Array.isArray(result.interpretation.moods)).toBe(true);
+    expect(Array.isArray(result.interpretation.summary)).toBe(true);
+  });
 });
 
 describe('request()', () => {
