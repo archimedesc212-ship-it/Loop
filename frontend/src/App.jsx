@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { applyAccentTheme, getAccentTheme } from './lib/theme';
 import { lazy, Suspense } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
@@ -30,6 +32,7 @@ function NotFound() {
 
 export default function App() {
   const { user, ready, sessionNote } = useAuth();
+  useEffect(() => { applyAccentTheme(getAccentTheme().id); }, []);
   if (!ready) return <div style={{ padding: 40 }}><Thinking label="Opening LOOP" /></div>;
   if (!user) return (
     <Routes>

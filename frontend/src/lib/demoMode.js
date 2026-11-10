@@ -91,7 +91,7 @@ function makeCatalogue(payload) {
       artist: { id: artistId, name: artistName },
       album: null, language: null, genre, genres: [genre],
       cover: palette, coverColor1: palette[0], coverColor2: palette[1],
-      playback: { playable: true, type: 'APPLE_MUSIC_LOOKUP', source: 'APPLE_MUSIC' },
+      playback: { playable: true, type: 'YOUTUBE_LOOKUP', source: 'YOUTUBE_DATA' },
       features, topic, topicScores,
       moods: moods.map((mood) => mood.name),
       moodsDetailed: moods.map((mood) => ({

@@ -5,6 +5,7 @@ import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { Field, PageHead, ErrorState, ListSkeleton } from '../components/ui';
+import { accentThemes, applyAccentTheme, getAccentTheme } from '../lib/theme';
 
 export default function Settings() {
   const { user, setUser } = useAuth();
@@ -15,6 +16,7 @@ export default function Settings() {
   const [busy, setBusy] = useState(false);
   const [exportPassword, setExportPassword] = useState('');
   const [exportBusy, setExportBusy] = useState(false);
+  const [accentTheme, setAccentTheme] = useState(() => getAccentTheme().id);
   useEffect(() => {
     setForm({ displayName: user.displayName, regionCode: user.region ? user.region.code : '', contentFilter: user.contentFilter,
       listeningHabit: user.listeningHabit || 'MIXED', languageIds: user.languages.map((l) => l.id) });
@@ -52,6 +54,31 @@ export default function Settings() {
   return (
     <div className="page" style={{ maxWidth: 760 }}>
       <PageHead title="Settings" />
+      <section className="card stack appearance-card" aria-labelledby="appearance-title">
+        <div className="appearance-heading">
+          <div>
+            <h2 id="appearance-title">Appearance</h2>
+            <p className="small soft">Make LOOP feel like yours. Your colour is used across navigation, buttons, highlights, the player and visualizer.</p>
+          </div>
+          <span className="appearance-live-dot" aria-hidden="true" />
+        </div>
+        <div className="appearance-label-row"><strong>Accent colour</strong><span className="small muted">Saved on this device</span></div>
+        <div className="accent-theme-grid" role="group" aria-label="Choose accent colour">
+          {accentThemes.map((theme) => (
+            <button type="button" key={theme.id} className={`accent-theme-option${accentTheme === theme.id ? ' selected' : ''}`}
+              onClick={() => { setAccentTheme(theme.id); applyAccentTheme(theme.id); }}
+              aria-pressed={accentTheme === theme.id} aria-label={`Use ${theme.label}`}>
+              <span className="accent-theme-swatch" style={{ '--swatch': theme.color }} />
+              <span>{theme.label}</span>
+              {accentTheme === theme.id && <span className="accent-theme-check" aria-hidden="true">✓</span>}
+            </button>
+          ))}
+        </div>
+        <div className="appearance-preview" aria-live="polite">
+          <div className="appearance-preview-copy"><span className="tiny muted">LIVE PREVIEW</span><strong>Colour your listening space</strong><span className="small soft">Your selection updates instantly and stays after you reopen LOOP.</span></div>
+          <div className="appearance-preview-actions"><span className="appearance-preview-pill">Selected theme</span><span className="appearance-preview-play">▶</span></div>
+        </div>
+      </section>
       {opts.error && <ErrorState error={opts.error} onRetry={opts.reload} />}
       <form className="stack" style={{ '--gap': '18px' }} onSubmit={save}>
         <Field label="Display name"><input className="input" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} maxLength={60} /></Field>

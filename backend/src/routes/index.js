@@ -183,6 +183,21 @@ router.post('/playback/private', v({ songId: r.int(1, 2 ** 31), listenedSec: r.i
 router.get('/history', v(limitQ, 'query'), h(c.playback.recent));
 router.post('/history', v({ songId: r.int(1, 2 ** 31), listenedSec: r.int(0, 1800), origin: opt(ORIGIN, 'HOME') }), h(c.playback.record));
 
+// Lyrics are stored only when the contributor confirms rights; annotations and notes are private by default.
+router.get('/songs/:id/lyrics', id, h(c.lyrics.get));
+router.put('/songs/:id/lyrics', id, v({
+  languageCode: opt(r.str(2, 12, /^[a-zA-Z-]+$/), 'und'),
+  sourceType: r.oneOf(['USER_PROVIDED', 'LICENSED']),
+  sourceLabel: r.str(2, 160), sourceUrl: opt(r.str(0, 500, /^https:\/\//i)),
+  rightsConfirmed: r.bool(),
+  lines: r.arrayOf(r.object({ startMs: r.int(0, 1800000), endMs: opt(r.int(0, 1800000)), text: r.str(1, 1000) }), 500, 1),
+}), h(c.lyrics.save));
+router.post('/songs/:id/lyrics/annotations', id, v({
+  lineId: r.int(1, Number.MAX_SAFE_INTEGER), text: r.str(1, 2000), sourceUrl: opt(r.str(0, 500, /^https:\/\//i)),
+}), h(c.lyrics.annotate));
+router.delete('/lyrics/annotations/:annotationId', v({ annotationId: r.int(1, Number.MAX_SAFE_INTEGER) }, 'params'), h(c.lyrics.deleteAnnotation));
+router.put('/songs/:id/notes', id, v({ text: opt(r.str(0, 5000), '') }), h(c.lyrics.saveNote));
+
 // ---------------------------------------------------------------- ratings & likes
 router.post('/ratings', v({ songId: r.int(1, 2 ** 31), rating: r.int(1, 5) }), h(c.feedback.createRating));
 router.put('/songs/:id/rating', id, v({ rating: r.int(1, 5) }), h(c.feedback.rate));

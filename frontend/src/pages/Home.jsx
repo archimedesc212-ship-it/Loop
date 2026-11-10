@@ -79,11 +79,15 @@ export default function Home() {
     : [...current, id].slice(-3));
 
   return (
-    <div className="page">
-      <section className="hero">
+    <div className="page home-page">
+      <header className="home-masthead">
+        <div><span className="home-eyebrow">YOUR MUSIC, YOUR MOMENT</span><h1>{greeting}<span className="home-greeting-dot">.</span></h1><p>Pick up where you left off, or find something that fits right now.</p></div>
+        <nav className="home-shortcuts" aria-label="Music shortcuts"><Link to="/search">Explore <Arrow /></Link><Link to="/library">Your library <Arrow /></Link></nav>
+      </header>
+      <section className="hero home-discovery-hero">
         <div className="stack" style={{ '--gap': '16px', maxWidth: 760 }}>
-          <div className="soft">{greeting}, {user.displayName.split(' ')[0]}</div>
-          <h1 className="display">What would you like to listen to?</h1>
+          <div className="soft home-hero-kicker"><Spark /> A soundtrack for right now</div>
+          <h2 className="display">What would you like to listen to?</h2>
           <p className="lead">Choose a mood or describe how you feel. LOOP will find tracks that fit.</p>
           <FeelInput value={text} onChange={setText} onSubmit={openDiscover} placeholder="Try: calm music for studying…" />
           {moods.data && <MoodTiles moods={moods.data} only={HERO_MOODS.slice(0, 8)} selected={selected} onToggle={toggleMood} />}
@@ -115,6 +119,7 @@ export default function Home() {
         </div>
       </section>
 
+      <div className="home-section-intro"><span className="home-eyebrow">CURATED FOR YOUR DAY</span><h2>Made to match your mood</h2><p>Your mixes, recent favourites and sounds worth discovering.</p></div>
       <Shelf title="Made for you" sub="A daily mix based on your listening and mood preferences." to="/mix/daily" state={daily} />
       <Shelf title="Recently played" sub="Pick up where you left off." state={recent} />
       <Shelf title="Popular in LOOP" sub="Popular songs from the curated recommendation catalogue." to="/search?q=popular" state={popular} />

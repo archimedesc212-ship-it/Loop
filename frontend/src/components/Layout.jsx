@@ -11,6 +11,7 @@ import { duration } from '../lib/format';
 import { buildSearchSuggestions } from '../lib/searchSuggestions';
 import { formatSleepRemaining } from '../lib/sleepTimer';
 import { registerMoodColors, LikeButton } from './Songs';
+import ImmersivePlayer from './ImmersivePlayer';
 
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
@@ -209,7 +210,7 @@ function TopBar({ onToggleSidebar, sidebarCollapsed }) {
             ))}
             <button type="submit" className="search-suggestion search-suggestion-all">
               <span className="search-suggestion-icon" aria-hidden="true">⌕</span>
-              <span className="search-suggestion-copy"><strong>Search all music sources</strong><small>YouTube · Apple Music · LOOP</small></span>
+              <span className="search-suggestion-copy"><strong>Search all music sources</strong><small>YouTube · LOOP</small></span>
               <span className="search-suggestion-kind">Enter</span>
             </button>
           </div>
@@ -244,7 +245,7 @@ function QueuePanel({ onClose }) {
               <span className="num tiny muted">{i + 1}</span>
               <span className="grow" style={{ minWidth: 0 }}>
                 <span className="q-title">{s.title}</span>
-                <span className="tiny muted">{s.artist.name}{s.playback?.type === 'APPLE_MUSIC_LOOKUP' ? ' · Apple Music' : s.playback && s.playback.playable === false ? ' · metadata only' : ''}</span>
+                <span className="tiny muted">{s.artist.name}{s.playback?.type === 'YOUTUBE_LOOKUP' ? ' · YouTube' : s.playback && s.playback.playable === false ? ' · metadata only' : ''}</span>
               </span>
             </button>
             {i !== p.index && <button className="icon-btn" onClick={() => p.removeAt(i)} aria-label={`Remove ${s.title} from the queue`}><Icon.X width={16} height={16} /></button>}
@@ -262,7 +263,7 @@ function mediaNote(media, incognito) {
   return `${media.label}${media.attribution ? ` · ${media.attribution}` : ''}${where}`;
 }
 
-function PlayerBar() {
+function PlayerBar({ onOpenImmersive }) {
   const p = usePlayer();
   const { user } = useAuth();
   const [queueOpen, setQueueOpen] = useState(false);
@@ -275,33 +276,37 @@ function PlayerBar() {
       <div className={`player${user.incognito ? ' private' : ''}`} role="region" aria-label="Player">
         <div className="now">
           {s.artworkUrl || p.media?.artworkUrl ? <img className="cover player-artwork" src={s.artworkUrl || p.media.artworkUrl} alt="" /> : <Cover colors={s.cover} seed={s.album ? (Number(s.album.id) || 1) * 31 + (Number(s.id) || 1) : (Number(s.id) || 1)} />}
-          <div style={{ minWidth: 0 }}>
-            {(String(s.id).startsWith('apple-') || String(s.id).startsWith('yt-'))
+          <div className="player-open-now" role="button" tabIndex={0} onClick={onOpenImmersive} style={{ minWidth: 0 }}>
+            {(String(s.id).startsWith('yt-'))
               ? <strong style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</strong>
               : <Link to={`/song/${s.id}`} style={{ fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</Link>}
             <div className="tiny muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={mediaNote(p.media, user.incognito)}>
               {s.artist.name} · {mediaNote(p.media, user.incognito)}
             </div>
           </div>
-          {!(String(s.id).startsWith('apple-') || String(s.id).startsWith('yt-')) && <span className="hide-sm"><LikeButton song={s} /></span>}
+          {!(String(s.id).startsWith('yt-')) && <span className="hide-sm"><LikeButton song={s} /></span>}
         </div>
         {p.externalPlayback ? (
           <div className="center external-player-center">
             <div className="controls">
+              <button className={`icon-btn${p.shuffle ? ' on' : ''}`} onClick={p.setShuffle} aria-label="Toggle shuffle" aria-pressed={p.shuffle}>⤨</button>
               <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
-              <span className="chip accent">{p.media?.type === 'YOUTUBE_EMBED' ? 'YouTube' : 'Apple Music'}</span>
+              <button className="play-btn" onClick={p.toggle} aria-label={p.status === 'playing' ? 'Pause' : 'Play'}>{p.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}</button>
               <button className="icon-btn" onClick={p.next} aria-label="Next"><Icon.Next /></button>
+              <button className={`icon-btn${p.repeat !== 'off' ? ' on' : ''}`} onClick={p.setRepeat} aria-label={`Repeat ${p.repeat}`} aria-pressed={p.repeat !== 'off'}>{p.repeat === 'one' ? '↻¹' : '↻'}</button>
             </div>
-            <div className="tiny muted">Use the embedded player above to listen without leaving LOOP.</div>
+            <button className="player-expand-btn" onClick={onOpenImmersive} aria-label="Open Now Playing">Open Now Playing</button>
           </div>
         ) : (
           <div className="center">
             <div className="controls">
+              <button className={`icon-btn${p.shuffle ? ' on' : ''}`} onClick={p.setShuffle} aria-label="Toggle shuffle" aria-pressed={p.shuffle}>⤨</button>
               <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
               <button className="play-btn" onClick={p.toggle} aria-label={p.status === 'playing' ? 'Pause' : 'Play'} disabled={p.status === 'loading'}>
                 {p.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}
               </button>
               <button className="icon-btn" onClick={p.next} aria-label="Next (counts as a skip if early)"><Icon.Next /></button>
+              <button className={`icon-btn${p.repeat !== 'off' ? ' on' : ''}`} onClick={p.setRepeat} aria-label={`Repeat ${p.repeat}`} aria-pressed={p.repeat !== 'off'}>{p.repeat === 'one' ? '↻¹' : '↻'}</button>
             </div>
             <div className="progress">
               <span style={{ textAlign: 'right' }}>{duration(p.position)}</span>
@@ -312,8 +317,8 @@ function PlayerBar() {
           </div>
         )}
         <div className="right">
-          {!p.externalPlayback && <>
-            <div className="sleep-control">
+          <>
+            {!p.externalPlayback && <div className="sleep-control">
               <button className={`icon-btn${sleepOpen ? ' on' : ''}`} onClick={() => setSleepOpen((open) => !open)} aria-label="Sleep timer" aria-expanded={sleepOpen} title="Sleep timer">
                 <Icon.Clock />
                 {p.sleepRemaining !== null && <span className="badge-count">{formatSleepRemaining(p.sleepRemaining)}</span>}
@@ -329,7 +334,7 @@ function PlayerBar() {
                   <button className="btn ghost sm" onClick={() => p.cancelSleepTimer()}>Cancel</button>
                 </div>}
               </div>}
-            </div>
+            </div>}
             <div className="row hide-sm" style={{ '--gap': '4px' }}>
               <button className="icon-btn" onClick={p.toggleMute} aria-label={p.muted ? 'Unmute' : 'Mute'} aria-pressed={p.muted}>
                 {p.muted || p.volume === 0 ? <Icon.VolumeOff /> : <Icon.Volume />}
@@ -337,7 +342,7 @@ function PlayerBar() {
               <input type="range" className="volume" min="0" max="100" value={Math.round((p.muted ? 0 : p.volume) * 100)}
                 onChange={(e) => p.setVolume(Number(e.target.value) / 100)} aria-label="Volume" aria-valuetext={`${Math.round(p.volume * 100)}%`} />
             </div>
-          </>}
+          </>
           <button className={`icon-btn${queueOpen ? ' on' : ''}`} onClick={() => setQueueOpen((o) => !o)} aria-label="Show play queue" aria-expanded={queueOpen}>
             <Icon.List /><span className="badge-count">{p.queue.length}</span>
           </button>
@@ -350,22 +355,22 @@ function PlayerBar() {
         {queueOpen && <QueuePanel onClose={closeQueue} />}
       </div>
       {p.externalPlayback && (p.media?.embedUri || p.media?.embedUrl) && (
-        <section className={p.media?.type === 'YOUTUBE_EMBED' ? 'apple-inline-panel youtube-inline-panel' : 'apple-inline-panel'} aria-label={p.media?.type === 'YOUTUBE_EMBED' ? 'YouTube embedded player' : 'Apple Music embedded player'}>
-          <div className="row between apple-inline-heading">
+        <section className="youtube-inline-panel" aria-label="YouTube embedded player">
+          <div className="row between youtube-inline-heading">
             <div className="tiny muted">NOW PLAYING · {p.media.trackName} — {p.media.artistName}</div>
-            {p.media?.watchUrl ? <a className="tiny link" href={p.media.watchUrl} target="_blank" rel="noreferrer">Open in YouTube</a> : <a className="tiny link" href={p.media.storeUrl} target="_blank" rel="noreferrer">Open in Apple Music</a>}
+            {p.media?.watchUrl ? <a className="tiny link" href={p.media.watchUrl} target="_blank" rel="noreferrer">Open in YouTube</a> : null}
           </div>
           <iframe
-            title={`${p.media?.type === 'YOUTUBE_EMBED' ? 'YouTube' : 'Apple Music'} player: ${p.media.trackName}`}
-            src={p.media.embedUrl || p.media.embedUri}
+            title={`YouTube player: ${p.media.trackName}`}
+            src={p.media.embedUrl}
             width="100%"
-            height={p.media?.type === 'YOUTUBE_EMBED' ? '315' : '175'}
+            height="315"
             allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *"
             frameBorder="0"
             loading="eager"
             referrerPolicy="strict-origin-when-cross-origin"
           />
-          <p className="tiny muted">{p.media?.type === 'YOUTUBE_EMBED' ? <>Playback is provided by YouTube’s official embedded player. Some videos may be unavailable for embedding. {p.media.watchUrl && <a href={p.media.watchUrl} target="_blank" rel="noreferrer" className="player-provider-fallback">Open directly on YouTube</a>}</> : <>Full tracks may require an Apple Music subscription. Short previews play directly in LOOP when Apple provides one. {p.media?.storeUrl && <a href={p.media.storeUrl} target="_blank" rel="noreferrer" className="player-provider-fallback">Open on Apple Music</a>}</>}</p>
+          <p className="tiny muted"><>Playback is provided by YouTube’s official embedded player. Some videos may be unavailable for embedding. {p.media.watchUrl && <a href={p.media.watchUrl} target="_blank" rel="noreferrer" className="player-provider-fallback">Open directly on YouTube</a>}</></p>
         </section>
       )}
 
@@ -400,6 +405,7 @@ export function OfflineBanner() {
 export default function Layout() {
   const { user } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem('loop.sidebarCollapsed') === 'true'; } catch { return false; } });
+  const [immersiveOpen, setImmersiveOpen] = useState(false);
   useEffect(() => { try { localStorage.setItem('loop.sidebarCollapsed', String(sidebarCollapsed)); } catch { /* preference storage is optional */ } }, [sidebarCollapsed]);
   const nav = useNavigate();
   useEffect(() => { api.moods().then(registerMoodColors).catch(() => {}); }, []);
@@ -419,7 +425,8 @@ export default function Layout() {
         )}
         <Outlet />
       </main>
-      <PlayerBar />
+      <PlayerBar onOpenImmersive={() => setImmersiveOpen(true)} />
+      <ImmersivePlayer open={immersiveOpen} onClose={() => setImmersiveOpen(false)} />
       <LearnedNote />
       <MobileNav />
     </div>

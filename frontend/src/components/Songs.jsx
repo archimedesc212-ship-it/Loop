@@ -21,7 +21,7 @@ export function PlaybackBadge({ song, verbose = false }) {
   if (!pb.playable) return <span className="chip badge-meta" title="No permitted audio source is available for this song. Its details are shown, but it cannot be played.">Metadata only</span>;
   if (verbose && pb.demo) return <span className="chip badge-demo" title="Playback is a demo sketch synthesised from the song’s analysed features — not the recording.">Demo sketch</span>;
   if (verbose && pb.type === 'PREVIEW') return <span className="chip">Preview</span>;
-  if (pb.type === 'APPLE_MUSIC_LOOKUP') return <span className="chip" title="Playback opens the official Apple Music embedded player. Availability varies by track and region.">Apple Music lookup</span>;
+  if (pb.type === 'YOUTUBE_LOOKUP') return <span className="chip" title="Playback opens the official YouTube embedded player. Availability varies by track and region.">YouTube lookup</span>;
   if (verbose && pb.type === 'USER_LOCAL') return <span className="chip">Licensed file</span>;
   return null;
 }
@@ -171,7 +171,7 @@ export function SongCard({ song, queue, origin = 'HOME', batchId, reason }) {
       )}
       <div style={{ minWidth: 0 }}>
         <div className="title" title={song.title}>{song.title}{song.explicit && <span className="chip" style={{ height: 18, marginLeft: 6, fontSize: '0.66rem' }}>E</span>}</div>
-        {(!playable || song.playback?.type === 'APPLE_MUSIC_LOOKUP') && <PlaybackBadge song={song} />}
+        {(!playable || song.playback?.type === 'YOUTUBE_LOOKUP') && <PlaybackBadge song={song} />}
         <div className="meta">
         {song.artist?.id
           ? <Link to={`/artist/${song.artist.id}`}>{song.artist.name || 'Unknown artist'}</Link>
@@ -277,7 +277,7 @@ export function TrackList({ songs: all, origin = 'HOME', batchId, showRank = tru
                     ? <Link to={`/language/${s.language.id}`}>{s.language.name || 'Unknown language'}</Link>
                     : (s.language?.name || 'Unknown language')}
                   {s.genre?.name ? ` · ${s.genre.name}` : ''}
-                  {(!playable || s.playback?.type === 'APPLE_MUSIC_LOOKUP') && <PlaybackBadge song={s} />}
+                  {(!playable || s.playback?.type === 'YOUTUBE_LOOKUP') && <PlaybackBadge song={s} />}
                 </div>
               </div>
               <div className="t-tags">

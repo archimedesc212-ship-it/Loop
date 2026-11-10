@@ -19,7 +19,7 @@ check('LOOP dark palette uses charcoal and green', /--bg:\s*#121212/i.test(css) 
 check('Responsive breakpoints cover tablet and phone widths', /max-width:\s*900px/.test(css) && /max-width:\s*640px/.test(css));
 check('Reduced-motion preference is respected', /prefers-reduced-motion:\s*reduce/.test(css));
 check('Keyboard focus indicator exists', /:focus-visible/.test(css));
-check('Player has a visible official-provider fallback link', /Open in YouTube/.test(layout) && /Open in Apple Music/.test(layout));
+check('Player has a visible official-provider fallback link', /Open in YouTube/.test(layout) && !/Open on Apple Music/.test(layout));
 check('Dark-theme stylesheet is loaded', /spotify-dark\.css/.test(main));
 check('Layout contains a main landmark and skip link', /<main\b/.test(layout) && /skip-link/.test(layout));
 

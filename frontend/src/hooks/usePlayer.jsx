@@ -9,12 +9,11 @@
 // Real app playback is selected by the server (backend mediaService):
 //   USER_LOCAL / PREVIEW → a real <audio> element (time comes from the element)
 //   GENERATED_SKETCH     → a clearly labelled demo sound sketch
-// The bundled metadata catalogue is a separate demo path: exact Apple Music matches
-// open Apple's official iframe player. LOOP does not synthesize or store recordings.
+// Catalogue-only tracks are resolved through the backend YouTube Data API.
+// LOOP uses the official YouTube iframe and never extracts or re-hosts audio.
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../services/api';
 import { createSketchPlayer } from '../lib/sketch';
-import { lookupAppleMusic } from '../lib/appleMusic';
 import { sleepFadeFactor } from '../lib/sleepTimer';
 import { useToast } from './useToast';
 
@@ -39,9 +38,12 @@ export function PlayerProvider({ children }) {
   const [status, setStatus] = useState('idle');          // idle | loading | playing | paused | external
   const [position, setPosition] = useState(0);
   const [media, setMedia] = useState(null);              // what is sounding: { type, label, demo, attribution, … }
+  const [audioElement, setAudioElement] = useState(null);
   const [speed, setSpeedState] = useState(() => stored(SPEED_KEY, 1));
   const [volume, setVolumeState] = useState(() => Math.min(1, Math.max(0, stored(VOLUME_KEY, 0.8))));
   const [muted, setMuted] = useState(false);
+  const [shuffle, setShuffle] = useState(false);
+  const [repeat, setRepeat] = useState('off');
   const [lastResult, setLastResult] = useState(null);
   const [sleepRemaining, setSleepRemaining] = useState(null);
   const [sleepDuration, setSleepDuration] = useState(0);
@@ -71,6 +73,7 @@ export function PlayerProvider({ children }) {
   const stopAudio = useCallback(() => {
     sketch.current.stop();
     if (audio.current) { audio.current.pause(); audio.current.src = ''; audio.current = null; }
+    setAudioElement(null);
   }, []);
 
   /** Report the current play to the API exactly once. */
@@ -117,47 +120,21 @@ export function PlayerProvider({ children }) {
       if (song.playback?.type === 'YOUTUBE_EMBED' && song.youtube?.embedUrl) {
         handle.current = null;
         setMedia({ type: 'YOUTUBE_EMBED', label: 'YouTube embedded player', embedUrl: song.youtube.embedUrl, watchUrl: song.youtube.watchUrl, trackName: song.title, artistName: song.artist?.name });
-        setStatus('external');
+        setStatus('playing');
         return;
       }
-      // Use a pre-resolved global catalogue result immediately when available.
-      // Otherwise resolve the LOOP metadata record across multiple storefronts.
-      if (song.playback?.type === 'APPLE_MUSIC_LOOKUP') {
-        const match = song.appleMusic || await lookupAppleMusic(song);
-        if (!match) {
+      // Resolve catalogue-only tracks through the server-side YouTube Data API.
+      // The API key stays on the backend; playback uses YouTube's official iframe.
+      if (song.playback?.type === 'YOUTUBE_LOOKUP') {
+        const result = await api.youtubeSearch(`${song.title} ${song.artist?.name || ''} official audio`, 5);
+        const video = (result.videos || []).find((item) => item.embedUrl && item.embeddable !== false);
+        if (!video) {
           setStatus('idle');
-          toast.info(`No close Apple Music match was found for “${song.title}”. Try another track or search worldwide.`);
+          toast.info(`No embeddable YouTube result was found for “${song.title}”.`);
           return;
         }
-        handle.current = null; // Provider embeds/previews do not expose listen events to LOOP.
-        if (match.previewUri) {
-          const a = new Audio(match.previewUri);
-          a.preload = 'auto';
-          a.volume = volRef.current;
-          let last = 0;
-          a.addEventListener('timeupdate', () => {
-            const t = a.currentTime;
-            if (t > last && t - last < 2) listened.current += t - last;
-            last = t;
-            posRef.current = t;
-            setPosition(t);
-          });
-          a.addEventListener('ended', () => { document.dispatchEvent(new CustomEvent('muse:ended')); });
-          a.addEventListener('error', () => toast.error({ message: 'Apple Music could not load this preview. Try the embedded player or another track.' }));
-          audio.current = a;
-          setMedia({ type: 'APPLE_MUSIC_PREVIEW', label: 'Apple Music preview', attribution: 'Official 30-second preview', uri: match.previewUri, ...match });
-          try {
-            await a.play();
-            setStatus('playing');
-            return;
-          } catch (playError) {
-            // A catalogue lookup can outlive the browser click activation. The
-            // inline Apple player remains playable with its own user gesture.
-            if (!['NotAllowedError', 'NotSupportedError', 'AbortError'].includes(playError?.name)) throw playError;
-            a.pause(); a.src = ''; audio.current = null;
-          }
-        }
-        setMedia({ type: 'APPLE_MUSIC_EMBED', label: 'Apple Music player', ...match });
+        handle.current = null;
+        setMedia({ type: 'YOUTUBE_EMBED', label: 'YouTube player', embedUrl: video.embedUrl, watchUrl: video.sourceUrl, trackName: song.title, artistName: song.artist?.name || video.channel, thumbnailUrl: video.thumbnailUrl });
         setStatus('external');
         return;
       }
@@ -179,6 +156,7 @@ export function PlayerProvider({ children }) {
         a.addEventListener('ended', () => { document.dispatchEvent(new CustomEvent('muse:ended')); });
         a.addEventListener('error', () => toast.error({ message: 'This audio file could not be loaded.' }));
         audio.current = a;
+          setAudioElement(a);
         await a.play();
       } else {
         const ok = await sketch.current.start(song);
@@ -228,37 +206,46 @@ export function PlayerProvider({ children }) {
     if (audio.current) audio.current.currentTime = to;
   }, []);
 
-  const next = useCallback(() => goTo(index + 1, 'next'), [goTo, index]);
+  const next = useCallback(() => {
+    if (repeat === 'one' && index >= 0) return goTo(index, 'repeat');
+    if (shuffle && queueRef.current.length > 1) {
+      const choices = queueRef.current.map((_, i) => i).filter((i) => i !== index);
+      return goTo(choices[Math.floor(Math.random() * choices.length)], 'next');
+    }
+    return goTo(index + 1 < queueRef.current.length ? index + 1 : (repeat === 'all' ? 0 : queueRef.current.length), 'next');
+  }, [goTo, index, repeat, shuffle]);
   const prev = useCallback(() => (posRef.current > 5 ? seek(0) : goTo(Math.max(0, index - 1), 'prev')), [goTo, index, seek]);
 
   const pause = useCallback(() => {
     if (statusRef.current !== 'playing') return;
+    if (media?.type === 'YOUTUBE_EMBED') {
+      document.querySelector('.loop-immersive-youtube iframe, .youtube-inline-panel iframe')?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }), '*');
+    }
     sketch.current.pause(); if (audio.current) audio.current.pause();
     setStatus('paused');
     const h = handle.current;
     if (h && !h.private) api.playEvent(h.playId, { type: 'PAUSE', positionSec: Math.round(posRef.current) }).catch(() => {});
-  }, []);
+  }, [media]);
 
   const resume = useCallback(() => {
     if (statusRef.current !== 'paused') return;
+    if (media?.type === 'YOUTUBE_EMBED') {
+      document.querySelector('.loop-immersive-youtube iframe, .youtube-inline-panel iframe')?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
+    }
     sketch.current.resume(); if (audio.current) audio.current.play();
     setStatus('playing');
     const h = handle.current;
     if (h && !h.private) api.playEvent(h.playId, { type: 'RESUME', positionSec: Math.round(posRef.current) }).catch(() => {});
-  }, []);
+  }, [media]);
 
   const toggle = useCallback(() => {
-    if (statusRef.current === 'external') {
-      document.querySelector('.apple-inline-panel iframe, .youtube-inline-panel iframe')?.focus();
-      return;
-    }
     if (statusRef.current === 'playing') pause();
     else if (statusRef.current === 'paused') resume();
     else if (statusRef.current === 'idle' && index >= 0 && currentRef.current) startAt(index);
   }, [index, pause, resume, startAt]);
   const setSpeed = useCallback((s) => { setSpeedState(s); store(SPEED_KEY, s); }, []);
-  const setVolume = useCallback((v) => { const x = Math.max(0, Math.min(1, v)); setVolumeState(x); setMuted(false); store(VOLUME_KEY, x); }, []);
-  const toggleMute = useCallback(() => setMuted((m) => !m), []);
+  const setVolume = useCallback((v) => { const x = Math.max(0, Math.min(1, v)); setVolumeState(x); setMuted(false); store(VOLUME_KEY, x); if (media?.type === 'YOUTUBE_EMBED') document.querySelector('.youtube-inline-panel iframe')?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [Math.round(x * 100)] }), '*'); }, [media]);
+  const toggleMute = useCallback(() => { setMuted((m) => { const nextMuted = !m; if (media?.type === 'YOUTUBE_EMBED') document.querySelector('.youtube-inline-panel iframe')?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: nextMuted ? 'mute' : 'unMute', args: [] }), '*'); return nextMuted; }); }, [media]);
   const setSleepTimer = useCallback((minutes) => {
     const value = Number(minutes);
     if (!Number.isFinite(value) || value < 1 || value > 180) return false;
@@ -343,13 +330,13 @@ export function PlayerProvider({ children }) {
 
   const length = audio.current && Number.isFinite(audio.current.duration) ? audio.current.duration : (current ? current.durationSec : 0);
   const value = useMemo(() => ({
-    current, queue, index, status, position, length, speed, volume, muted, media, lastResult, sleepRemaining,
-    play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset,
+    current, queue, index, status, position, length, speed, volume, muted, shuffle, repeat, media, audioElement, lastResult, sleepRemaining,
+    play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setShuffle: () => setShuffle((value) => !value), setRepeat: () => setRepeat((value) => value === 'off' ? 'all' : value === 'all' ? 'one' : 'off'), setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset,
     realAudio: !!(media && media.uri),
-    externalPlayback: !!(media && ((media.type === 'APPLE_MUSIC_EMBED' && media.embedUri) || (media.type === 'YOUTUBE_EMBED' && media.embedUrl))),
+    externalPlayback: !!(media && media.type === 'YOUTUBE_EMBED' && media.embedUrl),
     isCurrent: (id) => current && current.id === id,
     isPlaying: (id) => current && current.id === id && status === 'playing',
-  }), [current, queue, index, status, position, length, speed, volume, muted, media, lastResult, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);
+  }), [current, queue, index, status, position, length, speed, volume, muted, media, audioElement, lastResult, shuffle, repeat, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);
 
   return <PlayerCtx.Provider value={value}>{children}</PlayerCtx.Provider>;
 }

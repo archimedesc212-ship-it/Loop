@@ -7,7 +7,7 @@ import { demoRequest } from '../lib/demoMode';
 // readable `muse_csrf` cookie (double-submit, verified server-side with an HMAC).
 // No token is ever stored in localStorage.
 
-export const isDemoMode = import.meta.env.VITE_DEMO_MODE !== 'false';
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export class ApiError extends Error {
   constructor(status, code, message, details) {
@@ -167,6 +167,11 @@ export const api = {
   playFinish: (playId, b) => request('POST', `/playback/${playId}/finish`, b),
   playPrivate: (b) => request('POST', '/playback/private', b),
   history: (limit) => request('GET', `/history${qs({ limit })}`),
+  lyrics: (songId) => request('GET', `/songs/${songId}/lyrics`),
+  saveLyrics: (songId, payload) => request('PUT', `/songs/${songId}/lyrics`, payload),
+  addLyricAnnotation: (songId, payload) => request('POST', `/songs/${songId}/lyrics/annotations`, payload),
+  deleteLyricAnnotation: (annotationId) => request('DELETE', `/lyrics/annotations/${annotationId}`),
+  saveSongNote: (songId, text) => request('PUT', `/songs/${songId}/notes`, { text }),
   rate: (songId, rating) => request('PUT', `/songs/${songId}/rating`, { rating }),
   unrate: (songId) => request('DELETE', `/songs/${songId}/rating`),
   // mood-wise percentage ratings (0–100): the user's own judgement, separate from the AI's mood confidence

@@ -6,33 +6,7 @@ import { usePlayer } from '../hooks/usePlayer';
 import { TrackList } from '../components/Songs';
 import { Cover } from '../components/Art';
 import { ErrorState, ListSkeleton, Empty, MoodChip } from '../components/ui';
-import { searchAppleMusicCatalog } from '../lib/appleMusic';
 import * as Icon from '../components/Icons';
-
-function WorldwideTrack({ song, songs }) {
-  const player = usePlayer();
-  const current = player.isCurrent(song.id);
-  const playing = player.isPlaying(song.id);
-  const start = () => current ? player.toggle() : player.play(song, { queue: songs, origin: 'WORLDWIDE_SEARCH' });
-  return (
-    <article className={`world-track${current ? ' playing' : ''}`}>
-      {song.artworkUrl
-        ? <img className="world-artwork" src={song.artworkUrl} alt="" loading="lazy" />
-        : <Cover colors={song.cover} seed={song.appleMusic.trackId} size={54} />}
-      <div className="world-track-copy">
-        <strong title={song.title}>{song.title}</strong>
-        <span>{song.artist.name} · {song.album.title}</span>
-        <small>{song.appleMusic.storefront?.toUpperCase()} · {song.appleMusic.previewUri ? '30-second sample' : 'Apple Music player · full track may require subscription'}</small>
-      </div>
-      <div className="world-track-actions">
-        <Link className="world-full-version" to={`/search?q=${encodeURIComponent(`${song.title} ${song.artist.name} official audio`)}`} title={`Find full-length video options for ${song.title}`}>Full version</Link>
-        <button className="world-play" onClick={start} aria-label={`${playing ? 'Pause' : 'Play preview of'} ${song.title}`} title={song.appleMusic.previewUri ? 'Play 30-second Apple Music sample' : 'Open Apple Music player'}>
-          {playing ? <Icon.Pause /> : <Icon.Play />}
-        </button>
-      </div>
-    </article>
-  );
-}
 
 function formatVideoDuration(seconds) {
   if (!Number.isFinite(seconds) || seconds <= 0) return 'Duration unavailable';
@@ -60,9 +34,6 @@ export default function Search() {
   const [params] = useSearchParams();
   const q = (params.get('q') || '').trim();
   const { data, error, loading, reload } = useApi(() => (q.length >= 2 ? api.search(q) : Promise.resolve(null)), [q]);
-  const [worldSongs, setWorldSongs] = useState([]);
-  const [worldLoading, setWorldLoading] = useState(false);
-  const [worldError, setWorldError] = useState('');
   const [youtubeVideos, setYoutubeVideos] = useState([]);
   const [youtubeLoading, setYoutubeLoading] = useState(false);
   const [youtubeError, setYoutubeError] = useState('');
@@ -73,18 +44,6 @@ export default function Search() {
   const [mbRecordings, setMbRecordings] = useState([]);
   const [mbLoading, setMbLoading] = useState(false);
   const [mbError, setMbError] = useState('');
-
-  useEffect(() => {
-    if (q.length < 2) { setWorldSongs([]); setWorldLoading(false); return undefined; }
-    let cancelled = false;
-    setWorldLoading(true);
-    setWorldError('');
-    searchAppleMusicCatalog(q)
-      .then((songs) => { if (!cancelled) setWorldSongs(songs); })
-      .catch(() => { if (!cancelled) setWorldError('Worldwide catalogue search is temporarily unavailable.'); })
-      .finally(() => { if (!cancelled) setWorldLoading(false); });
-    return () => { cancelled = true; };
-  }, [q]);
 
   useEffect(() => {
     if (q.length < 2) { setYoutubeVideos([]); setMbRecordings([]); return undefined; }
@@ -107,14 +66,14 @@ export default function Search() {
     return (
       <div className="page stack" style={{ maxWidth: 900 }}>
         <h1 className="display">Search music worldwide</h1>
-        <p className="lead">Search LOOP's catalogue, Apple Music, YouTube and MusicBrainz by song, artist or album.</p>
+        <p className="lead">Search LOOP's catalogue, YouTube music videos and MusicBrainz by song, artist or album.</p>
         <div className="world-discovery-grid">
           {[
             ['Global pop', 'global pop'], ['Bollywood', 'Bollywood hits'], ['K-pop', 'K-pop'], ['Afrobeats', 'Afrobeats'],
             ['Latin', 'Latin pop'], ['Arabic music', 'Arabic pop'], ['Japanese music', 'Japanese pop'], ['Rock classics', 'classic rock'],
           ].map(([label, query]) => <Link key={label} className="world-discovery-tile" to={`/search?q=${encodeURIComponent(query)}`}>{label}<Icon.Arrow /></Link>)}
         </div>
-        <div className="small muted">Worldwide results are matched from supported Apple Music storefronts. Availability and previews vary by country.</div>
+        <div className="small muted">Full-length playback is provided by embeddable YouTube videos.</div>
       </div>
     );
   }
@@ -123,7 +82,7 @@ export default function Search() {
       <div>
         <div className="soft small">Search results</div>
         <h1 className="display">“{q}”</h1>
-        <p className="small muted" style={{ marginTop: 6 }}>Searching LOOP, YouTube, Apple Music and MusicBrainz. YouTube videos can play for their full uploaded duration; Apple samples are usually about 30 seconds.</p>
+        <p className="small muted" style={{ marginTop: 6 }}>Searching LOOP, YouTube and MusicBrainz. YouTube videos play through the official embedded player.</p>
       </div>
 
       <section>
@@ -145,17 +104,6 @@ export default function Search() {
         })}</div>}
         {!youtubeLoading && !youtubeError && youtubeVideos.length === 0 && <div className="small muted">No embeddable YouTube videos found.</div>}
         {!youtubeLoading && !youtubeError && youtubeVideos.length > 0 && visibleYoutubeVideos.length === 0 && <div className="small muted">No videos of two minutes or longer matched. Turn off the filter to see all results.</div>}
-      </section>
-
-      <section>
-        <div className="section-head">
-          <div><h2 className="section-title">Worldwide music</h2><p className="tiny muted">Apple Music provides short samples or its official subscription player. For full-length options, choose a suitable video in YouTube music videos above.</p></div>
-          {worldSongs.length > 0 && <span className="chip">{worldSongs.length} tracks</span>}
-        </div>
-        {worldLoading && <div className="small muted">Searching international catalogues…</div>}
-        {worldError && <div className="small" style={{ color: 'var(--bad)' }}>{worldError}</div>}
-        {worldSongs.length > 0 && <div className="world-track-list">{worldSongs.slice(0, 30).map((song) => <WorldwideTrack key={song.id} song={song} songs={worldSongs} />)}</div>}
-        {!worldLoading && !worldError && worldSongs.length === 0 && <div className="small muted">No worldwide matches found for this search.</div>}
       </section>
 
       <section>

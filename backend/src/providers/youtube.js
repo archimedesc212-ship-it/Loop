@@ -32,7 +32,7 @@ function mapVideo(item, detail = null) {
   return {
     externalId: id,
     sourceUrl: `https://www.youtube.com/watch?v=${id}`,
-    embedUrl: `https://www.youtube.com/embed/${id}?enablejsapi=1`,
+    embedUrl: `https://www.youtube.com/embed/${id}?enablejsapi=1&autoplay=1&playsinline=1`,
     title: sn.title || 'YouTube video',
     channel: sn.channelTitle || null,
     description: sn.description || '',

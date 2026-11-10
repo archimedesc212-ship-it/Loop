@@ -48,7 +48,7 @@ describe('uploaded music catalogue', () => {
   });
   afterAll(() => vi.unstubAllGlobals());
 
-  it('uses the supplied real catalogue records and resolves recordings through Apple Music', async () => {
+  it('uses the supplied real catalogue records and marks catalogue records for YouTube playback', async () => {
     const { demoRequest } = await import('../lib/demoMode');
     const result = await demoRequest('GET', '/recommendations/daily');
     expect(result.songs.length).toBeGreaterThan(0);
@@ -59,7 +59,7 @@ describe('uploaded music catalogue', () => {
     expect(song.language).toBeNull();
     expect(song.durationSec).toBeNull();
     expect(song.playback.playable).toBe(true);
-    expect(song.playback.type).toBe('APPLE_MUSIC_LOOKUP');
+    expect(song.playback.type).toBe('YOUTUBE_LOOKUP');
     expect(song.topic).toBe('sadness');
     expect(result.songs.every((song) => song.title !== 'Afterglow')).toBe(true);
   });

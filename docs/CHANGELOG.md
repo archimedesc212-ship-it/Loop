@@ -101,3 +101,11 @@ rewritten from scratch; every change below extends or corrects the existing code
 ## Documentation
 
 New: ENVIRONMENT, PROVIDERS (integration guide, credentials checklist, step-by-step), DEPLOYMENT (production, upgrades, backup, recovery), STATUS, CHANGELOG, AUDIT. Updated: README, ARCHITECTURE (playback, migrations, folders), DATABASE_DESIGN (migrations, ERD, normalisation, Workbench), API, SECURITY (with known gaps), TESTING, ASSUMPTIONS, PROJECT_REPORT, DATA_DICTIONARY (regenerated).
+
+
+## 2026-11-10 — YouTube-first playback and Now Playing
+- Removed the Apple Music catalogue search and preview playback path from the active frontend.
+- Catalogue-only songs now resolve through the backend YouTube Data API; the API key remains server-side.
+- Replaced the compact player controls with a native LOOP Now Playing strip and wired shuffle, repeat, queue, volume, previous/next, and full-screen player entry.
+- Added a full-screen Now Playing view backed by the same YouTube iframe (avoids starting duplicate audio).
+- Set the example environment to real API mode and enabled YouTube provider configuration; supply `YOUTUBE_API_KEY` in the private `.env` file.

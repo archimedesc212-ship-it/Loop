@@ -25,6 +25,7 @@ const media = require('../services/mediaService');
 const artistSvc = require('../services/artistService');
 const dataExport = require('../services/dataExportService');
 const moodDiary = require('../services/moodDiaryService');
+const lyricsSvc = require('../services/lyricsService');
 const providerSvc = require('../services/providerService');
 const { setSessionCookies, clearSessionCookies } = require('../middleware/auth');
 
@@ -450,4 +451,13 @@ exports.music = {
     const providers = require('../providers');
     res.json(await providers.musicbrainz.coverArt(q(req).mbid));
   },
+};
+
+// ---------------------------------------------------------------- lyrics, private annotations and listening notes
+exports.lyrics = {
+  get: async (req, res) => res.json(await lyricsSvc.get(p(req).id, req.user.id)),
+  save: async (req, res) => res.status(200).json(await lyricsSvc.saveLyrics(p(req).id, req.user.id, b(req))),
+  annotate: async (req, res) => res.status(201).json(await lyricsSvc.addAnnotation(p(req).id, b(req).lineId, req.user.id, b(req).text, b(req).sourceUrl)),
+  deleteAnnotation: async (req, res) => res.json(await lyricsSvc.deleteAnnotation(p(req).annotationId, req.user.id)),
+  saveNote: async (req, res) => res.json(await lyricsSvc.saveNote(p(req).id, req.user.id, b(req).text)),
 };
