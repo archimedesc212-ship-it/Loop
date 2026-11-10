@@ -133,7 +133,7 @@ export function demoRequest(method,path,body){
       )),
     });
   }
-  if(/^\/songs\/\d+$/.test(p))const song=all().find(s=>s.id===Number(p.split('/').pop()))||all()[0];return Promise.resolve(withSongDetails(song));
+  if(/^\/songs\/\d+$/.test(p)){const song=all().find(s=>s.id===Number(p.split('/').pop()))||all()[0];return Promise.resolve(withSongDetails(song));}
   if(/^\/songs\/\d+\/(like|rating)$/.test(p)){
     const id=Number(p.split('/')[2]);if(p.endsWith('/like'))write('likes',body?.liked?[...new Set([...read('likes',[]),id])]:read('likes',[]).filter(x=>x!==id));return Promise.resolve({ok:true});
   }
