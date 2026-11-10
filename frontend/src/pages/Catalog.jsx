@@ -26,7 +26,6 @@ export function SongPage() {
   const genres = Array.isArray(s.genres) ? s.genres : [];
   const moodsDetailed = Array.isArray(s.moodsDetailed) ? s.moodsDetailed : [];
   const segments = Array.isArray(s.segments) ? s.segments : [];
-  const analyses = Array.isArray(s.analyses) ? s.analyses : [];
   const provenance = Array.isArray(s.provenance) ? s.provenance : [];
   const mergedDuplicates = Array.isArray(s.mergedDuplicates) ? s.mergedDuplicates : [];
   const playing = player.isPlaying(s.id);
