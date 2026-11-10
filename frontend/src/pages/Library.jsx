@@ -9,7 +9,7 @@ import { Cover } from '../components/Art';
 import { TrackList } from '../components/Songs';
 import { ErrorState, ListSkeleton, Empty, Modal, Field, PageHead } from '../components/ui';
 import { Play, Plus, X } from '../components/Icons';
-import { ago, longDuration, plural } from '../lib/format';
+import { ago, plural } from '../lib/format';
 
 function Mosaic({ covers, id }) {
   const list = (typeof covers === 'string' ? JSON.parse(covers) : covers) || [];
