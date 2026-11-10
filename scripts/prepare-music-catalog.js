@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* global require, __dirname, process, console, fetch, AbortSignal, Buffer, module */
 'use strict';
 
 // Build the public, metadata-only LOOP music catalogue from the exact CSV supplied
