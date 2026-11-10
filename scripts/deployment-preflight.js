@@ -51,8 +51,13 @@ const apiFunction = read('api/index.js');
 const gitignore = read('.gitignore');
 const hybridDocs = read('docs/DEPLOYMENT_HYBRID.md');
 
-requireCheck(pkg.scripts && pkg.scripts.build === 'npm run build --workspace frontend',
-  'The root build script builds the Vite frontend workspace.');
+const catalogueBuild = read('scripts/prepare-music-catalog.js');
+requireCheck(pkg.scripts && pkg.scripts.build === 'node scripts/prepare-music-catalog.js && npm run build --workspace frontend',
+  'The root build verifies and prepares the supplied music catalogue before building Vite.');
+requireCheck(catalogueBuild.includes('046b8e714bb037b5960429a9a4bdfc205530c81e0617ef39a328307c9f9e1173')
+  && catalogueBuild.includes('lyricsIncluded: false')
+  && catalogueBuild.includes('EXPECTED_RECORDS = 28372'),
+  'The static music catalogue build is checksum-pinned, count-checked and excludes lyrics.');
 requireCheck(pkg.scripts && pkg.scripts.start === 'npm run start --workspace backend',
   'The root start script runs the persistent Express backend workspace.');
 requireCheck(pkg.scripts && pkg.scripts['deploy:check'] === 'node scripts/deployment-preflight.js',
