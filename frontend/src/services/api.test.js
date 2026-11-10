@@ -25,6 +25,20 @@ describe('cookies and CSRF headers', () => {
   });
 });
 
+describe('demo fixtures', () => {
+  it('match the song shape used by the real catalogue API', async () => {
+    const { demoRequest } = await import('../lib/demoMode');
+    const result = await demoRequest('GET', '/recommendations/daily');
+    expect(result.songs.length).toBeGreaterThan(0);
+    for (const song of result.songs) {
+      expect(song.artist.name).toBeTruthy();
+      expect(song.language.name).toBeTruthy();
+      expect(Array.isArray(song.moods)).toBe(true);
+      expect(song.moods.every((mood) => typeof mood === 'string')).toBe(true);
+    }
+  });
+});
+
 describe('request()', () => {
   beforeEach(() => {
   // API transport tests must exercise fetch, not the intentional static-site demo adapter.
