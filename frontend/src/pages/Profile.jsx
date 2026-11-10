@@ -1,5 +1,4 @@
-// Listening Profile + Music Mood Journey + how LOOP models your taste.
-// Every number on this page is computed by a SQL query over your plays.
+// Listening profile. Archive-only mode does not claim playback or listening statistics.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
@@ -30,7 +29,7 @@ export default function Profile() {
   if (profile.error) return <div className="page"><ErrorState error={profile.error} onRetry={profile.reload} /></div>;
   const h = profile.data.headline;
   if (!h || !h.totalPlays) {
-    return <div className="page"><PageHead title="Your listening profile" /><Empty title="No listening yet" action={<Link className="btn primary sm" to="/mood">Pick a mood</Link>}>Play a few songs and this page fills with your real numbers.</Empty></div>;
+    return <div className="page"><PageHead title="Your listening profile" /><Empty title="Listening stats are not available in this archive">The uploaded dataset contains track metadata and audio features, but no playback events or audio streams. LOOP keeps listening statistics empty rather than inventing play counts.</Empty></div>;
   }
   const t = profile.data.recentTrend;
   const fmtBucket = (b) => (period === 'monthly' ? toDate(b).toLocaleDateString('en-IN', { month: 'short' }) : date(b));
