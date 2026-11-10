@@ -18,13 +18,31 @@ const names = [
   ['Open Roads','Mira Vale','Energetic',88,54],['Quiet Rooms','Aarav Sen','Calm',28,97],
   ['Somewhere Soon','Nila','Dreamy',67,84],['New Morning','The Northbound','Happy',96,70],
 ];
-export const demoSongs = names.map((n,i)=>({
-  id:i+1,title:n[0],durationSec:176+i*13,artist:{id:i%4+1,name:n[1]},
-  album:{id:i+1,title:'LOOP Sessions'},cover:colors,coverColor1:colors[0],coverColor2:colors[1],
-  playback:{playable:true,type:'GENERATED_SKETCH',source:'MUSE_SKETCH',demo:true},
-  moods:[{id:demoMoods.find(m=>m.name===n[2]).id,name:n[2],color:demoMoods.find(m=>m.name===n[2]).color}],
-  reasons:[{text:'Matches your selected mood'}],liked:false,myRating:null,
-}));
+export const demoSongs = names.map((n, i) => {
+  const mood = demoMoods.find((item) => item.name === n[2]) || demoMoods[0];
+  return {
+    id: i + 1,
+    title: n[0],
+    durationSec: 176 + i * 13,
+    releaseYear: 2024,
+    explicit: false,
+    artist: { id: i % 4 + 1, name: n[1] },
+    album: { id: i + 1, title: 'LOOP Sessions' },
+    language: { id: 1, name: 'Telugu' },
+    genre: { id: 1, name: 'Indie Pop', color: '#C99AB2' },
+    cover: colors,
+    coverColor1: colors[0],
+    coverColor2: colors[1],
+    playback: { playable: true, type: 'GENERATED_SKETCH', source: 'MUSE_SKETCH', demo: true },
+    moods: [mood.name],
+    moodsDetailed: [{ id: mood.id, name: mood.name, emoji: mood.emoji, color: mood.color, confidence: 0.9 }],
+    credits: [],
+    genres: [{ id: 1, name: 'Indie Pop', color: '#C99AB2' }],
+    reasons: [{ text: 'Matches your selected mood' }],
+    liked: false,
+    myRating: null,
+  };
+});
 export const demoGenres = ['Indie Pop','Ambient','Alternative','Electronic','Acoustic','Film Score','R&B','Lo-fi'].map((name,i)=>({id:i+1,name,color:['#C99AB2','#9A9ACB','#D2A46F'][i%3],songs:18+i*7,plays:900-i*53}));
 export const demoContexts = [
   {code:'STUDY',name:'Study',emoji:'📚'},{code:'WORKOUT',name:'Workout',emoji:'⚡'},
@@ -51,7 +69,12 @@ export function demoRequest(method,path,body){
   if(p==='/recommendations/mood'){
     const chosen=(body?.moodIds||[]).map(id=>demoMoods.find(m=>m.id===id)).filter(Boolean);
     const term=(body?.text||'').toLowerCase();
-    const picks=all().filter(s=>!chosen.length&&!term||chosen.some(m=>s.moods.some(x=>x.id===m.id))||s.title.toLowerCase().includes(term)||s.moods[0].name.toLowerCase().includes(term));
+    const picks = all().filter((song) => (
+      (!chosen.length && !term)
+      || chosen.some((mood) => song.moods.includes(mood.name))
+      || song.title.toLowerCase().includes(term)
+      || song.moods.some((mood) => mood.toLowerCase().includes(term))
+    ));
     const moods=chosen.length?chosen:[demoMoods.find(m=>m.name==='Calm')];
     return Promise.resolve({...result(picks.length?picks:all().slice(0,5)),interpretation:{moods:moods.map(m=>({...m,confidence:0.9})),summary:'A sound shaped around your mood'},explanation:'Demo recommendations based on the selected mood.'});
   }
@@ -72,7 +95,14 @@ export function demoRequest(method,path,body){
   if(p==='/insights/journey')return Promise.resolve([]);
   if(p==='/insights/preferences')return Promise.resolve({signals:[],summary:'Your demo listening profile'});
   if(p==='/incognito')return Promise.resolve({active:false});
-  if(p==='/search') {const term=(q.get('q')||'').toLowerCase();return Promise.resolve({songs:all().filter(s=>(s.title+' '+s.artist.name+' '+s.moods[0].name).toLowerCase().includes(term))});}
+  if (p === '/search') {
+    const term = (q.get('q') || '').toLowerCase();
+    return Promise.resolve({
+      songs: all().filter((song) => (
+        `${song.title} ${song.artist.name} ${song.moods.join(' ')}`.toLowerCase().includes(term)
+      )),
+    });
+  }
   if(/^\/songs\/\d+$/.test(p))return Promise.resolve(all().find(s=>s.id===Number(p.split('/').pop()))||all()[0]);
   if(/^\/songs\/\d+\/(like|rating)$/.test(p)){
     const id=Number(p.split('/')[2]);if(p.endsWith('/like'))write('likes',body?.liked?[...new Set([...read('likes',[]),id])]:read('likes',[]).filter(x=>x!==id));return Promise.resolve({ok:true});
