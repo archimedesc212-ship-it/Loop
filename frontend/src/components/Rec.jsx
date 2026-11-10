@@ -44,13 +44,15 @@ export function SaveListButton({ list, defaultName }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(defaultName || list.title || 'My mix');
   const [busy, setBusy] = useState(false);
-  if (!list.batchId && list.smartType !== 'MOST_REPLAYED') return null;
+  if (!list.batchId && list.smartType !== 'MOST_REPLAYED' && !list.songs?.length) return null;
   const save = async () => {
     setBusy(true);
     try {
       const p = list.batchId
         ? await api.saveBatch({ batchId: list.batchId, name: name.trim(), smartType: list.smartType })
-        : await api.saveSmart(list.smartType, name.trim());
+        : list.smartType === 'MOST_REPLAYED'
+          ? await api.saveSmart(list.smartType, name.trim())
+          : await api.createPlaylist({ name: name.trim(), songIds: list.songs.map((song) => song.id) });
       toast.success(`Saved “${p.name}” · ${p.songCount} songs`);
       setOpen(false);
       nav(`/playlist/${p.id}`);
@@ -63,7 +65,7 @@ export function SaveListButton({ list, defaultName }) {
         <Modal title="Save as playlist" onClose={() => setOpen(false)}>
           <div className="stack">
             <Field label="Name"><input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} /></Field>
-            <p className="small muted">The songs are saved in their ranked order. The list keeps a link to the recommendation it came from.</p>
+            <p className="small muted">The real catalogue records are saved in their current order. Audio is not included.</p>
             <div className="row" style={{ justifyContent: 'flex-end' }}>
               <button className="btn ghost" onClick={() => setOpen(false)}>Cancel</button>
               <button className="btn primary" onClick={save} disabled={busy || !name.trim()}>{busy ? 'Saving…' : 'Save playlist'}</button>
