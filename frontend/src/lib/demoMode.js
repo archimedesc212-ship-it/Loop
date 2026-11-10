@@ -425,7 +425,7 @@ export async function demoRequest(method, path, body) {
     return { deleted: true, entryId };
   }
   if (p === '/me/settings' && method === 'PATCH') return { ...user, ...body, languages: [], region: null };
-  if (p === '/search') {
+  if (p === '/search' || p === '/search/suggest') {
     const term = norm(q.get('q'));
     const words = term.split(' ').filter(Boolean);
     const matched = term ? all.filter((song) => {
@@ -436,6 +436,9 @@ export async function demoRequest(method, path, body) {
     const artistHits = catalogue.artists.filter((artist) => words.every((word) => norm(artist.name).includes(word))).slice(0, 20);
     const moodHits = MOODS.filter((mood) => words.some((word) => norm(mood.name).includes(word)));
     const genreHits = catalogue.genres.filter((genre) => words.some((word) => norm(genre.name).includes(word)));
+    if (p === '/search/suggest') return {
+      songs: matched.slice(0, 5).map(withPersonalState), artists: artistHits.slice(0, 3), albums: [],
+    };
     return {
       total: matched.length, songs: matched.slice(0, limit).map(withPersonalState),
       artists: artistHits, albums: [], moods: moodHits, genres: genreHits, languages: [],

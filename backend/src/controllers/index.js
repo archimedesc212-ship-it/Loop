@@ -152,6 +152,10 @@ exports.catalog = {
   languages: async (req, res) => res.json(await catalog.languages()),
   regions: async (req, res) => res.json(await catalog.regions()),
   search: async (req, res) => res.json(await catalog.search(req.user, q(req).q)),
+  searchSuggest: async (req, res) => {
+    const result = await catalog.search(req.user, q(req).q, { recordHistory: false });
+    res.json({ songs: result.songs.slice(0, 5), artists: result.artists.slice(0, 3), albums: result.albums.slice(0, 2) });
+  },
   film: async (req, res) => res.json(await catalog.filmDetail(req.user, p(req).id)),
   language: async (req, res) => res.json(await catalog.languageDetail(req.user, p(req).id)),
   trending: async (req, res) => res.json(await catalog.trending(req.user, q(req))),

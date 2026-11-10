@@ -8,6 +8,7 @@ import { useToast } from '../hooks/useToast';
 import { useOnline } from '../hooks/useOnline';
 import { api } from '../services/api';
 import { duration } from '../lib/format';
+import { buildSearchSuggestions } from '../lib/searchSuggestions';
 import { formatSleepRemaining } from '../lib/sleepTimer';
 import { registerMoodColors, LikeButton } from './Songs';
 
@@ -98,15 +99,121 @@ function TopBar({ onToggleSidebar, sidebarCollapsed }) {
   const nav = useNavigate();
   const loc = useLocation();
   const [q, setQ] = useState(new URLSearchParams(loc.search).get('q') || '');
-  useEffect(() => { if (loc.pathname !== '/search') setQ(''); }, [loc.pathname]);
-  const submit = (e) => { e.preventDefault(); if (q.trim().length >= 2) nav(`/search?q=${encodeURIComponent(q.trim())}`); };
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const requestId = useRef(0);
   const { user } = useAuth();
+
+  useEffect(() => {
+    setQ(new URLSearchParams(loc.search).get('q') || '');
+    setSuggestionsOpen(false);
+  }, [loc.pathname, loc.search]);
+
+  // Autocomplete uses LOOP's own catalogue only. Provider searches (especially
+  // YouTube Data API) run after submit, avoiding a quota-consuming call per key.
+  useEffect(() => {
+    const term = q.trim();
+    const token = ++requestId.current;
+    if (term.length < 2) {
+      setSuggestions([]);
+      setSuggestionsLoading(false);
+      setActiveSuggestion(-1);
+      return undefined;
+    }
+    setSuggestionsLoading(true);
+    const timer = window.setTimeout(async () => {
+      try {
+        const result = await api.searchSuggestions(term);
+        if (requestId.current !== token) return;
+        setSuggestions(buildSearchSuggestions(result));
+        setActiveSuggestion(-1);
+      } catch {
+        if (requestId.current === token) setSuggestions([]);
+      } finally {
+        if (requestId.current === token) setSuggestionsLoading(false);
+      }
+    }, 260);
+    return () => {
+      window.clearTimeout(timer);
+      requestId.current += 1;
+    };
+  }, [q]);
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (q.trim().length >= 2) {
+      setSuggestionsOpen(false);
+      nav(`/search?q=${encodeURIComponent(q.trim())}`);
+    }
+  };
+  const chooseSuggestion = (item) => {
+    setQ(item.query);
+    setSuggestionsOpen(false);
+    setActiveSuggestion(-1);
+    nav(`/search?q=${encodeURIComponent(item.query)}`);
+  };
+  const onSearchKeyDown = (e) => {
+    if (e.key === 'Escape') { setSuggestionsOpen(false); setActiveSuggestion(-1); return; }
+    if (!suggestionsOpen || !suggestions.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveSuggestion((index) => (index + 1) % suggestions.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveSuggestion((index) => (index <= 0 ? suggestions.length - 1 : index - 1));
+    } else if (e.key === 'Enter' && activeSuggestion >= 0) {
+      e.preventDefault();
+      chooseSuggestion(suggestions[activeSuggestion]);
+    }
+  };
+
   return (
     <div className="topbar">
       <button type="button" className="icon-btn sidebar-toggle hide-sm" onClick={onToggleSidebar} aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-pressed={sidebarCollapsed} title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}><Icon.Menu /></button>
-      <form className="search-box" onSubmit={submit} role="search">
-        <Icon.Search />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search songs, artists, albums worldwide…" aria-label="Search" />
+      <form className="search-box" onSubmit={submit} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setSuggestionsOpen(false); }} role="search" autoComplete="off">
+        <Icon.Search aria-hidden="true" />
+        <input
+          value={q}
+          onChange={(e) => { setQ(e.target.value); setSuggestionsOpen(true); }}
+          onFocus={() => setSuggestionsOpen(true)}
+          onKeyDown={onSearchKeyDown}
+          placeholder="Search songs, artists, albums worldwide…"
+          aria-label="Search songs, artists and albums"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={suggestionsOpen && q.trim().length >= 2}
+          aria-controls="loop-search-suggestions"
+          aria-activedescendant={activeSuggestion >= 0 ? `loop-search-option-${activeSuggestion}` : undefined}
+        />
+        {suggestionsOpen && q.trim().length >= 2 && (
+          <div className="search-suggestions" id="loop-search-suggestions" role="listbox" aria-label="Search suggestions">
+            {suggestionsLoading && <div className="search-suggestion-status" role="status">Finding songs and artists…</div>}
+            {!suggestionsLoading && suggestions.length === 0 && <div className="search-suggestion-status">No catalogue suggestions. Press Enter to search worldwide.</div>}
+            {suggestions.map((item, index) => (
+              <button
+                type="button"
+                role="option"
+                aria-selected={activeSuggestion === index}
+                id={`loop-search-option-${index}`}
+                key={item.key}
+                className={`search-suggestion${activeSuggestion === index ? ' active' : ''}`}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => chooseSuggestion(item)}
+              >
+                <span className="search-suggestion-icon" aria-hidden="true">{item.kind === 'Song' ? '♫' : item.kind === 'Artist' ? '♙' : '▤'}</span>
+                <span className="search-suggestion-copy"><strong>{item.title}</strong><small>{item.detail}</small></span>
+                <span className="search-suggestion-kind">{item.kind}</span>
+              </button>
+            ))}
+            <button type="submit" className="search-suggestion search-suggestion-all">
+              <span className="search-suggestion-icon" aria-hidden="true">⌕</span>
+              <span className="search-suggestion-copy"><strong>Search all music sources</strong><small>YouTube · Apple Music · LOOP</small></span>
+              <span className="search-suggestion-kind">Enter</span>
+            </button>
+          </div>
+        )}
       </form>
       <div className="grow" />
       <PrivateToggle />
@@ -258,7 +365,7 @@ function PlayerBar() {
             loading="eager"
             referrerPolicy="strict-origin-when-cross-origin"
           />
-          <p className="tiny muted">{p.media?.type === 'YOUTUBE_EMBED' ? 'Playback is provided by YouTube’s official embedded player. Some videos may be unavailable for embedding.' : 'Full tracks may require an Apple Music subscription. Short previews play directly in LOOP when Apple provides one.'}</p>
+          <p className="tiny muted">{p.media?.type === 'YOUTUBE_EMBED' ? <>Playback is provided by YouTube’s official embedded player. Some videos may be unavailable for embedding. {p.media.watchUrl && <a href={p.media.watchUrl} target="_blank" rel="noreferrer" className="player-provider-fallback">Open directly on YouTube</a>}</> : <>Full tracks may require an Apple Music subscription. Short previews play directly in LOOP when Apple provides one. {p.media?.storeUrl && <a href={p.media.storeUrl} target="_blank" rel="noreferrer" className="player-provider-fallback">Open on Apple Music</a>}</>}</p>
         </section>
       )}
 

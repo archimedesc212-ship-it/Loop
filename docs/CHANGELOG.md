@@ -1,5 +1,14 @@
 # Changelog — finalisation pass (October 2026)
 
+## Search clarity, song suggestions and full-video duration (10 November 2026)
+
+- Fixed the Spotify-dark search field contrast: entered text, caret, placeholder and icon now remain visible on the dark surface.
+- Added debounced, keyboard-accessible autocomplete for LOOP catalogue songs, artists and albums. The dedicated `/api/search/suggest` endpoint does not write partial keystrokes to search history; the demo catalogue supports the same response shape.
+- Added actual YouTube video duration and current embedding-permission enrichment with `videos.list`; search results remain available if the optional enrichment call fails.
+- YouTube search now shows the actual video duration, offers a 2+ minute filter to hide many short clips, and no longer inserts a fabricated four-minute duration into the player queue.
+- Apple Music cards identify their short samples explicitly and include a Full version route that searches YouTube for the same song and artist. The official player panel now includes provider fallback links.
+- See [SEARCH_AND_FULL_LENGTH_PLAYBACK.md](SEARCH_AND_FULL_LENGTH_PLAYBACK.md).
+
 ## Global music search, in-page playback and Spotify-style UI (10 November 2026)
 
 - Global Search now combines the curated LOOP archive with Apple's public catalogue across the listener's locale and multiple international storefronts. Results are deduplicated by Apple track ID and show provider artwork when available.

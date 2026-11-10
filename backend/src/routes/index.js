@@ -137,6 +137,7 @@ router.get('/languages', h(c.catalog.languages));
 router.get('/regions', h(c.catalog.regions));
 router.get('/films/:id', id, h(c.catalog.film));
 router.get('/languages/:id', id, h(c.catalog.language));
+router.get('/search/suggest', v({ q: r.str(2, 80) }, 'query'), h(c.catalog.searchSuggest));
 router.get('/search', v({ q: r.str(1, 80) }, 'query'), h(c.catalog.search));
 router.get('/trending', v({
   window: opt(r.oneOf(['24H', '7D', '30D']), '7D'), entity: opt(r.oneOf(['SONG', 'ARTIST', 'GENRE', 'MOOD', 'LANGUAGE']), 'SONG'),

@@ -51,6 +51,10 @@ The listener interface uses LOOP's own Spotify-inspired dark visual system: blac
 
 The curated LOOP roadmap contains 102 music-focused features across 12 categories. Eighteen low-fit or unsupported proposals were removed from the active scope. See [docs/LOOP_FEATURE_ROADMAP.md](docs/LOOP_FEATURE_ROADMAP.md) and [docs/LOOP_FEATURE_SCOPE_REVIEW_2026-11-10.md](docs/LOOP_FEATURE_SCOPE_REVIEW_2026-11-10.md). This is a scoped plan, not a claim that every retained feature is already implemented.
 
+## Search and full-length playback
+
+Search autocomplete, high-contrast search input, and provider-specific playback limits are documented in [docs/SEARCH_AND_FULL_LENGTH_PLAYBACK.md](docs/SEARCH_AND_FULL_LENGTH_PLAYBACK.md).
+
 ## Contents
 
 - [Features](#features)

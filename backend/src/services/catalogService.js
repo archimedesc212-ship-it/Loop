@@ -176,7 +176,7 @@ const FUZZY_MIN = 0.6;
  * moods, genres and languages. Uses ngram FULLTEXT indexes so partial and
  * slightly misspelled words still match ("venela" finds "Vennela").
  */
-async function search(user, q) {
+async function search(user, q, { recordHistory = true } = {}) {
   const norm = normalise(q);
   if (norm.length < 2) throw ApiError.badRequest('Type at least 2 characters.');
   const like = `%${norm.replace(/[%_\\]/g, '\\$&')}%`;
@@ -246,7 +246,7 @@ async function search(user, q) {
 
   const songs = songRows.filter((r) => r.by_like || r.by_other || coverage(norm, r.title) >= FUZZY_MIN).slice(0, 24);
   const total = songs.length + artists.length + albums.length + moodsHit.length + genresHit.length + langs.length;
-  if (!user.incognitoId) {
+  if (recordHistory && !user.incognitoId) {
     await query('INSERT INTO search_history (user_id, query_text, normalized_query, result_count) VALUES (?, ?, ?, ?)',
       [user.id, q.slice(0, 120), norm.slice(0, 120), Math.min(total, 65535)]);
   }

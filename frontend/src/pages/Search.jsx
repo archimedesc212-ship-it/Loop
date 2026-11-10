@@ -22,13 +22,24 @@ function WorldwideTrack({ song, songs }) {
       <div className="world-track-copy">
         <strong title={song.title}>{song.title}</strong>
         <span>{song.artist.name} · {song.album.title}</span>
-        <small>{song.appleMusic.storefront?.toUpperCase()} · {song.appleMusic.previewUri ? '30-second preview' : 'Apple Music embedded player'}</small>
+        <small>{song.appleMusic.storefront?.toUpperCase()} · {song.appleMusic.previewUri ? '30-second sample' : 'Apple Music player · full track may require subscription'}</small>
       </div>
-      <button className="world-play" onClick={start} aria-label={`${playing ? 'Pause' : 'Play'} ${song.title}`}>
-        {playing ? <Icon.Pause /> : <Icon.Play />}
-      </button>
+      <div className="world-track-actions">
+        <Link className="world-full-version" to={`/search?q=${encodeURIComponent(`${song.title} ${song.artist.name} official audio`)}`} title={`Find full-length video options for ${song.title}`}>Full version</Link>
+        <button className="world-play" onClick={start} aria-label={`${playing ? 'Pause' : 'Play preview of'} ${song.title}`} title={song.appleMusic.previewUri ? 'Play 30-second Apple Music sample' : 'Open Apple Music player'}>
+          {playing ? <Icon.Pause /> : <Icon.Play />}
+        </button>
+      </div>
     </article>
   );
+}
+
+function formatVideoDuration(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return 'Duration unavailable';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return hours ? `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}` : `${minutes}:${String(secs).padStart(2, '0')}`;
 }
 
 function YouTubeSearchResult({ video, song, queue }) {
@@ -39,7 +50,7 @@ function YouTubeSearchResult({ video, song, queue }) {
   return (
     <article className={`world-track${current ? ' playing' : ''}`}>
       {video.thumbnailUrl ? <img className="world-artwork" src={video.thumbnailUrl} alt="" loading="lazy" /> : <Cover colors={['#302b63', '#24243e']} seed={video.externalId.length} size={54} />}
-      <div className="world-track-copy"><strong title={video.title}>{video.title}</strong><span>{video.channel || 'YouTube'}</span><small>YouTube embedded playback · <a href={video.sourceUrl} target="_blank" rel="noreferrer">Open video</a></small></div>
+      <div className="world-track-copy"><strong title={video.title}>{video.title}</strong><span>{video.channel || 'YouTube'}</span><small>{formatVideoDuration(video.durationSec)} · Official YouTube player · <a href={video.sourceUrl} target="_blank" rel="noreferrer">Open video</a></small></div>
       <button className="world-play" onClick={start} aria-label={`${playing ? 'Pause' : 'Play'} ${video.title}`}>{playing ? <Icon.Pause /> : <Icon.Play />}</button>
     </article>
   );
@@ -55,6 +66,10 @@ export default function Search() {
   const [youtubeVideos, setYoutubeVideos] = useState([]);
   const [youtubeLoading, setYoutubeLoading] = useState(false);
   const [youtubeError, setYoutubeError] = useState('');
+  const [longerVideosOnly, setLongerVideosOnly] = useState(false);
+  const visibleYoutubeVideos = longerVideosOnly
+    ? youtubeVideos.filter((video) => Number(video.durationSec) >= 120)
+    : youtubeVideos;
   const [mbRecordings, setMbRecordings] = useState([]);
   const [mbLoading, setMbLoading] = useState(false);
   const [mbError, setMbError] = useState('');
@@ -108,28 +123,20 @@ export default function Search() {
       <div>
         <div className="soft small">Search results</div>
         <h1 className="display">“{q}”</h1>
-        <p className="small muted" style={{ marginTop: 6 }}>Searching LOOP, Apple Music, YouTube and MusicBrainz.</p>
+        <p className="small muted" style={{ marginTop: 6 }}>Searching LOOP, YouTube, Apple Music and MusicBrainz. YouTube videos can play for their full uploaded duration; Apple samples are usually about 30 seconds.</p>
       </div>
 
       <section>
         <div className="section-head">
-          <div><h2 className="section-title">Worldwide music</h2><p className="tiny muted">Official Apple Music catalogue matches · playable previews stay inside LOOP</p></div>
-          {worldSongs.length > 0 && <span className="chip">{worldSongs.length} tracks</span>}
+          <div><h2 className="section-title">YouTube music videos</h2><p className="tiny muted">Actual uploaded video durations · official YouTube player stays inside LOOP. Longer videos may contain the full track; check the source video.</p></div>
+          <button type="button" className={`btn sm${longerVideosOnly ? ' primary' : ' ghost'}`} aria-pressed={longerVideosOnly} onClick={() => setLongerVideosOnly((value) => !value)}> {longerVideosOnly ? 'Showing 2+ min' : 'Filter 2+ min'} </button>
         </div>
-        {worldLoading && <div className="small muted">Searching international catalogues…</div>}
-        {worldError && <div className="small" style={{ color: 'var(--bad)' }}>{worldError}</div>}
-        {worldSongs.length > 0 && <div className="world-track-list">{worldSongs.slice(0, 30).map((song) => <WorldwideTrack key={song.id} song={song} songs={worldSongs} />)}</div>}
-        {!worldLoading && !worldError && worldSongs.length === 0 && <div className="small muted">No worldwide matches found for this search.</div>}
-      </section>
-
-      <section>
-        <div className="section-head"><div><h2 className="section-title">YouTube music videos</h2><p className="tiny muted">Embeddable videos · official YouTube player stays inside LOOP</p></div></div>
         {youtubeLoading && <div className="small muted">Searching YouTube…</div>}
         {youtubeError && <div className="small muted">{youtubeError} Check YOUTUBE_ENABLED and the backend API key.</div>}
-        {youtubeVideos.length > 0 && <div className="world-track-list">{youtubeVideos.map((video) => {
-          const queue = youtubeVideos.map((item) => ({
+        {visibleYoutubeVideos.length > 0 && <div className="world-track-list">{visibleYoutubeVideos.map((video) => {
+          const queue = visibleYoutubeVideos.map((item) => ({
             id: `yt-${item.externalId}`, title: item.title, artist: { name: item.channel || 'YouTube' },
-            album: { title: 'YouTube video' }, durationSec: 240, artworkUrl: item.thumbnailUrl,
+            album: { title: 'YouTube video' }, durationSec: item.durationSec || 0, artworkUrl: item.thumbnailUrl,
             cover: ['#302b63', '#24243e'], playback: { playable: true, type: 'YOUTUBE_EMBED' },
             youtube: { embedUrl: item.embedUrl, watchUrl: item.sourceUrl },
           }));
@@ -137,6 +144,18 @@ export default function Search() {
           return <YouTubeSearchResult key={video.externalId} video={video} song={song} queue={queue} />;
         })}</div>}
         {!youtubeLoading && !youtubeError && youtubeVideos.length === 0 && <div className="small muted">No embeddable YouTube videos found.</div>}
+        {!youtubeLoading && !youtubeError && youtubeVideos.length > 0 && visibleYoutubeVideos.length === 0 && <div className="small muted">No videos of two minutes or longer matched. Turn off the filter to see all results.</div>}
+      </section>
+
+      <section>
+        <div className="section-head">
+          <div><h2 className="section-title">Worldwide music</h2><p className="tiny muted">Apple Music provides short samples or its official subscription player. For full-length options, choose a suitable video in YouTube music videos above.</p></div>
+          {worldSongs.length > 0 && <span className="chip">{worldSongs.length} tracks</span>}
+        </div>
+        {worldLoading && <div className="small muted">Searching international catalogues…</div>}
+        {worldError && <div className="small" style={{ color: 'var(--bad)' }}>{worldError}</div>}
+        {worldSongs.length > 0 && <div className="world-track-list">{worldSongs.slice(0, 30).map((song) => <WorldwideTrack key={song.id} song={song} songs={worldSongs} />)}</div>}
+        {!worldLoading && !worldError && worldSongs.length === 0 && <div className="small muted">No worldwide matches found for this search.</div>}
       </section>
 
       <section>

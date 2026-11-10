@@ -14,9 +14,19 @@ function assertReady() {
   if (s.state === 'disabled') throw new ProviderError(CODE, 'DISABLED', 'YouTube Data API is disabled (YOUTUBE_ENABLED is not "true").');
   if (s.state !== 'ready') throw new ProviderError(CODE, 'MISCONFIGURED', `YouTube Data API needs ${s.missing.join(', ')}.`);
 }
-function mapVideo(item) {
+function parseIso8601Duration(value) {
+  if (typeof value !== 'string') return null;
+  const match = value.match(/^P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/);
+  if (!match) return null;
+  const [, days = '0', hours = '0', minutes = '0', seconds = '0'] = match;
+  const total = Number(days) * 86400 + Number(hours) * 3600 + Number(minutes) * 60 + Number(seconds);
+  return Number.isSafeInteger(total) && total >= 0 ? total : null;
+}
+
+function mapVideo(item, detail = null) {
   const id = item && item.id && item.id.videoId;
   if (!id || !/^[A-Za-z0-9_-]{6,20}$/.test(id)) return null;
+  if (detail?.status?.embeddable === false) return null;
   const sn = item.snippet || {};
   const thumbnail = sn.thumbnails && (sn.thumbnails.high || sn.thumbnails.medium || sn.thumbnails.default);
   return {
@@ -28,6 +38,8 @@ function mapVideo(item) {
     description: sn.description || '',
     publishedAt: sn.publishedAt || null,
     thumbnailUrl: thumbnail?.url || null,
+    durationSec: parseIso8601Duration(detail?.contentDetails?.duration),
+    embeddable: detail?.status?.embeddable ?? true,
     playback: { playable: true, type: 'YOUTUBE_EMBED', label: 'YouTube embedded player' },
   };
 }
@@ -44,6 +56,22 @@ async function searchVideos({ q, max = 10, fetchImpl } = {}) {
     timeoutMs: cfg.timeoutMs, retries: cfg.retries, minIntervalMs: c.minIntervalMs, fetchImpl,
   });
   if (!body || !Array.isArray(body.items)) throw new ProviderError(CODE, 'BAD_RESPONSE', 'YouTube response has no "items" list');
-  return body.items.map(mapVideo).filter(Boolean);
+  const ids = body.items.map((item) => item?.id?.videoId).filter((id) => typeof id === 'string' && /^[A-Za-z0-9_-]{6,20}$/.test(id));
+  let details = new Map();
+  if (ids.length) {
+    const detailParams = new URLSearchParams({ part: 'contentDetails,status', id: ids.join(','), key: c.apiKey });
+    try {
+      // videos.list is a low-cost lookup that gives LOOP the real uploaded
+      // duration and current embed permission. Search results remain usable if
+      // this optional enrichment call is unavailable.
+      const detailBody = await requestJson(CODE, `${c.baseUrl}/videos?${detailParams}`, {
+        timeoutMs: Math.min(cfg.timeoutMs, 5000), retries: 0, minIntervalMs: c.minIntervalMs, fetchImpl,
+      });
+      if (Array.isArray(detailBody?.items)) {
+        details = new Map(detailBody.items.map((item) => [item.id, item]));
+      }
+    } catch { /* Keep search results; duration will be shown as unavailable. */ }
+  }
+  return body.items.map((item) => mapVideo(item, details.get(item?.id?.videoId))).filter(Boolean);
 }
-module.exports = { code: CODE, check, searchVideos, mapVideo };
+module.exports = { code: CODE, check, searchVideos, mapVideo, parseIso8601Duration };

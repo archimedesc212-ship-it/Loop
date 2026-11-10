@@ -63,7 +63,7 @@ export default function Home() {
     if (!featuredVideo) return;
     const queue = featuredVideos.map((video) => ({
       id: `yt-${video.externalId}`, title: video.title, artist: { name: video.channel || 'YouTube' },
-      album: { title: 'Featured videos' }, durationSec: 240, artworkUrl: video.thumbnailUrl,
+      album: { title: 'Featured videos' }, durationSec: video.durationSec || 0, artworkUrl: video.thumbnailUrl,
       cover: ['#263d38', '#1a2228'], playback: { playable: true, type: 'YOUTUBE_EMBED' },
       youtube: { embedUrl: video.embedUrl, watchUrl: video.sourceUrl },
     }));
