@@ -16,6 +16,7 @@ import { api } from '../services/api';
 import { createSketchPlayer } from '../lib/sketch';
 import { sleepFadeFactor } from '../lib/sleepTimer';
 import { useToast } from './useToast';
+import { searchYouTubeBrowser } from '../lib/youtubeBrowser';
 
 const PlayerCtx = createContext(null);
 const SPEED_KEY = 'muse.demoSpeed';
@@ -126,11 +127,24 @@ export function PlayerProvider({ children }) {
       // Resolve catalogue-only tracks through the server-side YouTube Data API.
       // The API key stays on the backend; playback uses YouTube's official iframe.
       if (song.playback?.type === 'YOUTUBE_LOOKUP') {
-        const result = await api.youtubeSearch(`${song.title} ${song.artist?.name || ''} official audio`, 5);
-        const video = (result.videos || []).find((item) => item.embedUrl && item.embeddable !== false);
+        const query = `${song.title} ${song.artist?.name || ''} official audio`;
+        let videos = [];
+        try {
+          const result = await api.youtubeSearch(query, 5);
+          videos = result?.videos || [];
+        } catch { /* database-free Vercel uses the optional browser API key below */ }
+        if (!videos.length) {
+          try { videos = await searchYouTubeBrowser(query, 5); } catch (searchError) {
+            console.warn('LOOP YouTube search fallback:', searchError);
+          }
+        }
+        const video = videos.find((item) => item.embedUrl && item.embeddable !== false);
         if (!video) {
           setStatus('idle');
-          toast.info(`No embeddable YouTube result was found for “${song.title}”.`);
+          setMedia({ type: 'YOUTUBE_SEARCH', label: 'YouTube search', watchUrl: song.recordingSearchUrl || `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, trackName: song.title, artistName: song.artist?.name || '' });
+          toast.info(import.meta.env.VITE_YOUTUBE_API_KEY
+            ? `No embeddable YouTube upload was found for “${song.title}”.`
+            : 'Add VITE_YOUTUBE_API_KEY in Vercel to enable embedded song playback in database-free mode.');
           return;
         }
         handle.current = null;

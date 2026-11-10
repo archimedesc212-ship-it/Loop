@@ -8,6 +8,7 @@ import { MoodTiles, FeelInput, HERO_MOODS } from '../components/Rec';
 import { ShelfSkeleton, Empty, ErrorState } from '../components/ui';
 import { Arrow, Prev, Next, Spark, Play } from '../components/Icons';
 import { usePlayer } from '../hooks/usePlayer';
+import { searchYouTubeBrowser } from '../lib/youtubeBrowser';
 
 function Shelf({ title, sub, to, state, origin = 'HOME' }) {
   const { data, error, loading, reload } = state;
@@ -48,6 +49,7 @@ export default function Home() {
   useEffect(() => {
     let active = true;
     api.youtubeSearch('global music hits official music video', 8)
+      .catch(() => searchYouTubeBrowser('global music hits official music video', 8).then((videos) => ({ videos })))
       .then((result) => {
         if (!active) return;
         const videos = (result?.videos || []).filter((video) => video.thumbnailUrl && video.externalId);

@@ -29,3 +29,13 @@ configured the Express API and database.
 User session data is now treated as nullable during initial load. Components
 that inspect private/incognito state no longer dereference `user` before the
 guest/demo session is available.
+
+## Embedded YouTube playback in database-free mode (V8 patch)
+
+For Vercel deployments using the browser-only catalogue, set `VITE_YOUTUBE_API_KEY`
+to a Google Cloud API key with **YouTube Data API v3** enabled. Restrict the key
+to the YouTube Data API and HTTP referrers for your deployed domain(s). This
+variable is bundled into browser code, so it is public; never use an unrestricted
+server credential here. Redeploy after adding it. Without this key, LOOP can show
+catalogue metadata but cannot resolve a YouTube video ID for the embedded player.
+LOOP uses YouTube's official iframe embed and does not extract or proxy audio.
