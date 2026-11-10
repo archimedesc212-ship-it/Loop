@@ -437,6 +437,10 @@ pre.plan { margin: 0; padding: 12px; border-radius: 10px; background: var(--bg-2
 .btn.on { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
 
 .player .right { position: relative; }
+.sleep-control { position: relative; }
+.sleep-panel { position: absolute; right: 0; bottom: calc(100% + 12px); width: min(270px, calc(100vw - 28px)); padding: 14px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); box-shadow: 0 18px 50px rgba(0,0,0,.38); z-index: 45; }
+.sleep-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.sleep-options .btn { justify-content: center; padding-inline: 5px; }
 .player input.volume { width: 96px; accent-color: var(--accent); }
 .icon-btn .badge-count { position: absolute; transform: translate(11px, -10px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--surface-3); color: var(--text-2); font-size: 0.62rem; line-height: 16px; text-align: center; }
 .icon-btn { position: relative; }
@@ -506,3 +510,22 @@ pre.plan { margin: 0; padding: 12px; border-radius: 10px; background: var(--bg-2
   .trm-item { flex-wrap: wrap; }
   .trm-score { min-width: 0; flex: 1 1 100%; order: 3; }
 }
+
+@media (max-width: 780px) {
+  .schema-explorer-grid { grid-template-columns: 1fr !important; }
+}
+
+/* Playlist quality summary */
+.playlist-health { border: 1px solid var(--line); }
+.playlist-health-score { display: flex; align-items: baseline; gap: 7px; }
+.playlist-health-score strong { font-size: 1.9rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.playlist-health-track { height: 8px; overflow: hidden; border-radius: 999px; background: var(--surface-2); }
+.playlist-health-track > span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width 180ms ease; }
+.playlist-health-issues { margin: 0; padding-left: 20px; display: grid; gap: 5px; }
+.session-device { padding-top: 9px; border-top: 1px solid var(--line); }
+.permission-matrix { min-width: 720px; }
+.permission-cell { text-align: center; font-size: 1.05rem; }
+.permission-yes { color: var(--good); font-weight: 800; }
+.pill { display: inline-flex; align-items: center; border: 1px solid var(--line-2); border-radius: 999px; padding: 2px 8px; color: var(--text-2); background: var(--surface-2); font-size: 0.72rem; white-space: nowrap; }
+.pill.success { color: var(--good); border-color: color-mix(in srgb, var(--good), transparent 65%); }
+.pill.warning { color: var(--warn); border-color: color-mix(in srgb, var(--warn), transparent 65%); }

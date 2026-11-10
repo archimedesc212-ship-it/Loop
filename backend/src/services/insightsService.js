@@ -71,6 +71,105 @@ async function activity(userId) {
   return { daily, heatmap, weekdays, genres, languages, contexts };
 }
 
+
+/** Per-listener skip analysis. Uses only the caller's persisted listening rows. */
+/** Daily listening activity combined with a user's optional private diary mood. */
+async function calendar(userId, days = 365) {
+  const windowDays = Math.max(1, Math.min(365, Number(days) || 365));
+  return query(
+    `WITH RECURSIVE calendar AS (
+       SELECT CURDATE() - INTERVAL ? DAY AS d
+       UNION ALL SELECT d + INTERVAL 1 DAY FROM calendar WHERE d < CURDATE()
+     ), listening AS (
+       SELECT DATE(started_at) AS d, COUNT(*) AS plays, ROUND(SUM(listened_sec) / 60, 1) AS minutes
+         FROM listening_history
+        WHERE user_id = ? AND started_at >= CURDATE() - INTERVAL ? DAY
+        GROUP BY DATE(started_at)
+     )
+     SELECT DATE_FORMAT(calendar.d, '%Y-%m-%d') AS day,
+            COALESCE(listening.plays, 0) AS plays,
+            COALESCE(listening.minutes, 0) AS minutes,
+            diary.entry_id AS entryId, diary.mood_id AS moodId,
+            moods.name AS moodName, moods.emoji AS moodEmoji, moods.color_hex AS moodColor,
+            (diary.note IS NOT NULL) AS hasNote
+       FROM calendar
+       LEFT JOIN listening ON listening.d = calendar.d
+       LEFT JOIN mood_diary_entries diary ON diary.user_id = ? AND diary.checkin_date = calendar.d
+       LEFT JOIN moods ON moods.mood_id = diary.mood_id
+      ORDER BY calendar.d DESC`, [windowDays - 1, userId, windowDays - 1, userId]);
+}
+
+async function skipPatterns(userId, days = 30) {
+  const windowDays = Math.max(7, Math.min(365, Number(days) || 30));
+  const [summary, genres, artists, moods, contexts, hours, songs] = await Promise.all([
+    one(`SELECT COUNT(*) AS plays, COALESCE(SUM(skipped), 0) AS skips,
+                ROUND(100 * COALESCE(SUM(skipped), 0) / NULLIF(COUNT(*), 0), 1) AS skipRate,
+                ROUND(AVG(completion_pct), 1) AS avgCompletion
+           FROM listening_history
+          WHERE user_id = ? AND started_at >= NOW() - INTERVAL ? DAY`, [userId, windowDays]),
+    query(`SELECT g.name, COUNT(*) AS plays, SUM(lh.skipped) AS skips,
+                  ROUND(100 * SUM(lh.skipped) / NULLIF(COUNT(*), 0), 1) AS skipRate
+             FROM listening_history lh
+             JOIN song_genres sg ON sg.song_id = lh.song_id AND sg.is_primary = 1
+             JOIN genres g ON g.genre_id = sg.genre_id
+            WHERE lh.user_id = ? AND lh.started_at >= NOW() - INTERVAL ? DAY
+            GROUP BY g.genre_id, g.name HAVING COUNT(*) >= 2
+            ORDER BY skipRate DESC, skips DESC, plays DESC LIMIT 8`, [userId, windowDays]),
+    query(`SELECT a.name, COUNT(*) AS plays, SUM(lh.skipped) AS skips,
+                  ROUND(100 * SUM(lh.skipped) / NULLIF(COUNT(*), 0), 1) AS skipRate
+             FROM listening_history lh
+             JOIN songs s ON s.song_id = lh.song_id
+             JOIN artists a ON a.artist_id = s.primary_artist_id
+            WHERE lh.user_id = ? AND lh.started_at >= NOW() - INTERVAL ? DAY
+            GROUP BY a.artist_id, a.name HAVING COUNT(*) >= 2
+            ORDER BY skipRate DESC, skips DESC, plays DESC LIMIT 8`, [userId, windowDays]),
+    query(`SELECT pm.mood_name AS name, COUNT(*) AS plays, SUM(lh.skipped) AS skips,
+                  ROUND(100 * SUM(lh.skipped) / NULLIF(COUNT(*), 0), 1) AS skipRate
+             FROM listening_history lh
+             JOIN v_song_primary_mood pm ON pm.song_id = lh.song_id
+            WHERE lh.user_id = ? AND lh.started_at >= NOW() - INTERVAL ? DAY
+            GROUP BY pm.mood_id, pm.mood_name HAVING COUNT(*) >= 2
+            ORDER BY skipRate DESC, skips DESC, plays DESC LIMIT 8`, [userId, windowDays]),
+    query(`SELECT COALESCE(c.name, 'No context') AS name, COALESCE(c.emoji, '—') AS emoji,
+                  COUNT(*) AS plays, SUM(lh.skipped) AS skips,
+                  ROUND(100 * SUM(lh.skipped) / NULLIF(COUNT(*), 0), 1) AS skipRate
+             FROM listening_history lh
+             JOIN listening_sessions ls ON ls.session_id = lh.session_id AND ls.user_id = lh.user_id
+             LEFT JOIN contexts c ON c.context_id = ls.context_id
+            WHERE lh.user_id = ? AND lh.started_at >= NOW() - INTERVAL ? DAY
+            GROUP BY c.context_id, c.name, c.emoji
+            ORDER BY skipRate DESC, skips DESC, plays DESC LIMIT 8`, [userId, windowDays]),
+    query(`SELECT HOUR(started_at) AS hour, COUNT(*) AS plays, SUM(skipped) AS skips,
+                  ROUND(100 * SUM(skipped) / NULLIF(COUNT(*), 0), 1) AS skipRate
+             FROM listening_history
+            WHERE user_id = ? AND started_at >= NOW() - INTERVAL ? DAY
+            GROUP BY HOUR(started_at) HAVING COUNT(*) >= 2
+            ORDER BY skipRate DESC, skips DESC, hour LIMIT 8`, [userId, windowDays]),
+    query(`SELECT s.song_id AS songId, s.title, a.name AS artist, COUNT(*) AS plays,
+                  SUM(lh.skipped) AS skips,
+                  ROUND(100 * SUM(lh.skipped) / NULLIF(COUNT(*), 0), 1) AS skipRate
+             FROM listening_history lh
+             JOIN songs s ON s.song_id = lh.song_id
+             JOIN artists a ON a.artist_id = s.primary_artist_id
+            WHERE lh.user_id = ? AND lh.started_at >= NOW() - INTERVAL ? DAY
+            GROUP BY s.song_id, s.title, a.name
+           HAVING SUM(lh.skipped) > 0
+            ORDER BY skips DESC, skipRate DESC, plays DESC LIMIT 8`, [userId, windowDays]),
+  ]);
+  return {
+    days: windowDays,
+    summary: {
+      plays: Number(summary?.plays || 0), skips: Number(summary?.skips || 0),
+      skipRate: summary?.skipRate === null ? null : Number(summary?.skipRate || 0),
+      avgCompletion: summary?.avgCompletion === null ? null : Number(summary?.avgCompletion || 0),
+    },
+    genres, artists, moods, contexts,
+    hours: hours.map((row) => ({ ...row, hour: Number(row.hour), name: `${String(row.hour).padStart(2, '0')}:00` })),
+    songs,
+    note: 'Skip rates are descriptive, not quality judgements. Categories with fewer than two plays are omitted to reduce noise.',
+  };
+}
+
 /** Music Mood Journey: distributions over time, transitions and trends. */
 async function moodJourney(userId, period = 'weekly') {
   const bucket = { daily: "DATE(lh.started_at)", weekly: 'fn_week_start(DATE(lh.started_at))', monthly: "DATE_FORMAT(lh.started_at, '%Y-%m-01')" }[period];
@@ -151,4 +250,4 @@ async function preferences(userId) {
       behaviourShare: Math.round(evidenceShare * 100), onboardingShare: Math.round((1 - evidenceShare) * 100) } };
 }
 
-module.exports = { profile, activity, moodJourney, preferences };
+module.exports = { profile, activity, calendar, moodJourney, skipPatterns, preferences };

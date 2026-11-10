@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
@@ -9,9 +9,12 @@ import { Field, PageHead, ErrorState, ListSkeleton } from '../components/ui';
 export default function Settings() {
   const { user, setUser } = useAuth();
   const toast = useToast();
+  const navigate = useNavigate();
     const opts = useApi(() => api.onboardingOptions(), []);
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [exportPassword, setExportPassword] = useState('');
+  const [exportBusy, setExportBusy] = useState(false);
   useEffect(() => {
     setForm({ displayName: user.displayName, regionCode: user.region ? user.region.code : '', contentFilter: user.contentFilter,
       listeningHabit: user.listeningHabit || 'MIXED', languageIds: user.languages.map((l) => l.id) });
@@ -26,6 +29,25 @@ export default function Settings() {
       setUser(u);
       toast.success('Settings saved');
     } catch (err) { toast.error(err); } finally { setBusy(false); }
+  };
+  const exportData = async (e) => {
+    e.preventDefault();
+    if (!exportPassword) return;
+    setExportBusy(true);
+    try {
+      const data = await api.exportData({ password: exportPassword });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `loop-personal-data-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setExportPassword('');
+      toast.success('Your personal data export is ready');
+    } catch (err) { toast.error(err); } finally { setExportBusy(false); }
   };
   return (
     <div className="page" style={{ maxWidth: 760 }}>
@@ -57,7 +79,18 @@ export default function Settings() {
         <div className="row"><button className="btn primary" disabled={busy}>{busy ? 'Saving…' : 'Save settings'}</button>
           </div>
       </form>
+      <AccountSecurity user={user} setUser={setUser} navigate={navigate} />
       <HiddenSongs />
+
+      <form className="card stack section" style={{ '--gap': '10px' }} onSubmit={exportData}>
+        <h3>Download your data</h3>
+        <p className="small soft">Export the personal data LOOP stores for this account as a JSON file. The export includes your profile, preferences, listening history, ratings, likes, playlists, searches and artist-account records where applicable. Password hashes, session credentials, token hashes, IP hashes and other users’ data are excluded. Your current password is required, and exports are limited to once per hour.</p>
+        <Field label="Confirm your current password">
+          <input className="input" type="password" autoComplete="current-password" value={exportPassword}
+            onChange={(e) => setExportPassword(e.target.value)} maxLength={72} required />
+        </Field>
+        <div className="row"><button className="btn ghost" disabled={exportBusy || !exportPassword}>{exportBusy ? 'Preparing export…' : 'Download my data (JSON)'}</button></div>
+      </form>
 
       <div className="card stack section" style={{ '--gap': '6px' }} id="credits">
         <h3>About and credits</h3>
@@ -96,3 +129,131 @@ function HiddenSongs() {
   );
 }
 
+
+
+function AccountSecurity({ user, setUser, navigate }) {
+  const toast = useToast();
+  const sessions = useApi(() => api.sessions(), []);
+  const [revoking, setRevoking] = useState(null);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordBusy, setPasswordBusy] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deletePhrase, setDeletePhrase] = useState('');
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const registered = user.role !== 'GUEST' && !user.email?.endsWith('@guest.loop.invalid');
+  const isArtist = user.permissions?.includes('artist.upload');
+
+  const revoke = async (session) => {
+    if (session.current || revoking) return;
+    setRevoking(session.id);
+    try {
+      await api.revokeSession(session.id);
+      sessions.setData((old) => (old || []).filter((item) => item.id !== session.id));
+      toast.success('That session has been signed out');
+    } catch (err) { toast.error(err); }
+    finally { setRevoking(null); }
+  };
+
+  const changePassword = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) return toast.error('The new passwords do not match.');
+    if (!/(?=.*[A-Za-z])(?=.*\d).{8,72}/.test(newPassword)) return toast.error('Use 8–72 characters with at least one letter and one number.');
+    setPasswordBusy(true);
+    try {
+      const result = await api.changePassword({ currentPassword, newPassword });
+      setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+      await sessions.reload();
+      toast.success(`Password changed. ${result.otherSessionsRevoked || 0} other session(s) signed out.`);
+    } catch (err) { toast.error(err); }
+    finally { setPasswordBusy(false); }
+  };
+
+  const deleteAccount = async (e) => {
+    e.preventDefault();
+    if (deletePhrase !== 'DELETE') return toast.error('Type DELETE exactly to confirm.');
+    setDeleteBusy(true);
+    try {
+      await api.deleteAccount({ password: deletePassword, confirm: 'DELETE' });
+      setUser(null);
+      toast.success('Your account was deleted');
+      navigate('/login', { replace: true });
+    } catch (err) { toast.error(err); }
+    finally { setDeleteBusy(false); }
+  };
+
+  const date = (value) => {
+    if (!value) return 'Unknown';
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 'Unknown' : parsed.toLocaleString();
+  };
+  return (
+    <section className="stack section" aria-labelledby="privacy-security-title" style={{ '--gap': '14px' }}>
+      <div className="stack" style={{ '--gap': '4px' }}>
+        <h2 id="privacy-security-title">Privacy &amp; account security</h2>
+        <p className="small soft">Manage access to your account and understand what LOOP stores about your activity.</p>
+      </div>
+
+      <div className="card stack" style={{ '--gap': '10px' }}>
+        <div className="row between wrap"><h3>Signed-in devices</h3><button className="btn ghost sm" onClick={sessions.reload} disabled={sessions.loading}>Refresh</button></div>
+        <p className="small soft">These are active sign-in sessions for your account. You can sign out a device without affecting this device.</p>
+        {sessions.loading && <p className="small muted">Loading sessions…</p>}
+        {sessions.error && <ErrorState error={sessions.error} onRetry={sessions.reload} />}
+        {sessions.data && sessions.data.length === 0 && <p className="small muted">No active sessions were returned.</p>}
+        {sessions.data?.map((session) => (
+          <div className="row between wrap session-device" key={session.id}>
+            <div className="stack" style={{ '--gap': '2px', minWidth: 0 }}>
+              <div className="row wrap small" style={{ '--gap': '6px' }}>
+                <strong>{session.userAgent || 'Unknown device / browser'}</strong>
+                {session.current && <span className="pill">This device</span>}
+              </div>
+              <span className="tiny muted">Last active {date(session.lastSeenAt)} · Expires {date(session.expiresAt)}</span>
+            </div>
+            <button className="btn ghost sm danger" disabled={session.current || !!revoking} onClick={() => revoke(session)}>
+              {revoking === session.id ? 'Signing out…' : session.current ? 'Current session' : 'Sign out'}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {registered ? (
+        <form className="card stack" style={{ '--gap': '10px' }} onSubmit={changePassword}>
+          <h3>Change password</h3>
+          <p className="small soft">Changing your password signs out every other active session.</p>
+          <Field label="Current password"><input className="input" type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} maxLength={72} required /></Field>
+          <div className="grid-2">
+            <Field label="New password" hint="8–72 characters; at least one letter and one number."><input className="input" type="password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} minLength={8} maxLength={72} required /></Field>
+            <Field label="Confirm new password"><input className="input" type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} minLength={8} maxLength={72} required /></Field>
+          </div>
+          <div className="row"><button className="btn primary" disabled={passwordBusy || !currentPassword || !newPassword || !confirmPassword}>{passwordBusy ? 'Updating…' : 'Change password'}</button></div>
+        </form>
+      ) : (
+        <div className="card stack" style={{ '--gap': '6px' }}><h3>Guest account</h3><p className="small soft">Guest sessions do not have a password to change or a permanent identity to delete. Create an account to secure your preferences and data.</p><div className="row"><Link className="btn primary sm" to="/register">Create an account</Link></div></div>
+      )}
+
+      <div className="card stack" style={{ '--gap': '8px' }}>
+        <h3>Your data at a glance</h3>
+        <p className="small soft">Depending on the features you use, LOOP may store:</p>
+        <ul className="small soft" style={{ margin: 0, paddingLeft: 20 }}>
+          <li>Account identity, profile settings, selected languages, and content preferences.</li>
+          <li>Your likes, ratings, dismissed songs, playlists, searches, and non-private listening history.</li>
+          <li>Private Mood Diary check-ins and notes, visible only to you and excluded from recommendation training.</li>
+          <li>Sign-in session metadata used to keep your account secure. Ended sign-in sessions are purged after 30 days by the server housekeeping job.</li>
+          {isArtist && <li>Artist applications, uploaded track metadata, rights declarations, and moderation records.</li>}
+        </ul>
+        <p className="tiny muted">The Download your data section below provides a password-confirmed JSON export. It excludes password hashes, session credentials, token hashes, IP hashes, and other users’ records.</p>
+      </div>
+
+      {registered && (
+        <form className="card stack" style={{ '--gap': '10px' }} onSubmit={deleteAccount}>
+          <h3>Delete account</h3>
+          {isArtist ? <p className="small soft">Artist uploads and rights reports may need to be retained for legal and moderation history. The server may refuse immediate deletion and direct you to a reviewed deactivation or anonymisation process.</p> : <p className="small soft">This permanently removes your account and ordinary listener data. Download your data first if you want a copy. This action cannot be undone.</p>}
+          <Field label="Current password"><input className="input" type="password" autoComplete="current-password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} maxLength={72} required /></Field>
+          <Field label="Type DELETE to confirm"><input className="input" value={deletePhrase} onChange={(e) => setDeletePhrase(e.target.value)} autoComplete="off" required /></Field>
+          <div className="row"><button className="btn ghost danger" disabled={deleteBusy || !deletePassword || deletePhrase !== 'DELETE'}>{deleteBusy ? 'Deleting…' : 'Permanently delete my account'}</button></div>
+        </form>
+      )}
+    </section>
+  );
+}

@@ -8,6 +8,7 @@ const moodParser = require('./moodParser');
 const pipeline = require('./pipeline/pipelineService');
 const sessions = require('./sessionService');
 const { canonicalJson } = require('./pipeline/ingestService');
+const { files: migrationFiles, BASELINE } = require('../../scripts/migrate');
 
 const audit = (tx, actor, action, type, id, oldV, newV) => tx.query(
   'INSERT INTO audit_logs (actor_user_id, action, entity_type, entity_id, old_values, new_values) VALUES (?, ?, ?, ?, ?, ?)',
@@ -29,6 +30,42 @@ async function overview() {
       (SELECT COUNT(*) FROM pipeline_jobs WHERE status = 'FAILED') AS failed_jobs,
       (SELECT COUNT(*) FROM incognito_sessions WHERE status = 'ACTIVE' AND expires_at > NOW()) AS private_sessions`);
   return c;
+}
+
+/** Applied/pending migration inventory with source-file checksum verification. */
+async function migrationHistory() {
+  const source = migrationFiles();
+  const applied = await query('SELECT version, name, checksum, applied_at AS appliedAt, execution_ms AS executionMs FROM schema_migrations ORDER BY version');
+  const byVersion = new Map(applied.map((row) => [String(row.version), row]));
+  const problems = source.filter((file) => byVersion.has(file.version) && byVersion.get(file.version).checksum !== file.checksum)
+    .map((file) => ({ version: file.version, file: file.file, message: 'Applied migration checksum differs from the checked-in source file.' }));
+  const pending = source.filter((file) => !byVersion.has(file.version)).map((file) => ({ version: file.version, name: file.name, file: file.file, checksum: file.checksum }));
+  const currentVersion = applied.reduce((max, row) => max === null || String(row.version) > max ? String(row.version) : max, null);
+  const expectedVersion = source.length ? source[source.length - 1].version : BASELINE.version;
+  return {
+    baseline: byVersion.has(BASELINE.version),
+    currentVersion,
+    expectedVersion,
+    applied,
+    pending,
+    problems,
+    ready: byVersion.has(BASELINE.version) && pending.length === 0 && problems.length === 0 && currentVersion === expectedVersion,
+  };
+}
+
+/** Read-only matrix of permissions assigned to each database role. */
+async function permissionMatrix() {
+  const [roles, permissions, assignments] = await Promise.all([
+    query('SELECT role_id AS id, code, name FROM roles ORDER BY role_id'),
+    query('SELECT permission_code AS code, description FROM permissions ORDER BY permission_code'),
+    query('SELECT role_id AS roleId, permission_code AS permission FROM role_permissions ORDER BY role_id, permission_code'),
+  ]);
+  const byRole = new Map(roles.map((role) => [role.id, []]));
+  for (const row of assignments) byRole.get(row.roleId)?.push(row.permission);
+  return {
+    permissions,
+    roles: roles.map((role) => ({ ...role, permissions: byRole.get(role.id) || [] })),
+  };
 }
 
 /** Listening statistics for the admin dashboard (all from listening_history). */
@@ -402,6 +439,6 @@ async function auditLog({ entityType = null, limit = 50 }) {
 }
 
 module.exports = {
-  overview, listeningStats, listSongs, references, createSong, songDetailAdmin, updateSong, deleteSong, curateMood, clearCuration,
+  overview, permissionMatrix, migrationHistory, listeningStats, listSongs, references, createSong, songDetailAdmin, updateSong, deleteSong, curateMood, clearCuration,
   listArtists, createArtist, updateArtist, createAlbum, createMood, addKeyword, listUsers, updateUser, models, setParam, activateModel, auditLog,
 };

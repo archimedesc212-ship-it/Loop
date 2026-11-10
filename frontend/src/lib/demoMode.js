@@ -1,3 +1,4 @@
+import { diaryDateKey, upsertDiaryEntry, removeDiaryEntry } from './moodDiary';
 // Static, dataset-backed catalogue adapter. No invented songs, play counts or audio.
 const DATA_PATH = String(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/') + 'data/music-catalog.json';
 const STORAGE_PREFIX = 'loop.catalog.v1.';
@@ -308,7 +309,17 @@ export async function demoRequest(method, path, body) {
       : all.slice(0, limit);
     return listResult(rows, 'From the music archive', 'Real catalogue records from the uploaded 1950–2019 dataset.');
   }
-  if (p === '/recommendations/daily' || p === '/recommendations/discovery' || p === '/recommendations/similar') {
+  if (p === '/recommendations/discovery') {
+    const limit = safeLimit(q.get('limit'), 24, 100);
+    const requestedIntensity = q.get('intensity');
+    const rawIntensity = requestedIntensity === null ? 50 : Number(requestedIntensity);
+    const intensity = Number.isFinite(rawIntensity) ? Math.max(0, Math.min(100, rawIntensity)) : 50;
+    const base = { energy: 0.56, valence: 0.56, danceability: 0.55, acousticness: 0.45, instrumentalness: 0.25 };
+    const target = Object.fromEntries(Object.entries(base).map(([key, value]) => [key, value + ((1 - value) - value) * intensity / 100]));
+    const rows = choose(catalogue, target, limit, all);
+    return { ...listResult(rows, 'Discovery', `Metadata archive matches · ${intensity}% unexpected. This archive has no real playback history.`), discoveryIntensity: intensity };
+  }
+  if (p === '/recommendations/daily' || p === '/recommendations/similar') {
     const limit = safeLimit(q.get('limit'), 24, 100);
     const seedId = Number(q.get('seed'));
     const seed = Number.isFinite(seedId) && seedId > 0 ? catalogue.songById.get(seedId) : null;
@@ -368,6 +379,39 @@ export async function demoRequest(method, path, body) {
   if (p === '/likes') return all.filter((song) => read('likes', []).includes(song.id)).map(withPersonalState);
   if (p === '/me/dismissals') return getPlaylistSongs(catalogue, read('dismissals', []));
   if (p === '/me/onboarding') return { languages: [], regions: [], genres: catalogue.genres, moods: MOODS };
+  if (p === '/me/mood-diary' && method === 'GET') {
+    const days = safeLimit(q.get('days'), 90, 365);
+    const anchor = q.get('asOfDate') || diaryDateKey();
+    const cutoff = new Date(`${anchor}T12:00:00`); cutoff.setDate(cutoff.getDate() - days);
+    const cutoffKey = diaryDateKey(cutoff);
+    return read('moodDiary', []).filter((entry) => entry.checkinDate >= cutoffKey).sort((a, b) => b.checkinDate.localeCompare(a.checkinDate));
+  }
+  if (p === '/me/mood-diary/today' && method === 'PUT') {
+    const now = new Date();
+    const checkinDate = body?.checkinDate || diaryDateKey(now);
+    const rows = read('moodDiary', []);
+    const previous = rows.find((entry) => entry.checkinDate === checkinDate);
+    const mood = MOODS.find((item) => item.id === Number(body?.moodId));
+    const entry = {
+      entryId: previous?.entryId || Date.now(), checkinDate,
+      moodId: body?.moodId === undefined ? previous?.moodId || null : Number(body.moodId),
+      moodName: body?.moodId === undefined ? previous?.moodName || null : mood?.name || null,
+      moodEmoji: body?.moodId === undefined ? previous?.moodEmoji || null : mood?.emoji || null,
+      moodColor: body?.moodId === undefined ? previous?.moodColor || null : mood?.color || null,
+      note: body?.note === undefined ? previous?.note || null : String(body.note).trim() || null,
+      createdAt: previous?.createdAt || now.toISOString(), updatedAt: now.toISOString(),
+    };
+    if (!entry.moodId && !entry.note) return { error: { code: 'VALIDATION_ERROR', message: 'Choose a mood or add a note before saving.' } };
+    write('moodDiary', upsertDiaryEntry(rows, entry));
+    return entry;
+  }
+  if (/^\/me\/mood-diary\/\d+$/.test(p) && method === 'DELETE') {
+    const entryId = Number(p.split('/').pop());
+    const rows = read('moodDiary', []);
+    if (!rows.some((entry) => Number(entry.entryId) === entryId)) return { error: { code: 'NOT_FOUND', message: 'Mood diary entry not found.' } };
+    write('moodDiary', removeDiaryEntry(rows, entryId));
+    return { deleted: true, entryId };
+  }
   if (p === '/me/settings' && method === 'PATCH') return { ...user, ...body, languages: [], region: null };
   if (p === '/search') {
     const term = norm(q.get('q'));
@@ -467,6 +511,20 @@ export async function demoRequest(method, path, body) {
     if (!item) return { id, name: 'Playlist not found', kind: 'MANUAL', songCount: 0, covers: [], songs: [], totalDurationSec: null };
     return { ...item, songs: getPlaylistSongs(catalogue, item.songs || []) };
   }
+  if (/^\/playlists\/\d+\/order$/.test(p) && method === 'PUT') {
+    const id = Number(p.split('/')[2]);
+    const lists = read('playlists', []);
+    const item = lists.find((playlist) => playlist.id === id);
+    const requested = Array.isArray(body?.songIds) ? body.songIds.map(Number) : [];
+    const current = item?.songs || [];
+    if (!item) return { error: { code: 'NOT_FOUND', message: 'Playlist not found.' } };
+    if (new Set(requested).size !== requested.length || requested.length !== current.length || requested.some((songId) => !current.includes(songId))) {
+      return { error: { code: 'PLAYLIST_ORDER_STALE', message: 'Refresh this playlist and try again.' } };
+    }
+    item.songs = requested;
+    write('playlists', lists);
+    return { ...item, songs: getPlaylistSongs(catalogue, item.songs) };
+  }
   if (/^\/playlists\/\d+\/songs$/.test(p) && method === 'POST') {
     const id = Number(p.split('/')[2]);
     const lists = read('playlists', []);
@@ -499,7 +557,20 @@ export async function demoRequest(method, path, body) {
   }
   if (p === '/incognito') return { active: read('incognito', false), startedAt: null, secondsLeft: 7200, events: 0, memory: [], recentSongs: [] };
   if (p === '/insights/profile') return { days: 30, headline: null, longTerm: [], recentTrend: null, streak: { current: 0, longest: 0 }, mostReplayed: null, mostSkipped: null };
+  if (p === '/insights/skip-patterns') return { days: 30, summary: { plays: 0, skips: 0, skipRate: null, avgCompletion: null }, genres: [], artists: [], moods: [], contexts: [], hours: [], songs: [], note: 'The metadata-only archive has no real playback events to analyse.' };
   if (p === '/insights/activity') return { daily: [], genres: [], heatmap: [], languages: [], contexts: [] };
+  if (p === '/insights/calendar') {
+    const days = safeLimit(q.get('days'), 365, 365);
+    const saved = new Map(read('moodDiary', []).map((entry) => [entry.checkinDate, entry]));
+    const today = new Date();
+    const daily = Array.from({ length: days }, (_, index) => {
+      const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - index);
+      const day = diaryDateKey(date);
+      const entry = saved.get(day);
+      return { day, plays: 0, minutes: 0, entryId: entry?.entryId || null, moodId: entry?.moodId || null, moodName: entry?.moodName || null, moodEmoji: entry?.moodEmoji || null, moodColor: entry?.moodColor || null, hasNote: Boolean(entry?.note) };
+    });
+    return { daily, note: 'This metadata-only demo has no persistent playback history; private diary check-ins still appear.' };
+  }
   if (p === '/insights/journey') return { distribution: [], transitions: [], trends: [], sessionArcs: [] };
   if (p === '/insights/preferences') return {
     signals: [], summary: 'Listening insights appear after audio playback is connected.',

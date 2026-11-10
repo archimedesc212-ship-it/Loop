@@ -13,6 +13,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../services/api';
 import { createSketchPlayer } from '../lib/sketch';
+import { sleepFadeFactor } from '../lib/sleepTimer';
 import { useToast } from './useToast';
 
 const PlayerCtx = createContext(null);
@@ -40,6 +41,9 @@ export function PlayerProvider({ children }) {
   const [volume, setVolumeState] = useState(() => Math.min(1, Math.max(0, stored(VOLUME_KEY, 0.8))));
   const [muted, setMuted] = useState(false);
   const [lastResult, setLastResult] = useState(null);
+  const [sleepRemaining, setSleepRemaining] = useState(null);
+  const [sleepDuration, setSleepDuration] = useState(0);
+  const [sleepEndAt, setSleepEndAt] = useState(null);
   const handle = useRef(null);                            // { playId, private, songId }
   const listened = useRef(0);
   const posRef = useRef(0);
@@ -54,17 +58,18 @@ export function PlayerProvider({ children }) {
 
   if (!sketch.current) sketch.current = createSketchPlayer();
 
-  const effectiveVolume = muted ? 0 : volume;
+  const fadeFactor = sleepRemaining === null ? 1 : sleepFadeFactor(sleepRemaining, sleepDuration);
+  const effectiveVolume = muted ? 0 : volume * fadeFactor;
   useEffect(() => {
     volRef.current = effectiveVolume;
     sketch.current.setVolume(effectiveVolume);
     if (audio.current) audio.current.volume = effectiveVolume;
   }, [effectiveVolume]);
 
-  const stopAudio = () => {
+  const stopAudio = useCallback(() => {
     sketch.current.stop();
     if (audio.current) { audio.current.pause(); audio.current.src = ''; audio.current = null; }
-  };
+  }, []);
 
   /** Report the current play to the API exactly once. */
   const finishCurrent = useCallback(async (reason) => {
@@ -140,7 +145,7 @@ export function PlayerProvider({ children }) {
       setStatus('idle');
       toast.error(e);
     }
-  }, [toast]);
+  }, [toast, stopAudio]);
 
   /** play(song, { queue, origin, batchId, contextCode }) */
   const play = useCallback(async (song, ctx = {}) => {
@@ -151,13 +156,13 @@ export function PlayerProvider({ children }) {
     setQueue(q);
     queueRef.current = q;
     await startAt(i, q);
-  }, [finishCurrent, startAt]);
+  }, [finishCurrent, startAt, stopAudio]);
 
   const goTo = useCallback(async (i, reason) => {
     await finishCurrent(reason);
     if (i < 0 || i >= queueRef.current.length) { stopAudio(); setStatus('idle'); return; }
     await startAt(i);
-  }, [finishCurrent, startAt]);
+  }, [finishCurrent, startAt, stopAudio]);
 
   const seek = useCallback((sec) => {
     const song = currentRef.current;
@@ -193,6 +198,36 @@ export function PlayerProvider({ children }) {
   const setSpeed = useCallback((s) => { setSpeedState(s); store(SPEED_KEY, s); }, []);
   const setVolume = useCallback((v) => { const x = Math.max(0, Math.min(1, v)); setVolumeState(x); setMuted(false); store(VOLUME_KEY, x); }, []);
   const toggleMute = useCallback(() => setMuted((m) => !m), []);
+  const setSleepTimer = useCallback((minutes) => {
+    const value = Number(minutes);
+    if (!Number.isFinite(value) || value < 1 || value > 180) return false;
+    const seconds = Math.round(value * 60);
+    setSleepDuration(seconds);
+    setSleepEndAt(Date.now() + seconds * 1000);
+    setSleepRemaining(seconds);
+    return true;
+  }, []);
+  const cancelSleepTimer = useCallback(() => { setSleepRemaining(null); setSleepDuration(0); setSleepEndAt(null); }, []);
+  const stopForSleep = useCallback(async () => {
+    stopAudio();
+    await finishCurrent('sleep_timer');
+    setStatus('idle');
+    setPosition(0);
+    setMedia(null);
+    setSleepRemaining(null);
+    setSleepDuration(0);
+    setSleepEndAt(null);
+  }, [finishCurrent, stopAudio]);
+
+  // The countdown runs while playing or paused; fade begins in the final 30 seconds.
+  useEffect(() => {
+    if (sleepRemaining === null) return undefined;
+    if (sleepRemaining <= 0) { stopForSleep(); return undefined; }
+    const id = setTimeout(() => {
+      setSleepRemaining(sleepEndAt === null ? null : Math.max(0, Math.ceil((sleepEndAt - Date.now()) / 1000)));
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [sleepRemaining, sleepEndAt, stopForSleep]);
 
   /** Queue editing: jump to, remove, or add after the current song. */
   const jumpTo = useCallback((i) => goTo(i, 'switch'), [goTo]);
@@ -242,16 +277,17 @@ export function PlayerProvider({ children }) {
   const reset = useCallback(async () => {
     await finishCurrent('reset');
     stopAudio(); setQueue([]); setIndex(-1); setStatus('idle'); setPosition(0); setMedia(null);
-  }, [finishCurrent]);
+    setSleepRemaining(null); setSleepDuration(0); setSleepEndAt(null);
+  }, [finishCurrent, stopAudio]);
 
   const length = audio.current && Number.isFinite(audio.current.duration) ? audio.current.duration : (current ? current.durationSec : 0);
   const value = useMemo(() => ({
-    current, queue, index, status, position, length, speed, volume, muted, media, lastResult,
-    play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, jumpTo, removeAt, playNext, reset,
+    current, queue, index, status, position, length, speed, volume, muted, media, lastResult, sleepRemaining,
+    play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset,
     realAudio: !!(media && media.uri),
     isCurrent: (id) => current && current.id === id,
     isPlaying: (id) => current && current.id === id && status === 'playing',
-  }), [current, queue, index, status, position, length, speed, volume, muted, media, lastResult, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, jumpTo, removeAt, playNext, reset]);
+  }), [current, queue, index, status, position, length, speed, volume, muted, media, lastResult, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);
 
   return <PlayerCtx.Provider value={value}>{children}</PlayerCtx.Provider>;
 }

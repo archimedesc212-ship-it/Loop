@@ -2,7 +2,7 @@
 
 *Developed by Vaishnav Sai.* Generated from `feature-registry.json`; statuses come from code and passing tests only (see FEATURE_REGISTRY.md).
 
-**Today:** VERIFIED 9 · IMPLEMENTED-UNVERIFIED 1 · PARTIAL 33 · PLANNED 30 · BLOCKED 7 · NOT IMPLEMENTED 7.
+**Today:** VERIFIED 9 · IMPLEMENTED-UNVERIFIED 13 · PARTIAL 28 · PLANNED 28 · BLOCKED 7 · NOT IMPLEMENTED 2.
 
 **Database:** the application database and the academic submission both stay at the 64-table baseline (migrations 0000–0004).
 Proposed migrations `0005_roadmap_33_57.sql` (16 tables) and `0006_roadmap_58_87.sql` (14 tables) live in `database/migrations/proposed/`, which the migration runner does not read. They have been tested only on disposable schemas.
@@ -11,38 +11,38 @@ Proposed migrations `0005_roadmap_33_57.sql` (16 tables) and `0006_roadmap_58_87
 
 ### Stage 1 — Core product release (original 1–12)
 
-VERIFIED 3 · PARTIAL 5 · NOT IMPLEMENTED 4 · no schema change
+VERIFIED 3 · IMPLEMENTED-UNVERIFIED 6 · PARTIAL 3 · no schema change
 
 | # | Feature | Dependency | Status | Needs first |
 | --- | --- | --- | --- | --- |
-| 1 | Multi-Mood Blending | CORE | PARTIAL | — |
-| 2 | Mood Journey Engine | CORE | NOT IMPLEMENTED | — |
+| 1 | Multi-Mood Blending | CORE | IMPLEMENTED-UNVERIFIED | — |
+| 2 | Mood Journey Engine | CORE | IMPLEMENTED-UNVERIFIED | — |
 | 3 | Context-Aware Recommendations | CORE | VERIFIED | — |
 | 4 | Why This Song? | CORE | VERIFIED | — |
 | 5 | Skip-Aware Learning | CORE | PARTIAL | — |
-| 6 | Recommendation Diversity | CORE | PARTIAL | — |
+| 6 | Recommendation Diversity | CORE | IMPLEMENTED-UNVERIFIED | — |
 | 7 | Smart Cold Start | CORE | VERIFIED | — |
-| 8 | Recommendation Confidence | CORE | NOT IMPLEMENTED | — |
-| 9 | Mood Dial | CORE | NOT IMPLEMENTED | — |
+| 8 | Recommendation Confidence | CORE | IMPLEMENTED-UNVERIFIED | — |
+| 9 | Mood Dial | CORE | IMPLEMENTED-UNVERIFIED | — |
 | 10 | Multilingual Search Intelligence | CORE | PARTIAL | — |
 | 11 | Cross-Device Continuity | CORE | PARTIAL | — |
-| 12 | Interactive ER Explorer | CORE | NOT IMPLEMENTED | — |
+| 12 | Interactive ER Explorer | CORE | IMPLEMENTED-UNVERIFIED | — |
 
 ### Stage 2 — Intelligence and personal experience (original 13–24)
 
-VERIFIED 2 · PARTIAL 8 · NOT IMPLEMENTED 2 · no schema change
+VERIFIED 2 · IMPLEMENTED-UNVERIFIED 4 · PARTIAL 5 · NOT IMPLEMENTED 1 · no schema change
 
 | # | Feature | Dependency | Status | Needs first |
 | --- | --- | --- | --- | --- |
-| 13 | Mood Diary | CORE | NOT IMPLEMENTED | — |
+| 13 | Mood Diary | CORE | IMPLEMENTED-UNVERIFIED | — |
 | 14 | One-Tap Listening Modes | CORE | VERIFIED | — |
-| 15 | Surprise Me | CORE | PARTIAL | — |
+| 15 | Surprise Me | CORE | IMPLEMENTED-UNVERIFIED | — |
 | 16 | Human vs Model Comparison | CORE | VERIFIED | — |
 | 17 | Save My Mood Mix | CORE | PARTIAL | — |
 | 18 | Personal Music Wrapped | CORE | PARTIAL | — |
 | 19 | Taste Evolution Timeline | CORE | PARTIAL | — |
-| 20 | Mood Calendar Heatmap | CORE | PARTIAL | — |
-| 21 | Skip Pattern Intelligence | CORE | PARTIAL | — |
+| 20 | Mood Calendar Heatmap | CORE | IMPLEMENTED-UNVERIFIED | — |
+| 21 | Skip Pattern Intelligence | CORE | IMPLEMENTED-UNVERIFIED | — |
 | 22 | Artist Discovery Graph | CORE | NOT IMPLEMENTED | — |
 | 23 | Personal Recommendation Controls | CORE | PARTIAL | — |
 | 24 | Privacy Control Centre | CORE | PARTIAL | — |
@@ -120,14 +120,14 @@ PLANNED 1 · BLOCKED 7 · no schema change
 
 ### Phase 8 — Listening tools (no new tables except bookmarks)
 
-PARTIAL 2 · PLANNED 4 · schema: `0006_roadmap_58_87.sql`
+IMPLEMENTED-UNVERIFIED 1 · PARTIAL 2 · PLANNED 3 · schema: `0006_roadmap_58_87.sql`
 
 | # | Feature | Dependency | Status | Needs first |
 | --- | --- | --- | --- | --- |
 | 58 | Smart Queue Autopilot | CORE | PARTIAL | — |
 | 59 | Personal Radio Station | CORE | PARTIAL | — |
 | 72 | Personal Music Radio | CORE | PLANNED | #59 |
-| 60 | Sleep Timer with Audio Fade | CORE | PLANNED | — |
+| 60 | Sleep Timer with Audio Fade | CORE | IMPLEMENTED-UNVERIFIED | — |
 | 61 | Focus Timer + Music | CORE | PLANNED | — |
 | 63 | Listening Session Bookmarks | CORE | PLANNED | — |
 
@@ -150,14 +150,14 @@ PARTIAL 1 · PLANNED 9 · schema: `0006_roadmap_58_87.sql`
 
 ### Phase 10 — Account, privacy and security
 
-VERIFIED 1 · PARTIAL 3 · PLANNED 1 · schema: `0006_roadmap_58_87.sql`
+VERIFIED 1 · IMPLEMENTED-UNVERIFIED 1 · PARTIAL 3 · schema: `0006_roadmap_58_87.sql`
 
 | # | Feature | Dependency | Status | Needs first |
 | --- | --- | --- | --- | --- |
 | 76 | Active Device Manager | CORE | VERIFIED | — |
 | 77 | Login Activity Timeline | CORE | PARTIAL | — |
 | 79 | Automatic Data Retention Rules | CORE | PARTIAL | #57 |
-| 80 | Personal Data Export | CORE | PLANNED | — |
+| 80 | Personal Data Export | CORE | IMPLEMENTED-UNVERIFIED | — |
 | 81 | Account Recovery and Security Centre | PROVIDER | PARTIAL | #76, #77 |
 
 ### Phase 11 — Operations and platform

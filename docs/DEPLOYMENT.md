@@ -128,9 +128,9 @@ Each is a reasonable next step for a public deployment.
 
 ## Independent artist uploads (optional release slice)
 
-Artist onboarding and the local private-quarantine upload workflow are implemented behind the additive migration `0008_artist_accounts_uploads_rights.sql`. Before enabling this slice:
+Artist onboarding and the local private-quarantine upload workflow are implemented behind the additive migration `0008_artist_accounts_uploads_rights.sql`. The optional, account-private Mood Diary uses additive migration `0009_private_mood_diary.sql`. Before enabling these slices:
 
-- Set `VITE_DEMO_MODE=false` and apply `npm run db:migrate` after taking a database backup.
+- Set `VITE_DEMO_MODE=false` and apply `npm run db:migrate` after taking a database backup; this applies the pending 0008 and 0009 migrations in version order.
 - Set `LOCAL_MEDIA_DIR` to a private, persistent mounted volume. The API and the scanning worker must share the same volume. Never serve this directory as static content.
 - Configure a reachable ClamAV daemon with `CLAMAV_HOST` / `CLAMAV_PORT` and install `ffprobe` (or set `FFPROBE_PATH`). If scanning is unavailable, files remain private and cannot be published.
 - Run the bounded scanner as `npm run artist:scan --workspace backend`; production should replace manual/in-process scanning with a durable job worker and object storage/CDN delivery before broad public launch.

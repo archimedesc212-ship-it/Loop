@@ -47,10 +47,11 @@ async function withUserFlags(userId, songs) {
   const rows = await query(
     `SELECT s.song_id,
             EXISTS (SELECT 1 FROM user_likes ul WHERE ul.user_id = ? AND ul.song_id = s.song_id) AS liked,
-            (SELECT rating FROM ratings r WHERE r.user_id = ? AND r.song_id = s.song_id) AS my_rating
-       FROM songs s WHERE s.song_id IN (?)`, [userId, userId, ids]);
+            (SELECT rating FROM ratings r WHERE r.user_id = ? AND r.song_id = s.song_id) AS my_rating,
+            EXISTS (SELECT 1 FROM song_dismissals sd WHERE sd.user_id = ? AND sd.song_id = s.song_id) AS dismissed
+       FROM songs s WHERE s.song_id IN (?)`, [userId, userId, userId, ids]);
   const m = new Map(rows.map((r) => [r.song_id, r]));
-  return songs.map((s) => ({ ...s, liked: !!m.get(s.id)?.liked, myRating: m.get(s.id)?.my_rating ?? null }));
+  return songs.map((s) => ({ ...s, liked: !!m.get(s.id)?.liked, myRating: m.get(s.id)?.my_rating ?? null, dismissed: !!m.get(s.id)?.dismissed }));
 }
 
 async function catalogRows(ids) {

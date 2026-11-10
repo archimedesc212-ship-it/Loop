@@ -10,6 +10,7 @@ const { query, one, withTransaction } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { toSong, withUserFlags } = require('./songMapper');
 const moodParser = require('./moodParser');
+const { weightedMoods, interpolateProfile, discoveryTargets, recommendationEvidence } = require('../utils/recommendationLogic');
 
 const SIGNALS = [
   ['mood', 'mood_score', 'w_mood', 'Mood match'],
@@ -163,6 +164,7 @@ async function shape(user, batchId, rows, meta) {
     ...toSong(r),
     rank: r.rank_position,
     score: Number(r.final_score),
+    confidence: recommendationEvidence(r),
     breakdown: breakdown(r, weights, meta.strategy),
     reasons: (typeof r.reasons === 'string' ? JSON.parse(r.reasons) : r.reasons || [])
       .sort((a, b) => b.strength - a.strength).map((x) => ({ code: x.code, text: x.text })),
@@ -201,16 +203,18 @@ async function contextMoods(contextId) {
 // ---------------------------------------------------------------------------
 
 /** Mood picker and/or free text (optionally with a context). */
-async function forMood(user, { moodIds = [], text = null, contextCode = null, limit = 20 }) {
+async function forMood(user, { moodIds = [], moodWeights = undefined, text = null, contextCode = null, limit = 20 }) {
   let moods = [];
   let parse = null;
   let ctx = contextCode ? await contextByCode(contextCode) : null;
 
-  if (moodIds.length) {
-    const unique = [...new Set(moodIds)];
-    const rows = await moodRows(unique);
-    if (rows.length !== unique.length) throw new ApiError(400, 'INVALID_MOOD', 'One or more of the selected moods do not exist.');
-    moods = rows.map((r) => ({ moodId: r.mood_id, name: r.name, weight: 1 }));
+  let requestedWeights;
+  try { requestedWeights = weightedMoods(moodIds, moodWeights); }
+  catch (err) { throw ApiError.badRequest(err.message); }
+  if (requestedWeights.length) {
+    const rows = await moodRows(requestedWeights.map((m) => m.moodId));
+    if (rows.length !== requestedWeights.length) throw new ApiError(400, 'INVALID_MOOD', 'One or more of the selected moods do not exist.');
+    moods = rows.map((r) => ({ moodId: r.mood_id, name: r.name, weight: requestedWeights.find((m) => m.moodId === r.mood_id).weight }));
   }
   if (text) {
     parse = await moodParser.parseWithFallback(text, { allowAi: !user.incognitoId });
@@ -219,12 +223,16 @@ async function forMood(user, { moodIds = [], text = null, contextCode = null, li
         'MUSE could not find a mood in that. Try words like “calm”, “stressed”, “need motivation” or “late-night study”.',
         { suggestions: ['I need something calm for studying', "I've had a rough day", 'Something energetic for the gym', 'Feeling nostalgic tonight'] });
     }
-    parse.moods.forEach((pm) => { if (!moods.find((m) => m.moodId === pm.moodId)) moods.push(pm); });
+    if (moodWeights === undefined) parse.moods.forEach((pm) => { if (!moods.find((m) => m.moodId === pm.moodId)) moods.push(pm); });
     if (parse.context && !ctx) ctx = await contextByCode(parse.context.code);
   }
   if (!moods.length && ctx) moods = await contextMoods(ctx.context_id);
   if (!moods.length) throw ApiError.badRequest('Pick at least one mood or describe how you feel.');
   moods = moods.slice(0, 4);
+  if (moodWeights === undefined && moods.length) {
+    const totalWeight = moods.reduce((sum, mood) => sum + Math.max(0, Number(mood.weight) || 0), 0) || moods.length;
+    moods = moods.map((mood) => ({ ...mood, weight: (Math.max(0, Number(mood.weight) || 1) / totalWeight) }));
+  }
 
   const rows = await moodRows(moods.map((m) => m.moodId));
   const base = blend(rows, (r) => moods.find((m) => m.moodId === r.mood_id).weight);
@@ -318,13 +326,70 @@ async function regional(user, { languageId = null, limit = 16 } = {}) {
     subtitle: `${lang.native_name} · tuned to your sound`, moods, targets });
 }
 
-/** Discovery: only songs never played, novelty weight doubled. */
-async function discovery(user, { limit = 16 } = {}) {
-  const targets = (await tasteProfile(user.id)) || normalise({ energy: 0.55, valence: 0.6, danceability: 0.55, acousticness: 0.4,
+/** Discovery: only songs never played, with a user-adjustable familiar ↔ unexpected sound target. */
+async function discovery(user, { limit = 16, intensity = 50 } = {}) {
+  const base = (await tasteProfile(user.id)) || normalise({ energy: 0.55, valence: 0.6, danceability: 0.55, acousticness: 0.4,
     instrumentalness: 0.3, tempoMin: 75, tempoMax: 140 });
+  const discoveryIntensity = Math.max(0, Math.min(100, Number(intensity) || 0));
+  const targets = normalise(discoveryTargets(base, discoveryIntensity));
   const moods = await topMoodPrefs(user.id);
-  const { batchId, rows } = await createAndRun(user, { strategy: 'DISCOVERY', label: 'Discovery', targets, moods, discoveryOnly: true, limit });
-  return shape(user, batchId, rows, { strategy: 'DISCOVERY', title: 'Discovery', subtitle: 'Only songs you have never played', moods, targets });
+  const { batchId, rows } = await createAndRun(user, { strategy: 'DISCOVERY', label: `Discovery · ${discoveryIntensity}% unexpected`,
+    targets, moods, discoveryOnly: true, limit });
+  const out = await shape(user, batchId, rows, { strategy: 'DISCOVERY', title: 'Discovery',
+    subtitle: `Only songs you have never played · ${discoveryIntensity}% unexpected`, moods, targets });
+  out.discoveryIntensity = discoveryIntensity;
+  return out;
+}
+
+/** Mood Dial: use the listener's chosen energy × positivity point as the target sound. */
+async function dial(user, { energy, valence, limit = 20 }) {
+  const nearest = await one('SELECT mood_id AS moodId, name FROM moods ORDER BY POW(target_energy - ?, 2) + POW(target_valence - ?, 2), mood_id LIMIT 1', [energy, valence]);
+  if (!nearest) throw new ApiError(503, 'MOODS_NOT_READY', 'The mood catalogue is not ready yet.');
+  const rows = await moodRows([nearest.moodId]);
+  const base = blend(rows, () => 1);
+  const targets = normalise({ ...base, energy, valence });
+  const moods = [{ moodId: nearest.moodId, name: nearest.name, weight: 1 }];
+  const { batchId, rows: ranked } = await createAndRun(user, {
+    strategy: 'MOOD', label: `Mood Dial · ${Math.round(energy * 100)} energy · ${Math.round(valence * 100)} positivity`,
+    inputText: 'Mood Dial', targets, moods, limit,
+  });
+  return shape(user, batchId, ranked, { strategy: 'MOOD', title: 'Your Mood Dial mix',
+    subtitle: 'A point on the energy × positivity plane', moods, targets });
+}
+
+/** Move between two sound profiles by interpolating their real catalogue audio features. */
+async function moodJourney(user, { startMoodId, targetMoodId, steps = 4, perStage = 5 }) {
+  const ids = [...new Set([startMoodId, targetMoodId])];
+  const moodProfiles = await moodRows(ids);
+  if (moodProfiles.length !== ids.length) throw new ApiError(400, 'INVALID_MOOD', 'Choose valid start and destination moods.');
+  const start = moodProfiles.find((m) => m.mood_id === startMoodId);
+  const end = moodProfiles.find((m) => m.mood_id === targetMoodId);
+  const stages = [];
+  const seen = new Set();
+  for (let index = 0; index < steps; index++) {
+    const progress = steps === 1 ? 1 : index / (steps - 1);
+    const targets = normalise(interpolateProfile(start, end, progress));
+    let stageMoods;
+    if (startMoodId === targetMoodId) stageMoods = [{ moodId: startMoodId, name: start.name, weight: 1 }];
+    else stageMoods = [
+      ...(progress < 1 ? [{ moodId: startMoodId, name: start.name, weight: Math.max(0.01, 1 - progress) }] : []),
+      ...(progress > 0 ? [{ moodId: targetMoodId, name: end.name, weight: Math.max(0.01, progress) }] : []),
+    ];
+    const label = `${start.name} → ${end.name} · ${index + 1}/${steps}`;
+    const { batchId, rows } = await createAndRun(user, {
+      strategy: 'MOOD', label, inputText: `Mood journey: ${start.name} to ${end.name}`,
+      targets, moods: stageMoods, limit: perStage + Math.min(5, perStage),
+    });
+    const fresh = rows.filter((row) => !seen.has(row.song_id)).slice(0, perStage);
+    fresh.forEach((row) => seen.add(row.song_id));
+    stages.push(await shape(user, batchId, fresh, {
+      strategy: 'MOOD', title: index === 0 ? `Start in ${start.name}` : index === steps - 1 ? `Arrive at ${end.name}` : `Step ${index + 1} · ${start.name} to ${end.name}`,
+      subtitle: `${Math.round(progress * 100)}% of the sound transition`, moods: stageMoods, targets,
+    }));
+  }
+  return { strategy: 'MOOD_JOURNEY', title: `${start.name} to ${end.name}`,
+    subtitle: `${steps} stages with gradually changing audio-feature targets`, startMood: start.name, targetMood: end.name,
+    stages, songs: stages.flatMap((stage) => stage.songs), incognito: !!user.incognitoId };
 }
 
 /** Mood Recovery: three short stages that move from low to bright. */
@@ -351,6 +416,47 @@ async function recovery(user, { limit = 12 } = {}) {
     songs: stages.flatMap((s) => s.songs), incognito: !!user.incognitoId };
 }
 
+/** Re-run an owned batch's original feature and mood targets with the active model. */
+async function rebuildBatch(user, batchId) {
+  if (user.incognitoId) throw new ApiError(409, 'INCOGNITO_ACTIVE', 'Saved mix regeneration is paused during a private session.');
+  const source = await one('SELECT * FROM recommendation_batches WHERE batch_id = ? AND user_id = ? AND incognito_id IS NULL', [batchId, user.id]);
+  if (!source) throw ApiError.notFound('Saved mix source');
+  const moods = await query(`SELECT bm.mood_id AS moodId, m.name, bm.weight FROM recommendation_batch_moods bm
+                               JOIN moods m ON m.mood_id = bm.mood_id WHERE bm.batch_id = ? ORDER BY bm.weight DESC`, [batchId]);
+  const targets = normalise({
+    energy: source.target_energy, valence: source.target_valence, danceability: source.target_danceability,
+    acousticness: source.target_acousticness, instrumentalness: source.target_instrumentalness,
+    tempoMin: source.tempo_min, tempoMax: source.tempo_max, maxSpeechiness: source.max_speechiness,
+  });
+  let context = null;
+  if (source.context_id) {
+    const row = await one('SELECT code, name, emoji FROM contexts WHERE context_id = ?', [source.context_id]);
+    if (row) context = row;
+  }
+  let seed = null;
+  if (source.seed_song_id) {
+    const row = await one("SELECT * FROM v_song_catalog WHERE song_id = ? AND status = 'ACTIVE'", [source.seed_song_id]);
+    if (row) seed = toSong(row);
+    else if (source.strategy === 'SIMILAR') throw new ApiError(409, 'SEED_NO_LONGER_ACTIVE', 'The original seed song is no longer active, so this saved mix cannot be rebuilt.');
+  }
+  const count = await one('SELECT COUNT(*) AS n FROM recommendation_items WHERE batch_id = ?', [batchId]);
+  const limit = Math.max(1, Math.min(50, Number(count?.n) || 20));
+  const label = String(source.label || source.strategy).slice(0, 120);
+  const { batchId: nextBatchId, rows } = await createAndRun(user, {
+    strategy: source.strategy, label, inputText: source.input_text, contextId: source.context_id,
+    seedSongId: source.seed_song_id, languageId: source.language_id, targets, moods,
+    discoveryOnly: !!source.discovery_only, limit,
+  });
+  return {
+    ...(await shape(user, nextBatchId, rows, {
+      strategy: source.strategy, title: `${label} · refreshed`, subtitle: 'Rebuilt from the original mood and audio-feature targets using the active recommendation model.',
+      moods, targets, context,
+    })),
+    ...(seed ? { seed } : {}),
+    rebuiltFromBatchId: Number(batchId),
+  };
+}
+
 /** Re-open a stored batch (scores and reasons come from the tables, not recomputed). */
 async function getBatch(user, batchId) {
   const b = await one('SELECT * FROM recommendation_batches WHERE batch_id = ?', [batchId]);
@@ -369,6 +475,6 @@ async function getBatch(user, batchId) {
 }
 
 module.exports = {
-  forMood, forContext, daily, similar, regional, discovery, recovery, getBatch,
+  forMood, dial, moodJourney, forContext, daily, similar, regional, discovery, recovery, getBatch, rebuildBatch,
   createAndRun, runInTx, shape, normalise, blend, moodRows, describe, tasteProfile, topMoodPrefs, contextByCode, contextMoods, profileOf,
 };

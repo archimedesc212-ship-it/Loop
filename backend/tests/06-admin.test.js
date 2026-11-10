@@ -44,6 +44,30 @@ test('role-based access: listener < curator < admin', async () => {
   }
 });
 
+test('admin permission matrix shows live role grants and is restricted to health.view', async () => {
+  const denied = await h.api('GET', '/admin/permissions', { token: listener.token });
+  assert.equal(denied.status, 403);
+  const result = await h.api('GET', '/admin/permissions', { token: admin });
+  assert.equal(result.status, 200);
+  assert.ok(result.body.roles.some((role) => role.code === 'ADMIN' && role.permissions.includes('health.view')));
+  assert.ok(result.body.permissions.some((permission) => permission.code === 'catalog.write' && permission.description));
+  const curatorResult = await h.api('GET', '/admin/permissions', { token: curator });
+  assert.equal(curatorResult.status, 200, 'curators can inspect the effective permission matrix');
+});
+
+test('migration history compares applied versions and checksums with the release files', async () => {
+  const result = await h.api('GET', '/admin/migrations', { token: admin });
+  assert.equal(result.status, 200);
+  assert.equal(result.body.baseline, true);
+  assert.ok(result.body.applied.some((row) => row.version === '0000'));
+  assert.equal(typeof result.body.expectedVersion, 'string');
+  assert.ok(Array.isArray(result.body.pending));
+  assert.ok(Array.isArray(result.body.problems));
+  assert.equal(result.body.ready, result.body.pending.length === 0 && result.body.problems.length === 0
+    && result.body.currentVersion === result.body.expectedVersion);
+  assert.equal((await h.api('GET', '/admin/migrations', { token: listener.token })).status, 403);
+});
+
 test('a curator adds a song: provenance recorded, analysed, mood-tagged, audited', async () => {
   const r = await newSong(curator);
   assert.equal(r.status, 201);

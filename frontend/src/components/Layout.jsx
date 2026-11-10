@@ -8,15 +8,18 @@ import { useToast } from '../hooks/useToast';
 import { useOnline } from '../hooks/useOnline';
 import { api } from '../services/api';
 import { duration } from '../lib/format';
+import { formatSleepRemaining } from '../lib/sleepTimer';
 import { registerMoodColors, LikeButton } from './Songs';
 
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
   { to: '/mood', label: 'Mood', short: 'Mood', icon: Icon.Mood },
+  { to: '/mood-diary', label: 'Mood Diary', short: 'Diary', icon: Icon.BookOpen },
   { to: '/world', label: 'LOOP World', short: 'World', icon: Icon.Globe },
   { to: '/search', label: 'Search', short: 'Search', icon: Icon.Search },
   { to: '/library', label: 'Library', short: 'Library', icon: Icon.Library },
   { to: '/profile', label: 'Listening profile', short: 'Profile', icon: Icon.Chart },
+  { to: '/database', label: 'DB Explorer', short: 'Database', icon: Icon.Database },
 ];
 
 function Sidebar() {
@@ -34,14 +37,19 @@ function Sidebar() {
           <NavLink to="/admin" className="nav-link"><Icon.Shield />Admin</NavLink>
         </>
       )}
+      <NavLink to={user.role === 'ARTIST' ? '/artist/studio' : '/artist/apply'} className="nav-link">{user.role === 'ARTIST' ? <Icon.Music /> : <Icon.Mic />} {user.role === 'ARTIST' ? 'Artist Studio' : 'Become an artist'}</NavLink>
       <div className="sidebar-foot stack" style={{ '--gap': '10px' }}>
         <div className="row" style={{ '--gap': '10px' }}>
           <span className="avatar">{user.displayName.slice(0, 1)}</span>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.displayName}</div>
-            <div className="tiny muted">Guest listener</div>
+            <div className="tiny muted">{user.email?.endsWith('@guest.loop.invalid') ? 'Guest listener' : (user.roleName || 'Listener')}</div>
           </div>
         </div>
+        {user.email?.endsWith('@guest.loop.invalid') && <div className="row" style={{ '--gap': '4px' }}>
+          <Link to="/login" className="btn ghost sm grow">Sign in</Link>
+          <Link to="/register" className="btn primary sm grow">Create account</Link>
+        </div>}
         <div className="row" style={{ '--gap': '4px' }}>
           <Link to="/settings" className="btn ghost sm grow"><Icon.Settings />Settings</Link>
         </div>
@@ -51,7 +59,7 @@ function Sidebar() {
 }
 
 function MobileNav() {
-  const items = [NAV[0], NAV[1], NAV[2], NAV[4], NAV[5]];
+  const items = [NAV[0], NAV[1], NAV[2], NAV[5], NAV[6]];
   return (
     <nav className="mobile-nav" aria-label="Main">
       {items.map(({ to, short, icon: Ico, end }) => (
@@ -153,6 +161,7 @@ function PlayerBar() {
   const p = usePlayer();
   const { user } = useAuth();
   const [queueOpen, setQueueOpen] = useState(false);
+  const [sleepOpen, setSleepOpen] = useState(false);
   const closeQueue = useCallback(() => setQueueOpen(false), []);
   const s = p.current;
   if (!s) return null;
@@ -184,6 +193,23 @@ function PlayerBar() {
         </div>
       </div>
       <div className="right">
+        <div className="sleep-control">
+          <button className={`icon-btn${sleepOpen ? ' on' : ''}`} onClick={() => setSleepOpen((open) => !open)} aria-label="Sleep timer" aria-expanded={sleepOpen} title="Sleep timer">
+            <Icon.Clock />
+            {p.sleepRemaining !== null && <span className="badge-count">{formatSleepRemaining(p.sleepRemaining)}</span>}
+          </button>
+          {sleepOpen && <div className="sleep-panel" role="dialog" aria-label="Sleep timer settings">
+            <div className="row between"><b>Sleep timer</b><button className="icon-btn" onClick={() => setSleepOpen(false)} aria-label="Close sleep timer"><Icon.X /></button></div>
+            <p className="tiny muted">Playback fades down during the final 30 seconds, then stops.</p>
+            <div className="sleep-options">
+              {[5, 15, 30, 45, 60, 90].map((minutes) => <button key={minutes} className="btn ghost sm" onClick={() => { p.setSleepTimer(minutes); setSleepOpen(false); }}>{minutes} min</button>)}
+            </div>
+            {p.sleepRemaining !== null && <div className="row between" style={{ marginTop: 10 }}>
+              <span className="small">Stops in <b>{formatSleepRemaining(p.sleepRemaining)}</b></span>
+              <button className="btn ghost sm" onClick={() => p.cancelSleepTimer()}>Cancel</button>
+            </div>}
+          </div>}
+        </div>
         <div className="row hide-sm" style={{ '--gap': '4px' }}>
           <button className="icon-btn" onClick={p.toggleMute} aria-label={p.muted ? 'Unmute' : 'Mute'} aria-pressed={p.muted}>
             {p.muted || p.volume === 0 ? <Icon.VolumeOff /> : <Icon.Volume />}

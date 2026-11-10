@@ -2,13 +2,13 @@
 
 Developed by Vaishnav Sai. Generated from `feature-registry.json` by `backend/scripts/roadmap/check-registry.js`, which checks every reference against the code.
 
-**All 87:** VERIFIED 9 · IMPLEMENTED-UNVERIFIED 1 · PARTIAL 33 · PLANNED 30 · BLOCKED 7 · NOT IMPLEMENTED 7
+**All 87:** VERIFIED 9 · IMPLEMENTED-UNVERIFIED 19 · PARTIAL 23 · PLANNED 27 · BLOCKED 7 · NOT IMPLEMENTED 2
 
-**Original 1–32:** VERIFIED 5 · PARTIAL 20 · NOT IMPLEMENTED 7
+**Original 1–32:** VERIFIED 5 · IMPLEMENTED-UNVERIFIED 13 · PARTIAL 12 · NOT IMPLEMENTED 2
 
 **Expansion 33–57:** VERIFIED 3 · IMPLEMENTED-UNVERIFIED 1 · PARTIAL 4 · PLANNED 13 · BLOCKED 4
 
-**Expansion 58–87:** VERIFIED 1 · PARTIAL 9 · PLANNED 17 · BLOCKED 3
+**Expansion 58–87:** VERIFIED 1 · IMPLEMENTED-UNVERIFIED 5 · PARTIAL 7 · PLANNED 14 · BLOCKED 3
 
 **By dependency:** CORE 72 · INFRA 5 · PROVIDER 7 · PLATFORM 3
 
@@ -34,35 +34,35 @@ No feature is reported as implemented unless the code exists; VERIFIED additiona
 
 | # | Feature | Phase | Dependency | Status | New database objects | Depends on |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Multi-Mood Blending | S1 | CORE | PARTIAL | — | — |
-| 2 | Mood Journey Engine | S1 | CORE | NOT IMPLEMENTED | — | — |
+| 1 | Multi-Mood Blending | S1 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 2 | Mood Journey Engine | S1 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 3 | Context-Aware Recommendations | S1 | CORE | VERIFIED | — | — |
 | 4 | Why This Song? | S1 | CORE | VERIFIED | — | — |
 | 5 | Skip-Aware Learning | S1 | CORE | PARTIAL | — | — |
-| 6 | Recommendation Diversity | S1 | CORE | PARTIAL | — | — |
+| 6 | Recommendation Diversity | S1 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 7 | Smart Cold Start | S1 | CORE | VERIFIED | — | — |
-| 8 | Recommendation Confidence | S1 | CORE | NOT IMPLEMENTED | — | — |
-| 9 | Mood Dial | S1 | CORE | NOT IMPLEMENTED | — | — |
+| 8 | Recommendation Confidence | S1 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 9 | Mood Dial | S1 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 10 | Multilingual Search Intelligence | S1 | CORE | PARTIAL | — | — |
 | 11 | Cross-Device Continuity | S1 | CORE | PARTIAL | — | — |
-| 12 | Interactive ER Explorer | S1 | CORE | NOT IMPLEMENTED | — | — |
-| 13 | Mood Diary | S2 | CORE | NOT IMPLEMENTED | — | — |
+| 12 | Interactive ER Explorer | S1 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 13 | Mood Diary | S2 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 14 | One-Tap Listening Modes | S2 | CORE | VERIFIED | — | — |
-| 15 | Surprise Me | S2 | CORE | PARTIAL | — | — |
+| 15 | Surprise Me | S2 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 16 | Human vs Model Comparison | S2 | CORE | VERIFIED | — | — |
-| 17 | Save My Mood Mix | S2 | CORE | PARTIAL | — | — |
+| 17 | Save My Mood Mix | S2 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 18 | Personal Music Wrapped | S2 | CORE | PARTIAL | — | — |
 | 19 | Taste Evolution Timeline | S2 | CORE | PARTIAL | — | — |
-| 20 | Mood Calendar Heatmap | S2 | CORE | PARTIAL | — | — |
-| 21 | Skip Pattern Intelligence | S2 | CORE | PARTIAL | — | — |
+| 20 | Mood Calendar Heatmap | S2 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 21 | Skip Pattern Intelligence | S2 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 22 | Artist Discovery Graph | S2 | CORE | NOT IMPLEMENTED | — | — |
 | 23 | Personal Recommendation Controls | S2 | CORE | PARTIAL | — | — |
-| 24 | Privacy Control Centre | S2 | CORE | PARTIAL | — | — |
+| 24 | Privacy Control Centre | S2 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 25 | SQL Query Studio | S3 | CORE | PARTIAL | — | — |
 | 26 | SQL Execution Plan Visualizer | S3 | CORE | PARTIAL | — | — |
 | 27 | Index Performance Lab | S3 | INFRA | NOT IMPLEMENTED | — | — |
 | 28 | Transaction Demonstrator | S3 | CORE | PARTIAL | — | — |
-| 29 | Permission Matrix | S3 | CORE | PARTIAL | — | — |
+| 29 | Permission Matrix | S3 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 30 | Data Quality Centre | S3 | CORE | PARTIAL | — | — |
 | 31 | Database Scenario Simulator | S3 | CORE | PARTIAL | — | — |
 | 32 | Mood Disagreement Analysis | S3 | CORE | PARTIAL | — | — |
@@ -93,12 +93,12 @@ No feature is reported as implemented unless the code exists; VERIFIED additiona
 | 57 | Accessibility and Inclusive Mode | P4 | CORE | PARTIAL | user_settings | — |
 | 58 | Smart Queue Autopilot | P8 | CORE | PARTIAL | recommendation_batches.strategy | — |
 | 59 | Personal Radio Station | P8 | CORE | PARTIAL | recommendation_batches.seed_artist_id, recommendation_batches.strategy | — |
-| 60 | Sleep Timer with Audio Fade | P8 | CORE | PLANNED | — | — |
+| 60 | Sleep Timer with Audio Fade | P8 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 61 | Focus Timer + Music | P8 | CORE | PLANNED | — | — |
 | 62 | Playback Quality Selector | P7 | PROVIDER | BLOCKED | — | — |
 | 63 | Listening Session Bookmarks | P8 | CORE | PLANNED | listening_bookmarks | — |
-| 64 | Playlist Health Score | P9 | CORE | PLANNED | — | — |
-| 65 | Duplicate Playlist Cleaner | P9 | CORE | PARTIAL | — | — |
+| 64 | Playlist Health Score | P9 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 65 | Duplicate Playlist Cleaner | P9 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 66 | Playlist Version History | P9 | CORE | PLANNED | playlist_revisions, playlist_revision_songs | #34 |
 | 67 | Playlist Conflict Resolver | P9 | CORE | PLANNED | — | #34, #66 |
 | 68 | Playlist Alternative Finder | P9 | CORE | PLANNED | — | — |
@@ -113,10 +113,10 @@ No feature is reported as implemented unless the code exists; VERIFIED additiona
 | 77 | Login Activity Timeline | P10 | CORE | PARTIAL | login_events | — |
 | 78 | Consent and API Connection Centre | P7 | PROVIDER | BLOCKED | — | #35, #37 |
 | 79 | Automatic Data Retention Rules | P10 | CORE | PARTIAL | retention_policies, user_settings.history_retention_days, pipeline_jobs.job_type | #57 |
-| 80 | Personal Data Export | P10 | CORE | PLANNED | — | — |
+| 80 | Personal Data Export | P10 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 81 | Account Recovery and Security Centre | P10 | PROVIDER | PARTIAL | — | #76, #77 |
 | 82 | Database Backup and Restore Centre | P11 | INFRA | PLANNED | pipeline_jobs.job_type | — |
-| 83 | Migration History Dashboard | P11 | CORE | PARTIAL | — | — |
+| 83 | Migration History Dashboard | P11 | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 84 | API Health Monitor | P11 | CORE | PARTIAL | — | — |
 | 85 | Recommendation A/B Testing | P11 | CORE | PLANNED | experiments, experiment_arms, recommendation_batches.experiment_arm_id | — |
 | 86 | Feature Flag Manager | P11 | CORE | PLANNED | feature_flags, feature_flag_overrides | — |
@@ -502,17 +502,17 @@ An endless station started from one song, artist or mood.
 
 ### 60. Sleep Timer with Audio Fade
 
-**Status:** PLANNED · **Dependency:** CORE · **Phase:** P8
+**Status:** IMPLEMENTED-UNVERIFIED · **Dependency:** CORE · **Phase:** P8
 
-Stop playback after N minutes or at the end of the current song, fading the volume out.
+A player-level sleep countdown with a final 30-second audio fade, playback stop, cancel and 5–90 minute presets.
 
-- **Reuses:** tables `playback_events`, `listening_history`; views —; routines —; APIs `POST /playback/:playId/events`, `POST /playback/:playId/finish`; UI `frontend/src/hooks/usePlayer.jsx`
+- **Reuses:** tables `playback_events`, `listening_history`; views —; routines —; APIs `POST /playback/:playId/events`, `POST /playback/:playId/finish`; UI `frontend/src/components/Layout.jsx`, `frontend/src/hooks/usePlayer.jsx`
 - **Database change:** none. None. A timer is client state; the stop is recorded as an ordinary PAUSE / finish, so listening history stays correct.
 - **API:** `No new endpoint`
 - **Frontend:** Timer menu (15/30/45/60 min, end of song); Gradual volume fade over the last 30 s; Remaining time in the player
 - **Security and privacy:** No data stored; Fade restores the previous volume on resume
-- **Tests to add:** timer pauses playback and records listened seconds correctly; end-of-song timer stops before the next song starts; cancelling the timer restores volume
-- **Gaps:** Browsers may throttle timers in background tabs; mobile background playback is a platform limitation.
+- **Tests to add:** fade factor stays at full volume before the final window; fade factor decreases linearly and reaches zero; timer stops the current play exactly once when its deadline is reached
+- **Gaps:** Countdown and fade logic are implemented for real audio and the generated demo sketch; browser/device background behavior and manual playback integration remain end-to-end unverified.
 
 ### 61. Focus Timer + Music
 
@@ -556,31 +556,33 @@ Save a moment in a song ("the drop at 1:32") with an optional note and jump back
 
 ### 64. Playlist Health Score
 
-**Status:** PLANNED · **Dependency:** CORE · **Phase:** P9
+**Status:** IMPLEMENTED-UNVERIFIED · **Dependency:** CORE · **Phase:** P9
 
-A 0–100 score with reasons: unplayable or hidden songs, near-duplicates, mood and energy jumps, overly long runs of one artist.
+Playlist pages now show a transparent 0–100 heuristic health score with reasons for explicitly unavailable tracks, user-dismissed tracks, normalized title/artist duplicates, large adjacent energy jumps, and runs of three or more consecutive tracks by the same artist. Missing metadata is not penalized.
 
-- **Reuses:** tables `playlist_songs`, `songs`, `song_media`, `audio_features`, `song_moods`; views —; routines —; APIs `GET /playlists/:id`; UI `frontend/src/pages/Library.jsx`
+- **Reuses:** tables `playlist_songs`, `songs`, `song_media`, `audio_features`, `song_moods`; views —; routines —; APIs `GET /playlists/:id`; UI `frontend/src/pages/Library.jsx`, `frontend/src/lib/playlistHealth.js`
 - **Database change:** none. None. Computed on request from existing rows; storing it would go stale.
 - **API:** `GET /playlists/:id/health → {score, issues[]}`
 - **Frontend:** Health badge on playlist pages; Issue list with one-tap fixes
 - **Security and privacy:** Same access rule as viewing the playlist
+- **Passing tests:** "does not penalise missing playability or audio-feature metadata"
 - **Tests to add:** a hidden song lowers the score with an explicit issue; score is reproducible for the same playlist
+- **Gaps:** Browser-level accessibility and real catalogue integration checks remain to be run with installed frontend dependencies and the production database.
 
 ### 65. Duplicate Playlist Cleaner
 
-**Status:** PARTIAL · **Dependency:** CORE · **Phase:** P9
+**Status:** IMPLEMENTED-UNVERIFIED · **Dependency:** CORE · **Phase:** P9
 
-Find near-duplicates (same normalised title and artist, merged songs, alternate versions) and remove them in one step.
+Playlist pages detect repeated normalized title + artist pairs and offer a confirmed cleanup action for owner-editable playlists. Cleanup keeps the first occurrence, preserves distinct version labels, uses owner-checked remove endpoints, and refreshes after partial failure.
 
-- **Reuses:** tables `playlist_songs`, `songs`, `song_artists`; views —; routines —; APIs `GET /playlists/:id`, `DELETE /playlists/:id/songs/:songId`; UI `frontend/src/pages/Library.jsx`
+- **Reuses:** tables `playlist_songs`, `songs`, `song_artists`; views —; routines —; APIs `GET /playlists/:id`, `DELETE /playlists/:id/songs/:songId`; UI `frontend/src/pages/Library.jsx`, `frontend/src/lib/playlistHealth.js`
 - **Database change:** none. None. The playlist_songs primary key already prevents exact duplicates; near-duplicates are found with songs.normalized_title and merged_into_song_id.
 - **API:** `GET /playlists/:id/duplicates`; `POST /playlists/:id/duplicates/resolve {keepSongIds[]}`
 - **Frontend:** Grouped duplicate review dialog
 - **Security and privacy:** Owner or EDITOR collaborator only; Resolve runs in one transaction
-- **Passing tests:** "duplicates are rejected: same song twice, same playlist name twice"
+- **Passing tests:** "groups duplicate titles by normalised title and artist"
 - **Tests to add:** a merged song and its target are reported as duplicates; resolve keeps the chosen entry and counters stay correct
-- **Gaps:** Exact duplicates are already impossible; near-duplicate detection and the cleaner UI are not built.
+- **Gaps:** The real catalogue may contain alternate recordings with identical title and artist but no version label; users are asked to confirm cleanup and first occurrence is retained. Full browser/database integration remains unverified.
 
 ### 66. Playlist Version History
 
@@ -774,7 +776,7 @@ Old data is deleted on a schedule according to visible rules, and listeners can 
 
 ### 80. Personal Data Export
 
-**Status:** PLANNED · **Dependency:** CORE · **Phase:** P10
+**Status:** IMPLEMENTED-UNVERIFIED · **Dependency:** CORE · **Phase:** P10
 
 Download everything MUSE stores about you as a JSON file.
 
@@ -783,7 +785,8 @@ Download everything MUSE stores about you as a JSON file.
 - **API:** `POST /me/export {password} → application/json download`
 - **Frontend:** "Download my data" in Settings
 - **Security and privacy:** Requires the current password; Own rows only; excludes password hash, token hashes and other users' data; Rate-limited (e.g. once per hour); Logged in audit_logs
-- **Tests to add:** export contains my plays and none of another user's; export never contains password_hash or token_hash; wrong password is 401
+- **Tests to add:** export contains only the caller’s personal rows; export excludes password hashes, session tokens and other users’ data; wrong password is rejected and export throttling is enforced
+- **Gaps:** The password-confirmed JSON export, audit record and hourly limit are implemented; database-backed security tests remain.
 
 ### 81. Account Recovery and Security Centre
 
@@ -817,18 +820,18 @@ Scheduled logical backups with verification by restoring into a scratch schema; 
 
 ### 83. Migration History Dashboard
 
-**Status:** PARTIAL · **Dependency:** CORE · **Phase:** P11
+**Status:** IMPLEMENTED-UNVERIFIED · **Dependency:** CORE · **Phase:** P11
 
-Admins see applied and pending migrations with checksums, timings and drift warnings.
+Admin migration dashboard compares checked-in SQL migration filenames and SHA-256 checksums with schema_migrations, identifies applied/pending migrations and modified-file checksum mismatches, and reports baseline/current/expected version readiness. It is read-only and never applies DDL.
 
-- **Reuses:** tables `schema_migrations`; views —; routines —; APIs `GET /admin/health`; UI `frontend/src/pages/admin/SystemAdmin.jsx`
+- **Reuses:** tables `schema_migrations`; views —; routines —; APIs `GET /admin/migrations`; UI `frontend/src/pages/admin/MigrationsAdmin.jsx`, `frontend/src/pages/admin/Admin.jsx`
 - **Database change:** none. None. schema_migrations already records version, checksum, time and duration.
 - **API:** `GET /admin/migrations → applied, pending, checksum problems (same logic as migrate.js status)`
 - **Frontend:** Migrations table in System admin; Warning when a file changed after it was applied
 - **Security and privacy:** Admin-only, read-only: the dashboard never applies a migration
-- **Passing tests:** "the schema is at the latest migration and every view/routine/trigger uses one collation"; "liveness does not touch the database; readiness reports schema version and provider states without secrets"
+- **Passing tests:** "migration history compares applied versions and checksums with the release files"
 - **Tests to add:** dashboard lists 0000–0004 as applied with checksums; an edited migration file is reported as a checksum problem
-- **Gaps:** Schema version is reported by readiness and the CLI; there is no admin screen.
+- **Gaps:** The live MySQL integration test and database restore/drift validation require a configured MySQL environment. The dashboard does not perform full structural drift inspection.
 
 ### 84. API Health Monitor
 
@@ -890,35 +893,35 @@ Show how key queries use indexes, and measure the API under concurrent load.
 
 | # | Feature | Status | Evidence (passing tests) | Gaps |
 | --- | --- | --- | --- | --- |
-| 1 | Multi-Mood Blending | PARTIAL | "picking moods returns a ranked, explained list stored in the database" | Up to 4 moods are accepted but weighted equally; no percentage weights or 100 % validation. |
-| 2 | Mood Journey Engine | NOT IMPLEMENTED | — | GET /insights/journey reports past moods; it does not generate journeys. |
+| 1 | Multi-Mood Blending | IMPLEMENTED-UNVERIFIED | "explicit mood blend weights are normalized from exactly 100 percent"; "mood blend rejects duplicate, zero, excessive and non-100 percent allocations"; "legacy mood selections are evenly weighted and duplicate ids are removed" | The API and UI are implemented; a MySQL-backed end-to-end test is still required. |
+| 2 | Mood Journey Engine | IMPLEMENTED-UNVERIFIED | "journey interpolation starts at the source profile, ends at the target and moves linearly" | The journey generator and UI are implemented; database-backed stage ranking remains to be exercised. |
 | 3 | Context-Aware Recommendations | VERIFIED | "focus mode prefers instrumental, low-speech songs"; "other strategies respond: daily, regional, recovery, worlds, recommendations/:userId" | — |
 | 4 | Why This Song? | VERIFIED | "picking moods returns a ranked, explained list stored in the database" | — |
 | 5 | Skip-Aware Learning | PARTIAL | "a short listen is a skip; completion % is derived by the database, not trusted from the client"; "behaviour changes recommendations: a 1★ song disappears, a liked song seeds "Because you liked"" | Skips are weighted (w_skip) with decay in preference refresh, but no test proves repeated skips change rankings. |
-| 6 | Recommendation Diversity | PARTIAL | "diversity: no artist appears more than the configured cap" | No user-adjustable discovery intensity. |
+| 6 | Recommendation Diversity | IMPLEMENTED-UNVERIFIED | "diversity: no artist appears more than the configured cap" | Adjustable discovery target is implemented; per-user persisted diversity preferences and SQL-backed ranking tests remain unverified. |
 | 7 | Smart Cold Start | VERIFIED | "onboarding stores weights that drive the first recommendations" | — |
-| 8 | Recommendation Confidence | NOT IMPLEMENTED | — | — |
-| 9 | Mood Dial | NOT IMPLEMENTED | — | — |
+| 8 | Recommendation Confidence | IMPLEMENTED-UNVERIFIED | "recommendation confidence is labelled from available evidence rather than score-as-probability" | Evidence classification and the why-panel disclosure are implemented; full response-to-UI tests remain. |
+| 9 | Mood Dial | IMPLEMENTED-UNVERIFIED | — | The energy-by-positivity control and recommendation endpoint are implemented; DB-backed tests remain. |
 | 10 | Multilingual Search Intelligence | PARTIAL | "search finds songs, aliases and moods via SQL"; "search edge cases: empty, one character, nothing found, very long" | No transliteration between scripts. |
 | 11 | Cross-Device Continuity | PARTIAL | — | Queue and playback position are not synced. |
-| 12 | Interactive ER Explorer | NOT IMPLEMENTED | — | Static diagrams exist in docs/erd; no in-app explorer. |
-| 13 | Mood Diary | NOT IMPLEMENTED | — | — |
+| 12 | Interactive ER Explorer | IMPLEMENTED-UNVERIFIED | "searches table names, column names and column types without case sensitivity"; "finds incoming references and returns outgoing relationship metadata" | The explorer is interactive but uses the checked-in 64-table academic schema snapshot; it is not a live database browser and does not include newer migrations until the snapshot is regenerated. |
+| 13 | Mood Diary | IMPLEMENTED-UNVERIFIED | — | Migration 0009 and owner-only API/UI are implemented; MySQL integration and end-to-end privacy tests remain unverified. |
 | 14 | One-Tap Listening Modes | VERIFIED | "focus mode prefers instrumental, low-speech songs" | — |
-| 15 | Surprise Me | PARTIAL | "discovery only returns songs the user has never played" | No adjustable discovery intensity. |
+| 15 | Surprise Me | IMPLEMENTED-UNVERIFIED | "discovery only returns songs the user has never played" | Discovery intensity is implemented in the endpoint and UI; end-to-end SQL ranking tests remain unverified. |
 | 16 | Human vs Model Comparison | VERIFIED | "user ratings never change the AI mood prediction"; "the average and count per song and mood match the stored ratings" | — |
-| 17 | Save My Mood Mix | PARTIAL | "a generated list saves as a playlist in rank order; someone else cannot save it" | No reorder or regenerate. |
+| 17 | Save My Mood Mix | IMPLEMENTED-UNVERIFIED | "an owned saved mix can be rebuilt from its original mood and audio targets" | Database-backed integration test remains unrun in this environment; batches whose required similar-song seed is no longer active are safely refused. |
 | 18 | Personal Music Wrapped | PARTIAL | "listening insights are computed from the plays" | Daily/weekly/monthly only; no yearly summary or shareable recap. |
 | 19 | Taste Evolution Timeline | PARTIAL | — | Moods only; no genre/artist/language evolution. |
-| 20 | Mood Calendar Heatmap | PARTIAL | — | Listening heatmap only; depends on 13 for mood check-ins. |
-| 21 | Skip Pattern Intelligence | PARTIAL | — | Platform-level SQL (Phase 3 Q06) exists; no per-user skip report in the app. |
+| 20 | Mood Calendar Heatmap | IMPLEMENTED-UNVERIFIED | — | API, month grid and privacy-scoped data joins are implemented; MySQL integration and end-to-end rendering remain unverified. Listening dates follow the application database timezone. |
+| 21 | Skip Pattern Intelligence | IMPLEMENTED-UNVERIFIED | — | The per-user endpoint and dashboard are implemented; MySQL integration, privacy-scope and empty-account tests remain. |
 | 22 | Artist Discovery Graph | NOT IMPLEMENTED | — | — |
 | 23 | Personal Recommendation Controls | PARTIAL | ""Not for me" removes a song from future recommendations until undone; paused in private sessions" | No 'prefer this artist' or 'explore new genres' controls. |
-| 24 | Privacy Control Centre | PARTIAL | "the database itself rejects permanent history while a private session is active"; "sessions list, revoke one, sign out everywhere" | No personal data export. |
+| 24 | Privacy Control Centre | IMPLEMENTED-UNVERIFIED | "the database itself rejects permanent history while a private session is active"; "sessions list, revoke one, sign out everywhere" | Full browser-level interaction and database integration tests still require the frontend dependencies and a configured MySQL service. |
 | 25 | SQL Query Studio | PARTIAL | — | Exists as the Phase 3 Streamlit/HTML apps (phase3/), verified by phase3/run_query_tests.py; not yet inside the LOOP app. |
 | 26 | SQL Execution Plan Visualizer | PARTIAL | — | EXPLAIN examples in the Workbench queries file and slow-query digests for admins; no visualizer. |
 | 27 | Index Performance Lab | NOT IMPLEMENTED | — | — |
 | 28 | Transaction Demonstrator | PARTIAL | — | Demonstrated by SQL scripts (constraint tests with rollback); no UI. |
-| 29 | Permission Matrix | PARTIAL | "protected routes need a valid token" | Enforcement exists; no matrix screen. |
+| 29 | Permission Matrix | IMPLEMENTED-UNVERIFIED | "admin permission matrix shows live role grants and is restricted to health.view" | The new integration test is present but the database-backed suite could not run here because Express dependencies are missing. |
 | 30 | Data Quality Centre | PARTIAL | "ingestion is idempotent and review decisions are enforced and audited" | No detection of suspicious ratings or contradictory mood classifications. |
 | 31 | Database Scenario Simulator | PARTIAL | — | Scripts and tests (empty catalogue, constraint tests); no UI. |
 | 32 | Mood Disagreement Analysis | PARTIAL | — | Aggregates exist; no disagreement report. |

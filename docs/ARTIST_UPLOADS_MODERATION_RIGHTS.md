@@ -1,7 +1,25 @@
 # LOOP artist uploads, playback security, moderation and rights contract
 
-Status: implementation contract; this document does not claim these runtime features are already implemented.
+Status: partial runtime implementation added in the LOOP high-priority work pass; not production-ready. The current code implements account applications, private local quarantine, signature/size checks, ClamAV + ffprobe gating, moderator review, separate publication, artist withdrawal and rights reports.
 Target: first public release for independent artists who own or control the necessary rights.
+
+## Current implementation boundary (November 2026)
+
+Implemented in this codebase: `/register` and `/login` use the existing server-side session system; `/artist/apply` records applications for non-guest LISTENER accounts; `/artist/studio` submits rights declarations and uploads to a private `artist-quarantine` directory; `/admin` includes artist application, scanning, rights review, publication and report actions. Migration `0008_artist_accounts_uploads_rights.sql` is additive and gives ARTIST accounts the listener permission set plus creator permissions. Audio is signature-checked on intake, scanned by ClamAV, probed by ffprobe and held from playback until a moderator approves and explicitly publishes it.
+
+Not implemented yet: private object-storage / CDN adapter, direct signed multipart uploads, durable worker queue and crash-safe processing leases, transcoding/normalization, short-lived signed playback grants, contributor/label splits, royalty calculation or payouts, email verification/notifications, copyright counter-notice and appeal workflows, and production deployment validation. Country-based territory and licence-date checks are enforced in the current playback-resolution and direct-media paths, but these are not a substitute for signed edge playback grants. The current filesystem storage is local `LOCAL_MEDIA_DIR`; it is **not durable on an ephemeral host**. Do not enable public artist uploads on a serverless or ephemeral deployment without a persistent mounted volume or an object-storage implementation. The in-process admin scan endpoint is intended for small bounded files; production should move scanning into a durable background worker.
+
+### Local setup for the implemented slice
+
+1. Apply the forward-only migration with `npm run db:migrate`.
+2. Set `VITE_DEMO_MODE=false` for a backend-connected frontend.
+3. Configure `LOCAL_MEDIA_DIR` to a private persistent directory writable by the API/worker; do not expose it as static web content.
+4. Configure `CLAMAV_HOST`, `CLAMAV_PORT`, and install `ffprobe` (or set `FFPROBE_PATH`). Without a reachable scanner, uploads remain quarantined.
+5. Register an account, submit an artist application, approve it in the admin artist panel, then upload a supported audio file from Artist Studio.
+6. Use the admin panel's scan action or run `npm run artist:scan` on a worker. Approve only after rights/evidence review; publish is a second explicit action.
+7. Verify backup/restore for the media directory as well as the database.
+
+`ARTIST_UPLOAD_MAX_BYTES` is capped at 50 MiB by the application. `ARTIST_STORAGE_QUOTA_BYTES` defaults to 500 MiB per rolling 30 days. These are guardrails, not a CDN or storage plan.
 
 ## Non-negotiable release boundary
 
@@ -21,16 +39,25 @@ Terminal or exceptional states: `REJECTED`, `TAKEDOWN_PENDING`, `TAKEN_DOWN`, `S
 
 Only an authorized moderator may move a track to APPROVED. Only an artist with ownership of the track may edit its draft metadata or request withdrawal. Publication requires APPROVED status, valid rights grant, active territory window and completed media processing.
 
-## Upload protocol
+## Implemented upload protocol (local persistent-volume mode)
 
-1. Authenticated artist requests an upload intent with metadata and declared file size, MIME type and checksum.
-2. API validates artist role, account state, per-account quota, allowed format and configured maximum size.
-3. API creates a random opaque object key and a short-lived, single-purpose signed upload URL for a private bucket. The browser never receives storage credentials.
-4. Browser uploads directly to object storage. For large files use multipart upload with bounded part sizes and explicit abort/expiry cleanup.
-5. Browser calls finalize. Server verifies object existence, actual size, checksum, content type by magic bytes, and ownership of the upload intent.
-6. Track remains quarantined. A background worker performs malware scanning, media probing, duration/codec checks, metadata extraction and safe transcoding. Never run FFmpeg in a short Vercel request.
-7. A moderator reviews the rights declaration, metadata, evidence and any automated flags.
-8. On approval, server records the moderation decision and creates a publishable catalogue record. Only then can a playback token be issued.
+1. Authenticated artist requests an upload intent with metadata, declared file size/MIME, territory/date grant and separate composition/master rights declarations.
+2. The API validates the artist-account link, upload limits and rolling quota, then returns a random 128-bit upload identifier and a single-use PUT endpoint.
+3. The browser streams the file to a private `artist-quarantine` directory under `LOCAL_MEDIA_DIR`; the API enforces the byte count, accepted MIME/signature pair and SHA-256 checksum.
+4. The upload remains unavailable to playback. ClamAV INSTREAM and ffprobe must both pass; ffprobe validates an audio-only stream and duration from 30 seconds to 30 minutes.
+5. An authorized moderator reviews the rights evidence and metadata. Approval creates a hidden song. A second explicit moderator action publishes it.
+6. Playback and direct media delivery check publication state, licence dates and listener country; artist-upload responses are sent with `Cache-Control: private, no-store`.
+7. Artist withdrawal or a resolved copyright report hides the song and restricts the media record so future playback requests are denied.
+
+This mode requires a private persistent mounted volume shared by the API and scanner. It is not a serverless object-storage architecture and should not be exposed on ephemeral storage.
+
+## Target production object-storage protocol (not implemented)
+
+1. API creates an upload intent and short-lived, single-purpose signed upload URL for a private object bucket. The browser never receives storage credentials.
+2. Browser uploads directly to object storage. For large files use multipart upload with bounded part sizes and explicit abort/expiry cleanup.
+3. Browser calls finalize. Server verifies object existence, actual size, checksum, content type by magic bytes, and ownership of the upload intent.
+4. A durable worker performs malware scanning, media probing, safe transcoding and metadata extraction. Never run FFmpeg in a short Vercel request.
+5. A moderator reviews the rights declaration, metadata, evidence and automated flags. Only then can the recording become publicly discoverable.
 
 Reject path traversal, arbitrary URLs, client-supplied storage keys, oversized files, MIME-only validation, executable/polyglot files, duplicate finalize calls and replayed intents.
 
@@ -69,9 +96,10 @@ A track is not publishable if required fields are absent, territory/date is out 
 - Maintain repeat-infringer policy, appeal path, response SLAs and a designated legal/takedown contact before launch.
 - No automatic AI decision should be the sole basis for permanent removal or account termination.
 
-## Minimal API contract
+## Implemented API contract
 
-All endpoints require same-origin CSRF protection for cookie-authenticated writes and per-user/IP rate limits.
+All write endpoints use the existing same-origin CSRF protection and per-IP rate limits. Artist routes are `/api/artist/me`, `/api/artist/applications`, `/api/artist/uploads`, `/api/artist/uploads/:id/content` (PUT), `/api/artist/uploads/:id/withdraw`, and `/api/artist/uploads/:id/reports`. Admin routes are under `/api/admin/artist-applications`, `/api/admin/artist-uploads`, and `/api/admin/artist-rights-reports` and require `artist.review`.
+
 
 | Method and route | Purpose | Required checks |
 |---|---|---|

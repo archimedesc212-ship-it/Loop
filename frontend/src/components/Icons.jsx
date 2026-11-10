@@ -49,3 +49,5 @@ export const BrandMark = (p) => (
 );
 export const Music = (p) => <I {...p}><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></I>;
 export const Mic = (p) => <I {...p}><rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8" /></I>;
+
+export const BookOpen = (p) => <I {...p}><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H20v16H5.5A2.5 2.5 0 0 0 3 21z" /><path d="M3 5.5v15A2.5 2.5 0 0 1 5.5 18H20M8 7h8M8 11h8" /></I>;

@@ -22,6 +22,20 @@ test('picking moods returns a ranked, explained list stored in the database', as
   assert.ok(top.moods.some((m) => ['Calm', 'Dreamy', 'Peaceful', 'Relaxed'].includes(m)));
 });
 
+test('an owned saved mix can be rebuilt from its original mood and audio targets', async () => {
+  const moods = await h.query("SELECT mood_id FROM moods WHERE name IN ('Calm', 'Dreamy')");
+  const original = await h.api('POST', '/recommendations/mood', { token: user.token, body: { moodIds: moods.map((m) => m.mood_id), limit: 8 } });
+  assert.equal(original.status, 200);
+  const refreshed = await h.api('POST', `/recommendations/batches/${original.body.batchId}/rebuild`, { token: user.token, body: {} });
+  assert.equal(refreshed.status, 201);
+  assert.notEqual(refreshed.body.batchId, original.body.batchId);
+  assert.equal(refreshed.body.rebuiltFromBatchId, original.body.batchId);
+  assert.deepEqual(refreshed.body.interpretation.targets, original.body.interpretation.targets);
+  assert.deepEqual(refreshed.body.interpretation.moods.map((m) => m.id).sort(), original.body.interpretation.moods.map((m) => m.id).sort());
+  const stranger = await h.newUser({ onboard: false });
+  assert.equal((await h.api('POST', `/recommendations/batches/${original.body.batchId}/rebuild`, { token: stranger.token, body: {} })).status, 404);
+});
+
 test('text input is parsed deterministically, including negation and activity', async () => {
   const p = await h.api('POST', '/recommendations/parse', { token: user.token, body: { text: 'not happy, need something calm for studying' } });
   assert.equal(p.status, 200);

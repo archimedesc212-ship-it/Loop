@@ -81,27 +81,27 @@ Colours: green VERIFIED · blue IMPLEMENTED-UNVERIFIED · amber PARTIAL · grey 
 
 | # | Feature | Dependency | Status | Needs first | Needed by |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Multi-Mood Blending | CORE | PARTIAL | — | — |
-| 2 | Mood Journey Engine | CORE | NOT IMPLEMENTED | — | — |
+| 1 | Multi-Mood Blending | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 2 | Mood Journey Engine | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 3 | Context-Aware Recommendations | CORE | VERIFIED | — | — |
 | 4 | Why This Song? | CORE | VERIFIED | — | — |
 | 5 | Skip-Aware Learning | CORE | PARTIAL | — | — |
-| 6 | Recommendation Diversity | CORE | PARTIAL | — | — |
+| 6 | Recommendation Diversity | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 7 | Smart Cold Start | CORE | VERIFIED | — | — |
-| 8 | Recommendation Confidence | CORE | NOT IMPLEMENTED | — | — |
-| 9 | Mood Dial | CORE | NOT IMPLEMENTED | — | — |
+| 8 | Recommendation Confidence | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 9 | Mood Dial | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 10 | Multilingual Search Intelligence | CORE | PARTIAL | — | — |
 | 11 | Cross-Device Continuity | CORE | PARTIAL | — | — |
-| 12 | Interactive ER Explorer | CORE | NOT IMPLEMENTED | — | — |
-| 13 | Mood Diary | CORE | NOT IMPLEMENTED | — | — |
+| 12 | Interactive ER Explorer | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 13 | Mood Diary | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 14 | One-Tap Listening Modes | CORE | VERIFIED | — | — |
-| 15 | Surprise Me | CORE | PARTIAL | — | — |
+| 15 | Surprise Me | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 16 | Human vs Model Comparison | CORE | VERIFIED | — | — |
 | 17 | Save My Mood Mix | CORE | PARTIAL | — | — |
 | 18 | Personal Music Wrapped | CORE | PARTIAL | — | — |
 | 19 | Taste Evolution Timeline | CORE | PARTIAL | — | — |
-| 20 | Mood Calendar Heatmap | CORE | PARTIAL | — | — |
-| 21 | Skip Pattern Intelligence | CORE | PARTIAL | — | — |
+| 20 | Mood Calendar Heatmap | CORE | IMPLEMENTED-UNVERIFIED | — | — |
+| 21 | Skip Pattern Intelligence | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 22 | Artist Discovery Graph | CORE | NOT IMPLEMENTED | — | — |
 | 23 | Personal Recommendation Controls | CORE | PARTIAL | — | — |
 | 24 | Privacy Control Centre | CORE | PARTIAL | — | — |
@@ -140,7 +140,7 @@ Colours: green VERIFIED · blue IMPLEMENTED-UNVERIFIED · amber PARTIAL · grey 
 | 57 | Accessibility and Inclusive Mode | CORE | PARTIAL | — | #79 |
 | 58 | Smart Queue Autopilot | CORE | PARTIAL | — | — |
 | 59 | Personal Radio Station | CORE | PARTIAL | — | #72 |
-| 60 | Sleep Timer with Audio Fade | CORE | PLANNED | — | — |
+| 60 | Sleep Timer with Audio Fade | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 61 | Focus Timer + Music | CORE | PLANNED | — | — |
 | 62 | Playback Quality Selector | PROVIDER | BLOCKED | — | — |
 | 63 | Listening Session Bookmarks | CORE | PLANNED | — | — |
@@ -160,7 +160,7 @@ Colours: green VERIFIED · blue IMPLEMENTED-UNVERIFIED · amber PARTIAL · grey 
 | 77 | Login Activity Timeline | CORE | PARTIAL | — | #81 |
 | 78 | Consent and API Connection Centre | PROVIDER | BLOCKED | #35, #37 | — |
 | 79 | Automatic Data Retention Rules | CORE | PARTIAL | #57 | — |
-| 80 | Personal Data Export | CORE | PLANNED | — | — |
+| 80 | Personal Data Export | CORE | IMPLEMENTED-UNVERIFIED | — | — |
 | 81 | Account Recovery and Security Centre | PROVIDER | PARTIAL | #76, #77 | — |
 | 82 | Database Backup and Restore Centre | INFRA | PLANNED | — | — |
 | 83 | Migration History Dashboard | CORE | PARTIAL | — | — |

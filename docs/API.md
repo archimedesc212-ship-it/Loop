@@ -95,6 +95,7 @@ All return `{ batchId, strategy, title, subtitle, songs[], interpretation?, inco
 | GET | `/recommendations/discovery` | never-played songs only |
 | GET | `/recommendations/recovery` | three stages |
 | GET | `/recommendations/batches/:id` | a stored list (owner only) |
+| POST | `/recommendations/batches/:id/rebuild` | rebuild an owned mix with its stored mood/audio targets and the active model; rejected in private sessions |
 | GET | `/recommendations/:userId` | your own, or anyone's with `users.manage` |
 
 ## Playback, history, feedback
@@ -188,7 +189,33 @@ song and mood (primary key).
 
 Allowed review actions per type: possible duplicate — all five; suspicious metadata — APPROVE, REJECT, IGNORE, REPROCESS; failed ingestion — REJECT, IGNORE, REPROCESS; source conflict — APPROVE, MERGE, REJECT, IGNORE.
 
+## Private Mood Diary
+
+- `GET /api/me/mood-diary?days=90&asOfDate=YYYY-MM-DD` — signed-in owner’s private check-ins for a 1–365 day window. `asOfDate` is optional and lets the browser use its local calendar day.
+- `PUT /api/me/mood-diary/today` — upsert one check-in for the supplied browser-local date: `{ checkinDate, moodId?, note? }`. A mood, a note, or both are required; notes are limited to 500 characters. Check-in dates are restricted to the current local day (with a one-day UTC boundary allowance).
+- `DELETE /api/me/mood-diary/:entryId` — permanently delete one of the caller’s own entries; entries belonging to another account are indistinguishable from missing entries (404).
+
+Mood Diary entries are private by default, cascade-delete with their account, and are included in password-confirmed personal-data export. They are not shared with other listeners, used for recommendation ranking, or used for model training. Migration `0009_private_mood_diary.sql` creates the additive storage table.
+
 ## Health and readiness
 
 - `GET /api/health` (no auth) — **liveness**: `{ status: "ok" }`; does not touch the database.
 - `GET /api/ready` (no auth) — **readiness**: 200 `{ status: "ready", database: "up", schema: { expected, current }, catalogue: { activeSongs, playableSongs }, providers: [{ code, state }] }`, or 503 with `status: "not_ready"` and the reason (database down, schema behind the code). No secrets, hostnames or connection strings.
+
+## Listener skip analytics
+
+`GET /api/recommendations/discovery?limit=20&intensity=50` returns unplayed tracks with a familiar-to-unexpected sound target (0–100, default 50). The discovery-only SQL gate continues to exclude tracks already played; intensity changes the audio-feature target rather than weakening that rule.
+
+`GET /api/insights/skip-patterns?days=30` returns the authenticated user's skip patterns for a 7–365 day window. The response includes summary totals and category-level skip counts/rates for genres, artists, music moods, contexts, hour of day and songs. Categories with fewer than two plays are omitted from rate rankings; the result is descriptive, not a dislike judgement. The endpoint reads only the caller's listening rows and requires no schema migration.
+
+### `GET /api/insights/calendar?days=365`
+
+Returns one row per calendar day for the authenticated listener, with listening play/minute totals and that same user's optional private Mood Diary mood (no diary note text is returned). `days` is 1–365. Listening dates use the application database timezone.
+
+### `PUT /api/playlists/:id/order`
+
+Reorders a listener-owned manual or saved-mix playlist. Supply `songIds` as the exact current membership in the requested order; missing, duplicated or foreign IDs are rejected. Private sessions and generated smart playlists cannot be reordered.
+
+
+
+Admin read-only diagnostics: `GET /api/admin/permissions` shows the live role × permission mapping; `GET /api/admin/migrations` compares applied versions and source checksums. Both require `health.view`.

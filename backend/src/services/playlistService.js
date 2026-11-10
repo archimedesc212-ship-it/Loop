@@ -4,6 +4,7 @@ const { query, one, withTransaction } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const { toSong, withUserFlags } = require('./songMapper');
 const rec = require('./recommendationService');
+const { isExactPlaylistOrder } = require('../utils/playlistOrder');
 
 const KINDS = { MANUAL: 'MANUAL', SMART: 'SMART', SAVED_MIX: 'SAVED_MIX', WORLD: 'WORLD' };
 
@@ -116,6 +117,27 @@ async function removeSong(user, playlistId, songId) {
   return { removed: true };
 }
 
+/** Reorder only user-editable playlists, requiring an exact permutation of current members. */
+async function reorder(user, playlistId, songIds) {
+  assertPermanent(user);
+  await withTransaction(async (tx) => {
+    const playlist = await owned(user, playlistId, { forUpdate: true, tx });
+    if (!['MANUAL', 'SAVED_MIX'].includes(playlist.kind)) {
+      throw new ApiError(409, 'PLAYLIST_NOT_EDITABLE', 'This generated playlist cannot be manually reordered.');
+    }
+    const rows = await tx.query('SELECT song_id FROM playlist_songs WHERE playlist_id = ? ORDER BY position FOR UPDATE', [playlistId]);
+    const currentIds = rows.map((row) => Number(row.song_id));
+    if (!isExactPlaylistOrder(currentIds, songIds)) {
+      throw new ApiError(409, 'PLAYLIST_ORDER_STALE', 'The playlist changed. Refresh it and try the reorder again.');
+    }
+    for (let position = 0; position < songIds.length; position++) {
+      await tx.query('UPDATE playlist_songs SET position = ? WHERE playlist_id = ? AND song_id = ?', [position + 1, playlistId, songIds[position]]);
+    }
+    await tx.query('UPDATE playlists SET updated_at = NOW() WHERE playlist_id = ?', [playlistId]);
+  });
+  return detail(user, playlistId);
+}
+
 // ---------------------------------------------------------------------------
 // SMART PLAYLISTS — every one is built from the user's real signals
 // ---------------------------------------------------------------------------
@@ -185,4 +207,4 @@ async function saveSmart(user, type, name) {
     kind: KINDS.SMART, smartType: type });
 }
 
-module.exports = { list, detail, create, saveBatch, update, remove, addSong, removeSong, smartTypes, generateSmart, saveSmart };
+module.exports = { list, detail, create, saveBatch, update, remove, addSong, removeSong, reorder, smartTypes, generateSmart, saveSmart };

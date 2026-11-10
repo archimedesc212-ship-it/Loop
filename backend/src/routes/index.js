@@ -56,7 +56,11 @@ router.post('/auth/logout-all', h(c.auth.logoutAll));
 // ---------------------------------------------------------------- account
 router.get('/me/sessions', h(c.me.sessions));
 router.delete('/me/sessions/:sessionId', v({ sessionId: r.str(16, 16, /^[0-9a-f]{16}$/) }, 'params'), h(c.me.revokeSession));
+router.get('/me/mood-diary', v({ days: opt(r.int(1, 365), 90), asOfDate: opt(r.date()) }, 'query'), h(c.me.moodDiary));
+router.put('/me/mood-diary/today', v({ checkinDate: r.date(), moodId: opt(r.int(1, 65535)), note: opt(r.str(0, 500)) }), h(c.me.saveMoodDiaryToday));
+router.delete('/me/mood-diary/:entryId', v({ entryId: r.int(1, Number.MAX_SAFE_INTEGER) }, 'params'), h(c.me.removeMoodDiaryEntry));
 router.post('/me/password', v({ currentPassword: r.str(1, 72), newPassword: PASSWORD }), h(c.me.changePassword));
+router.post('/me/export', v({ password: r.str(1, 72) }), h(c.me.exportData));
 router.delete('/me', v({ password: r.str(1, 72), confirm: r.oneOf(['DELETE']) }), h(c.me.deleteAccount));
 
 // ---------------------------------------------------------------- onboarding & settings
@@ -135,18 +139,24 @@ router.get('/trending', v({
 // ---------------------------------------------------------------- recommendations
 router.post('/recommendations/mood', v({
   moodIds: opt(r.arrayOf(r.int(1, 65535), 4), []),
+  moodWeights: opt(r.arrayOf(r.object({ moodId: r.int(1, 65535), weight: r.decimal(0.01, 100, 2) }), 4, 1)),
   text: opt(r.str(2, 280)),
   contextCode: opt(r.str(2, 20, /^[A-Z_]+$/)),
   limit: opt(r.int(1, 50), 20),
 }), h(c.rec.mood));
+router.post('/recommendations/dial', v({ energy: r.num(0, 1), valence: r.num(0, 1), limit: opt(r.int(1, 50), 20) }), h(c.rec.dial));
+router.post('/recommendations/journey', v({ startMoodId: r.int(1, 65535), targetMoodId: r.int(1, 65535),
+  steps: opt(r.int(3, 5), 4), perStage: opt(r.int(3, 10), 5),
+}), h(c.rec.journey));
 router.post('/recommendations/parse', v({ text: r.str(1, 280) }), h(c.rec.parse));
 router.get('/recommendations/context/:code', v({ code: r.str(2, 20, /^[A-Z_]+$/) }, 'params'), v(limitQ, 'query'), h(c.rec.context));
 router.get('/recommendations/daily', v(limitQ, 'query'), h(c.rec.daily));
 router.get('/recommendations/similar', v({ seed: opt(r.int(1, 2 ** 31)), ...limitQ }, 'query'), h(c.rec.similar));
 router.get('/recommendations/regional', v({ languageId: opt(r.int(1, 65535)), ...limitQ }, 'query'), h(c.rec.regional));
-router.get('/recommendations/discovery', v(limitQ, 'query'), h(c.rec.discovery));
+router.get('/recommendations/discovery', v({ ...limitQ, intensity: opt(r.int(0, 100), 50) }, 'query'), h(c.rec.discovery));
 router.get('/recommendations/recovery', v(limitQ, 'query'), h(c.rec.recovery));
 router.get('/recommendations/batches/:id', id, h(c.rec.batch));
+router.post('/recommendations/batches/:id/rebuild', id, h(c.rec.rebuildBatch));
 router.get('/recommendations/:userId', v({ userId: r.int(1, 2 ** 31) }, 'params'), requireSelfOr('users.manage', 'userId'),
   v(limitQ, 'query'), h(c.rec.forUser));
 
@@ -209,15 +219,19 @@ router.post('/playlists/smart/:type', SMART_TYPE, v({ name: opt(r.str(1, 80)) })
 router.get('/playlists/:id', id, h(c.playlists.detail));
 router.patch('/playlists/:id', id, v({ name: opt(r.str(1, 80)), description: opt(r.str(0, 255)) }), h(c.playlists.update));
 router.delete('/playlists/:id', id, h(c.playlists.remove));
+router.put('/playlists/:id/order', id, v({ songIds: r.arrayOf(r.int(1, 2 ** 31), 200) }), h(c.playlists.reorder));
 router.post('/playlists/:id/songs', id, v({ songId: r.int(1, 2 ** 31) }), h(c.playlists.addSong));
 router.delete('/playlists/:id/songs/:songId', v({ id: r.int(1, 2 ** 31), songId: r.int(1, 2 ** 31) }, 'params'), h(c.playlists.removeSong));
 
 // ---------------------------------------------------------------- insights
 const daysQ = v({ days: opt(r.int(1, 365), 30) }, 'query');
 const periodQ = v({ period: opt(r.oneOf(['daily', 'weekly', 'monthly']), 'weekly') }, 'query');
+const skipDaysQ = v({ days: opt(r.int(7, 365), 30) }, 'query');
 router.get('/insights/profile', daysQ, h(c.insights.profile));
 router.get('/insights/activity', h(c.insights.activity));
+router.get('/insights/calendar', v({ days: opt(r.int(1, 365), 365) }, 'query'), h(c.insights.calendar));
 router.get('/insights/journey', periodQ, h(c.insights.journey));
+router.get('/insights/skip-patterns', skipDaysQ, h(c.insights.skipPatterns));
 router.get('/insights/preferences', h(c.insights.preferences));
 router.get('/users/:id/analytics', id, requireSelfOr('users.manage'), h(c.insights.analytics));
 router.get('/users/:id/preferences', id, requireSelfOr('users.manage'), h(c.insights.preferences));
@@ -239,6 +253,8 @@ const can = requirePermission;
 const HEX = r.hex();
 const UNIT = r.num(0, 1);
 A.get('/overview', can('health.view'), h(c.admin.overview));
+A.get('/permissions', can('health.view'), h(c.admin.permissionMatrix));
+A.get('/migrations', can('health.view'), h(c.admin.migrations));
 A.get('/stats', can('health.view'), h(c.admin.stats));
 A.get('/references', can('catalog.write'), h(c.admin.references));
 A.get('/songs', can('catalog.write'), v({ q: opt(r.str(0, 80), ''), status: opt(r.oneOf(['ACTIVE', 'PENDING_ANALYSIS', 'HIDDEN', 'MERGED'])),

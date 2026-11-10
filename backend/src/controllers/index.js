@@ -23,6 +23,8 @@ const ApiError = require('../utils/ApiError');
 const sessions = require('../services/sessionService');
 const media = require('../services/mediaService');
 const artistSvc = require('../services/artistService');
+const dataExport = require('../services/dataExportService');
+const moodDiary = require('../services/moodDiaryService');
 const providerSvc = require('../services/providerService');
 const { setSessionCookies, clearSessionCookies } = require('../middleware/auth');
 
@@ -94,6 +96,9 @@ exports.auth = {
 
 exports.me = {
   sessions: async (req, res) => res.json(await sessions.list(req.user.id, req.session.id)),
+  moodDiary: async (req, res) => res.json(await moodDiary.list(req.user.id, q(req).days || 90, q(req).asOfDate)),
+  saveMoodDiaryToday: async (req, res) => res.status(200).json(await moodDiary.saveToday(req.user.id, b(req))),
+  removeMoodDiaryEntry: async (req, res) => res.json(await moodDiary.remove(req.user.id, p(req).entryId)),
   revokeSession: async (req, res) => {
     const id = p(req).sessionId;
     const own = await one('SELECT user_id FROM auth_sessions WHERE session_id = ?', [id]);
@@ -103,6 +108,14 @@ exports.me = {
     res.json({ ok: true });
   },
   changePassword: async (req, res) => res.json(await auth.changePassword(req.user.id, req.session.id, b(req))),
+  exportData: async (req, res) => {
+    const data = await dataExport.create(req.user.id, b(req).password);
+    const stamp = new Date().toISOString().slice(0, 10);
+    res.set('Content-Type', 'application/json; charset=utf-8');
+    res.set('Content-Disposition', `attachment; filename=loop-personal-data-${stamp}.json`);
+    res.set('Cache-Control', 'no-store');
+    res.json(data);
+  },
   deleteAccount: async (req, res) => {
     await auth.deleteAccount(req.user.id, b(req));
     clearSessionCookies(res);
@@ -147,6 +160,8 @@ exports.catalog = {
 // ---------------------------------------------------------------------------
 exports.rec = {
   mood: async (req, res) => res.json(await rec.forMood(req.user, b(req))),
+  dial: async (req, res) => res.json(await rec.dial(req.user, b(req))),
+  journey: async (req, res) => res.json(await rec.moodJourney(req.user, b(req))),
   parse: async (req, res) => res.json(await moodParser.parse(b(req).text)),
   context: async (req, res) => res.json(await rec.forContext(req.user, { code: p(req).code, limit: q(req).limit })),
   daily: async (req, res) => res.json(await rec.daily(req.user, q(req))),
@@ -159,6 +174,7 @@ exports.rec = {
   discovery: async (req, res) => res.json(await rec.discovery(req.user, q(req))),
   recovery: async (req, res) => res.json(await rec.recovery(req.user, q(req))),
   batch: async (req, res) => res.json(await rec.getBatch(req.user, p(req).id)),
+  rebuildBatch: async (req, res) => res.status(201).json(await rec.rebuildBatch(req.user, p(req).id)),
   /** GET /api/recommendations/:userId — the user's personalised Daily Mix. */
   forUser: async (req, res) => {
     const target = p(req).userId;
@@ -252,6 +268,7 @@ exports.playlists = {
   remove: async (req, res) => res.json(await playlists.remove(req.user, p(req).id)),
   addSong: async (req, res) => res.status(201).json(await playlists.addSong(req.user, p(req).id, b(req).songId)),
   removeSong: async (req, res) => res.json(await playlists.removeSong(req.user, p(req).id, p(req).songId)),
+  reorder: async (req, res) => res.json(await playlists.reorder(req.user, p(req).id, b(req).songIds)),
   smartTypes: async (req, res) => res.json(playlists.smartTypes()),
   smart: async (req, res) => res.json(await playlists.generateSmart(req.user, p(req).type, q(req).limit)),
   saveSmart: async (req, res) => res.status(201).json(await playlists.saveSmart(req.user, p(req).type, b(req).name)),
@@ -260,7 +277,9 @@ exports.playlists = {
 exports.insights = {
   profile: async (req, res) => res.json(await insights.profile(userOf(req), q(req).days || 30)),
   activity: async (req, res) => res.json(await insights.activity(userOf(req))),
+  calendar: async (req, res) => res.json({ daily: await insights.calendar(userOf(req), q(req).days || 365) }),
   journey: async (req, res) => res.json(await insights.moodJourney(userOf(req), q(req).period || 'weekly')),
+  skipPatterns: async (req, res) => res.json(await insights.skipPatterns(userOf(req), q(req).days || 30)),
   preferences: async (req, res) => res.json(await insights.preferences(userOf(req))),
   /** GET /api/users/:id/analytics — profile + activity + journey in one response. */
   analytics: async (req, res) => {
@@ -306,6 +325,8 @@ exports.media = {
 const actor = (req) => req.user.id;
 exports.admin = {
   overview: async (req, res) => res.json(await admin.overview()),
+  permissionMatrix: async (req, res) => res.json(await admin.permissionMatrix()),
+  migrations: async (req, res) => res.json(await admin.migrationHistory()),
   stats: async (req, res) => res.json(await admin.listeningStats()),
   references: async (req, res) => res.json(await admin.references()),
   songs: async (req, res) => res.json(await admin.listSongs(q(req))),

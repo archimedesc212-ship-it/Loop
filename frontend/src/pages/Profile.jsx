@@ -24,6 +24,7 @@ export default function Profile() {
   const activity = useApi(() => api.activity(), []);
   const journey = useApi(() => api.journey(period), [period]);
   const prefs = useApi(() => api.preferences(), []);
+  const skips = useApi(() => api.skipPatterns(30), []);
 
   if (profile.loading) return <div className="page grid-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} h={104} r={14} />)}</div>;
   if (profile.error) return <div className="page"><ErrorState error={profile.error} onRetry={profile.reload} /></div>;
@@ -36,7 +37,7 @@ export default function Profile() {
 
   return (
     <div className="page stack" style={{ '--gap': '22px' }}>
-      <PageHead kicker={`${user.displayName} · last 30 days and all-time`} title="Your listening profile">
+      <PageHead kicker={`${user.displayName} · last 30 days and all-time`} title="Your listening profile" actions={<Link className="btn ghost sm" to="/mood-diary">Private Mood Diary ↗</Link>}>
         <p className="soft small">Moods here describe the music you played, not how you felt.</p>
       </PageHead>
 
@@ -57,6 +58,51 @@ export default function Profile() {
         <Stat text label="Most skipped (30 days)" value={profile.data.mostSkipped ? <Link className="link" to={`/song/${profile.data.mostSkipped.song_id}`}>{profile.data.mostSkipped.title}</Link> : '–'}
           foot={profile.data.mostSkipped ? `${profile.data.mostSkipped.artist_name} · ${profile.data.mostSkipped.n} skips` : 'Nothing skipped'} />
       </div>
+
+      <Panel title="Skip pattern intelligence" sub="Your listening behaviour over the last 30 days. A skip is not automatically a dislike.">
+        {skips.loading && <Skeleton h={170} />}
+        {skips.error && <ErrorState error={skips.error} onRetry={skips.reload} />}
+        {skips.data && (
+          <>
+            <div className="grid-4">
+              <Stat label="Plays analysed" value={n(skips.data.summary.plays)} />
+              <Stat label="Skipped" value={n(skips.data.summary.skips)} />
+              <Stat label="Skip rate" value={pct(skips.data.summary.skipRate)} />
+              <Stat label="Average completion" value={pct(skips.data.summary.avgCompletion)} />
+            </div>
+            <div className="grid-2" style={{ alignItems: 'start' }}>
+              <div className="stack" style={{ '--gap': '9px' }}>
+                <h3 style={{ fontSize: '0.95rem' }}>Genres with highest skip rate</h3>
+                {skips.data.genres.length ? <HBars data={skips.data.genres.map((x) => ({ ...x, name: `${x.name} (${x.skips}/${x.plays})` }))} value="skipRate" unit="%" /> : <p className="small muted">Not enough repeated genre plays yet.</p>}
+              </div>
+              <div className="stack" style={{ '--gap': '9px' }}>
+                <h3 style={{ fontSize: '0.95rem' }}>Artists with highest skip rate</h3>
+                {skips.data.artists.length ? <HBars data={skips.data.artists.map((x) => ({ ...x, name: `${x.name} (${x.skips}/${x.plays})` }))} value="skipRate" unit="%" /> : <p className="small muted">Not enough repeated artist plays yet.</p>}
+              </div>
+              <div className="stack" style={{ '--gap': '9px' }}>
+                <h3 style={{ fontSize: '0.95rem' }}>Music moods</h3>
+                {skips.data.moods.length ? <HBars data={skips.data.moods.map((x) => ({ ...x, name: `${x.name} (${x.skips}/${x.plays})` }))} value="skipRate" unit="%" /> : <p className="small muted">Mood labels are not available for enough plays.</p>}
+              </div>
+              <div className="stack" style={{ '--gap': '9px' }}>
+                <h3 style={{ fontSize: '0.95rem' }}>Listening contexts</h3>
+                {skips.data.contexts.length ? <HBars data={skips.data.contexts.map((x) => ({ ...x, name: `${x.emoji} ${x.name} (${x.skips}/${x.plays})` }))} value="skipRate" unit="%" /> : <p className="small muted">No context-tagged listening yet.</p>}
+              </div>
+              <div className="stack" style={{ '--gap': '9px' }}>
+                <h3 style={{ fontSize: '0.95rem' }}>Time of day</h3>
+                {skips.data.hours.length ? <HBars data={skips.data.hours.map((x) => ({ ...x, name: `${x.name} (${x.skips}/${x.plays})` }))} value="skipRate" unit="%" /> : <p className="small muted">Not enough repeated plays in a time window yet.</p>}
+              </div>
+            </div>
+            {skips.data.songs.length > 0 && <div className="stack" style={{ '--gap': '7px' }}>
+              <h3 style={{ fontSize: '0.95rem' }}>Most skipped songs</h3>
+              {skips.data.songs.slice(0, 5).map((song) => <div className="row between small" key={song.songId}>
+                <span><Link className="link" to={`/song/${song.songId}`}>{song.title}</Link> <span className="muted">· {song.artist}</span></span>
+                <span className="num muted">{song.skips}/{song.plays} · {song.skipRate}%</span>
+              </div>)}
+            </div>}
+            <p className="tiny muted">{skips.data.note}</p>
+          </>
+        )}
+      </Panel>
 
       {activity.data && (
         <>

@@ -7,6 +7,8 @@ import { demoRequest } from '../lib/demoMode';
 // readable `muse_csrf` cookie (double-submit, verified server-side with an HMAC).
 // No token is ever stored in localStorage.
 
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE !== 'false';
+
 export class ApiError extends Error {
   constructor(status, code, message, details) {
     super(message);
@@ -52,7 +54,7 @@ const QUIET_401 = new Set(['/auth/me', '/auth/login', '/auth/register']);
 
 export async function request(method, path, body) {
   // Presentation mode is intentionally database-free: all demo data stays in this browser.
-  if (import.meta.env.VITE_DEMO_MODE !== 'false') return demoRequest(method, path, body);
+  if (isDemoMode) return demoRequest(method, path, body);
   let res;
   let text;
   const controller = new AbortController();
@@ -108,6 +110,8 @@ export const api = {
   // auth & profile
   me: () => request('GET', '/auth/me'),
   session: () => request('GET', '/auth/session'),
+  register: (b) => request('POST', '/auth/register', b),
+  login: (b) => request('POST', '/auth/login', b),
   createGuestSession,
   logout: () => request('POST', '/auth/logout', {}),
   logoutAll: () => request('POST', '/auth/logout-all', {}),
@@ -115,6 +119,10 @@ export const api = {
   revokeSession: (id) => request('DELETE', `/me/sessions/${id}`),
   changePassword: (b) => request('POST', '/me/password', b),
   deleteAccount: (b) => request('DELETE', '/me', b),
+  exportData: (b) => request('POST', '/me/export', b),
+  moodDiary: (days = 90, asOfDate = undefined) => request('GET', `/me/mood-diary${qs({ days, asOfDate })}`),
+  saveMoodDiaryToday: (b) => request('PUT', '/me/mood-diary/today', b),
+  deleteMoodDiaryEntry: (id) => request('DELETE', `/me/mood-diary/${id}`),
   dismissals: () => request('GET', '/me/dismissals'),
   onboardingOptions: () => request('GET', '/me/onboarding'),
   saveOnboarding: (b) => request('POST', '/me/onboarding', b),
@@ -138,14 +146,17 @@ export const api = {
   trending: (q) => request('GET', `/trending${qs(q)}`),
   // recommendations
   recMood: (b) => request('POST', '/recommendations/mood', b),
+  recDial: (b) => request('POST', '/recommendations/dial', b),
+  recJourney: (b) => request('POST', '/recommendations/journey', b),
   parse: (text) => request('POST', '/recommendations/parse', { text }),
   recContext: (code, limit) => request('GET', `/recommendations/context/${code}${qs({ limit })}`),
   recDaily: (limit) => request('GET', `/recommendations/daily${qs({ limit })}`),
   recSimilar: (seed, limit) => request('GET', `/recommendations/similar${qs({ seed, limit })}`),
   recRegional: (languageId, limit) => request('GET', `/recommendations/regional${qs({ languageId, limit })}`),
-  recDiscovery: (limit) => request('GET', `/recommendations/discovery${qs({ limit })}`),
+  recDiscovery: (limit, intensity = 50) => request('GET', `/recommendations/discovery${qs({ limit, intensity })}`),
   recRecovery: () => request('GET', '/recommendations/recovery'),
   batch: (id) => request('GET', `/recommendations/batches/${id}`),
+  rebuildBatch: (id) => request('POST', `/recommendations/batches/${id}/rebuild`, {}),
   // playback & feedback
   playStart: (b) => request('POST', '/playback/start', b),
   playEvent: (playId, b) => request('POST', `/playback/${playId}/events`, b),
@@ -173,14 +184,46 @@ export const api = {
   deletePlaylist: (id) => request('DELETE', `/playlists/${id}`),
   addToPlaylist: (id, songId) => request('POST', `/playlists/${id}/songs`, { songId }),
   removeFromPlaylist: (id, songId) => request('DELETE', `/playlists/${id}/songs/${songId}`),
+  reorderPlaylist: (id, songIds) => request('PUT', `/playlists/${id}/order`, { songIds }),
   smartTypes: () => request('GET', '/playlists/smart'),
   smart: (type, limit) => request('GET', `/playlists/smart/${type}${qs({ limit })}`),
   saveSmart: (type, name) => request('POST', `/playlists/smart/${type}`, { name }),
   // insights
   profile: (days) => request('GET', `/insights/profile${qs({ days })}`),
   activity: () => request('GET', '/insights/activity'),
+  calendarInsights: (days = 365) => request('GET', `/insights/calendar${qs({ days })}`),
   journey: (period) => request('GET', `/insights/journey${qs({ period })}`),
+  skipPatterns: (days = 30) => request('GET', `/insights/skip-patterns${qs({ days })}`),
   preferences: () => request('GET', '/insights/preferences'),
+  // independent artist onboarding and private audio upload
+  artist: {
+    profile: () => request('GET', '/artist/me'),
+    apply: (b) => request('POST', '/artist/applications', b),
+    createUpload: (b) => request('POST', '/artist/uploads', b),
+    withdraw: (id) => request('POST', `/artist/uploads/${id}/withdraw`, {}),
+    report: (id, b) => request('POST', `/artist/uploads/${id}/reports`, b),
+    uploadFile: async (id, file) => {
+      if (isDemoMode) throw new ApiError(400, 'DEMO_MODE', 'Artist uploads require the connected LOOP API. Set VITE_DEMO_MODE=false to use server-backed features.');
+      let response;
+      try {
+        response = await fetch(`/api/artist/uploads/${id}/content`, {
+          method: 'PUT', credentials: 'same-origin',
+          headers: { ...buildHeaders('PUT', false), 'Content-Type': file.type || 'application/octet-stream' },
+          body: file,
+        });
+      } catch {
+        throw new ApiError(0, 'NETWORK', 'The upload connection was interrupted. The private upload intent can be retried only if it is still open.');
+      }
+      const raw = await response.text();
+      let data = null;
+      try { data = raw ? JSON.parse(raw) : null; } catch { data = null; }
+      if (!response.ok) {
+        const e = data?.error || { code: `HTTP_${response.status}`, message: 'The upload could not be completed.' };
+        throw new ApiError(response.status, e.code, e.message, e.details);
+      }
+      return data;
+    },
+  },
   // private sessions & worlds
   incognito: () => request('GET', '/incognito'),
   startIncognito: (moodId) => request('POST', '/incognito', moodId ? { moodId } : {}),
@@ -192,6 +235,8 @@ export const api = {
   // admin
   admin: {
     overview: () => request('GET', '/admin/overview'),
+    permissions: () => request('GET', '/admin/permissions'),
+    migrations: () => request('GET', '/admin/migrations'),
     stats: () => request('GET', '/admin/stats'),
     references: () => request('GET', '/admin/references'),
     songs: (q) => request('GET', `/admin/songs${qs(q)}`),
@@ -233,5 +278,13 @@ export const api = {
     media: () => request('GET', '/admin/media'),
     checkMedia: () => request('POST', '/admin/media/check', {}),
     registerMedia: (songId, b) => request('POST', `/admin/songs/${songId}/media`, b),
+    artistApplications: (status = 'PENDING') => request('GET', `/admin/artist-applications${qs({ status })}`),
+    decideArtistApplication: (id, b) => request('POST', `/admin/artist-applications/${id}/decision`, b),
+    artistUploads: (status = 'ALL') => request('GET', `/admin/artist-uploads${qs({ status })}`),
+    scanArtistUpload: (id) => request('POST', `/admin/artist-uploads/${id}/scan`, {}),
+    decideArtistUpload: (id, b) => request('POST', `/admin/artist-uploads/${id}/decision`, b),
+    publishArtistUpload: (id) => request('POST', `/admin/artist-uploads/${id}/publish`, {}),
+    artistRightsReports: (status = 'OPEN') => request('GET', `/admin/artist-rights-reports${qs({ status })}`),
+    resolveArtistRightsReport: (id, b) => request('POST', `/admin/artist-rights-reports/${id}/decision`, b),
   },
 };

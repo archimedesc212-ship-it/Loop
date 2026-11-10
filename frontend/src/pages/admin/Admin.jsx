@@ -10,12 +10,14 @@ import { PipelineAdmin, ReviewAdmin } from './PipelineAdmin';
 import { ProvidersAdmin } from './ProvidersAdmin';
 import { HealthAdmin, PerformanceAdmin, ModelsAdmin, UsersAdmin, AuditAdmin } from './SystemAdmin';
 import { ArtistReviewAdmin } from './ArtistReviewAdmin';
+import { PermissionsAdmin } from './PermissionsAdmin';
+import { MigrationsAdmin } from './MigrationsAdmin';
 
 const TABS = [
   ['', 'Overview', 'health.view'], ['catalog', 'Catalogue', 'catalog.write'], ['content', 'Add content', 'catalog.write'],
   ['review', 'Review queue', 'pipeline.view'], ['pipeline', 'Pipeline', 'pipeline.view'], ['providers', 'Providers & media', 'pipeline.view'], ['models', 'Models', 'health.view'],
   ['users', 'Users', 'users.manage'], ['health', 'Database health', 'health.view'], ['performance', 'Query performance', 'health.view'],
-  ['audit', 'Audit log', 'audit.view'], ['artists', 'Artists & rights', 'artist.review'],
+  ['audit', 'Audit log', 'audit.view'], ['permissions', 'Permissions', 'health.view'], ['migrations', 'Migrations', 'health.view'], ['artists', 'Artists & rights', 'artist.review'],
 ];
 
 function Overview() {
@@ -74,6 +76,8 @@ export default function Admin() {
         <Route path="health" element={<HealthAdmin />} />
         <Route path="performance" element={<PerformanceAdmin />} />
         <Route path="audit" element={<AuditAdmin />} />
+        <Route path="permissions" element={<PermissionsAdmin />} />
+        <Route path="migrations" element={<MigrationsAdmin />} />
         <Route path="artists" element={<ArtistReviewAdmin />} />
       </Routes>
     </div>

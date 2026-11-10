@@ -122,4 +122,4 @@ async function profile(userId) {
   };
 }
 
-module.exports = { register, login, profile, changePassword, deleteAccount, MAX_FAILED, LOCK_MINUTES };
+module.exports = { register, login, profile, checkPassword, changePassword, deleteAccount, MAX_FAILED, LOCK_MINUTES };

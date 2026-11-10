@@ -200,12 +200,26 @@ export function SongCard({ song, queue, origin = 'HOME', batchId, reason }) {
 
 function WhyPanel({ song }) {
   const signals = (song.breakdown && song.breakdown.signals) || [];
+  const confidence = song.confidence;
   return (
     <div className="why">
       <div className="row between wrap" style={{ marginBottom: 10 }}>
         <strong>Why this song?</strong>
         <span className="tiny muted">Score {score(song.score)} / 100 · every reason below comes from stored signals</span>
       </div>
+      {confidence && (
+        <div className="card stack" style={{ '--gap': '5px', marginBottom: 12, padding: 12 }}>
+          <div className="row between wrap"><b className="small">Match evidence</b><span className="chip">{confidence.label}</span></div>
+          <p className="tiny soft">{confidence.level === 'NEW_USER_FALLBACK'
+            ? 'This result is based mainly on your requested mood, sound and catalogue signals. LOOP does not yet have enough listening behaviour to personalise this match.'
+            : confidence.level === 'LIMITED_DATA'
+              ? 'Some personal listening evidence is available, but the match is supported by only a small number of independent signals.'
+              : confidence.level === 'PARTIAL_MATCH'
+                ? 'Several independent signals support this result, including at least one signal learned from your listening behaviour.'
+                : 'Many independent signals support this result, including signals learned from your listening behaviour.'}</p>
+          {confidence.supportingSignals?.length > 0 && <p className="tiny muted">Signals: {confidence.supportingSignals.join(' · ')}</p>}
+        </div>
+      )}
       {song.reasons && song.reasons.length > 0 ? (
         <ul style={{ marginBottom: 14 }}>{song.reasons.map((r) => <li key={r.code}>{r.text}</li>)}</ul>
       ) : <p className="small muted" style={{ marginBottom: 12 }}>Ranked on overall fit; no single signal stood out.</p>}

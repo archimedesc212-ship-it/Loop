@@ -10,6 +10,7 @@ import { TrackList } from '../components/Songs';
 import { ErrorState, ListSkeleton, Empty, Modal, Field, PageHead } from '../components/ui';
 import { Play, Plus, X } from '../components/Icons';
 import { ago, plural } from '../lib/format';
+import { analysePlaylistHealth } from '../lib/playlistHealth';
 
 function Mosaic({ covers, id }) {
   const list = (typeof covers === 'string' ? JSON.parse(covers) : covers) || [];
@@ -108,7 +109,10 @@ export function PlaylistPage() {
   const { data: p, error, loading, reload, setData } = useApi(() => api.playlist(id), [id]);
   const toast = useToast();
   const player = usePlayer();
+  const { user } = useAuth();
   const nav = useNavigate();
+  const [cleaning, setCleaning] = useState(false);
+  const [rebuilding, setRebuilding] = useState(false);
   if (loading) return <ListSkeleton n={8} />;
   if (error) return <div className="page"><ErrorState error={error} onRetry={reload} /></div>;
   const remove = async (s) => {
@@ -122,18 +126,68 @@ export function PlaylistPage() {
     if (!window.confirm(`Delete “${p.name}”? This cannot be undone.`)) return;
     try { await api.deletePlaylist(p.id); toast.success('Playlist deleted'); nav('/library'); } catch (e) { toast.error(e); }
   };
+  const reorder = async (song, delta) => {
+    const next = [...p.songs];
+    const from = next.findIndex((item) => item.id === song.id);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= next.length) return;
+    [next[from], next[to]] = [next[to], next[from]];
+    try {
+      const updated = await api.reorderPlaylist(p.id, next.map((item) => item.id));
+      setData(updated);
+      toast.success('Playlist order updated.');
+    } catch (e) { toast.error(e); }
+  };
+  const reorderable = !user.incognito && ['MANUAL', 'SAVED_MIX'].includes(p.kind);
+  const health = analysePlaylistHealth(p.songs);
+  const rebuildSource = async () => {
+    if (!p.sourceBatchId || rebuilding || user.incognito) return;
+    setRebuilding(true);
+    try {
+      const result = await api.rebuildBatch(p.sourceBatchId);
+      toast.success('A fresh version of this mix is ready');
+      nav(`/mix/batch/${result.batchId}`);
+    } catch (e) { toast.error(e); }
+    finally { setRebuilding(false); }
+  };
+  const cleanDuplicates = async () => {
+    if (!reorderable || !health.duplicates.length || cleaning) return;
+    const removeIds = health.duplicates.flatMap((group) => group.slice(1).map((song) => song.id));
+    if (!window.confirm(`Remove ${removeIds.length} duplicate entr${removeIds.length === 1 ? 'y' : 'ies'}? The first occurrence is kept. Version labels are retained when they differ.`)) return;
+    setCleaning(true);
+    try {
+      for (const songId of removeIds) await api.removeFromPlaylist(p.id, songId);
+      const removed = new Set(removeIds);
+      const songs = p.songs.filter((song) => !removed.has(song.id));
+      const duration = p.totalDurationSec === null ? null : Math.max(0, p.totalDurationSec - p.songs.filter((song) => removed.has(song.id)).reduce((sum, song) => sum + (song.durationSec || 0), 0));
+      setData({ ...p, songs, songCount: songs.length, totalDurationSec: duration });
+      toast.success(`Removed ${removeIds.length} duplicate entr${removeIds.length === 1 ? 'y' : 'ies'}`);
+    } catch (e) { await reload(); toast.error(e); }
+    finally { setCleaning(false); }
+  };
   return (
     <div className="page stack" style={{ '--gap': '22px' }}>
       <PageHead kicker={p.kind === 'MANUAL' ? 'Playlist' : p.kind === 'SMART' ? 'Smart playlist' : p.kind === 'WORLD' ? 'Saved LOOP World' : 'Saved mix'} title={p.name}
         actions={<>
           {p.songs.some(isPlayable) && <button className="btn primary" onClick={() => player.play(p.songs.find(isPlayable), { queue: p.songs, origin: 'PLAYLIST' })}><Play />Play available audio</button>}
           {p.sourceBatchId && <Link className="btn" to={`/mix/batch/${p.sourceBatchId}`}>Original mix</Link>}
+          {p.sourceBatchId && <button className="btn" onClick={rebuildSource} disabled={rebuilding || user.incognito}>{rebuilding ? 'Rebuilding…' : 'Rebuild mix'}</button>}
           <button className="btn ghost danger" onClick={del}><X />Delete</button>
         </>}>
         {p.description && <p className="soft">{p.description}</p>}
         <p className="small muted">{plural(p.songCount, 'song')} · track duration is not included in the supplied dataset</p>
       </PageHead>
-      {p.songs.length ? <TrackList songs={p.songs} origin="PLAYLIST" onRemove={p.kind === 'MANUAL' || p.kind === 'SAVED_MIX' ? remove : undefined} />
+      <section className="card stack playlist-health" style={{ '--gap': '10px' }} aria-labelledby="playlist-health-title">
+        <div className="row between wrap">
+          <div className="stack" style={{ '--gap': '2px' }}><h3 id="playlist-health-title">Playlist health</h3><span className="small muted">A transparent metadata-based checklist, not a prediction of listening quality.</span></div>
+          <div className="playlist-health-score"><strong>{health.score}</strong><span className="tiny muted">/100 · {health.label}</span></div>
+        </div>
+        <div className="playlist-health-track" role="progressbar" aria-label="Playlist health score" aria-valuemin={0} aria-valuemax={100} aria-valuenow={health.score}><span style={{ width: `${health.score}%` }} /></div>
+        {health.issues.length ? <ul className="small soft playlist-health-issues">{health.issues.map((issue) => <li key={issue.code}>{issue.message}</li>)}</ul> : <p className="small soft">No playlist quality flags were found in the available metadata.</p>}
+        {health.duplicates.length > 0 && <div className="row wrap"><button className="btn ghost sm" disabled={!reorderable || cleaning} onClick={cleanDuplicates}>{cleaning ? 'Cleaning…' : `Clean ${health.counts.duplicateExtras} duplicate entr${health.counts.duplicateExtras === 1 ? 'y' : 'ies'}`}</button>{!reorderable && <span className="tiny muted">Only your editable playlists can be cleaned.</span>}</div>}
+      </section>
+      {p.songs.length ? <TrackList songs={p.songs} origin="PLAYLIST" onRemove={p.kind === 'MANUAL' || p.kind === 'SAVED_MIX' ? remove : undefined}
+        extra={reorderable ? (song) => { const index = p.songs.findIndex((item) => item.id === song.id); return <div className="row" style={{ '--gap': '2px' }}><button className="icon-btn" onClick={() => reorder(song, -1)} disabled={index <= 0} aria-label={`Move ${song.title} up`} title="Move up">↑</button><button className="icon-btn" onClick={() => reorder(song, 1)} disabled={index >= p.songs.length - 1} aria-label={`Move ${song.title} down`} title="Move down">↓</button></div>; } : undefined} />
         : <Empty title="This playlist is empty">Use the + button on any song to add it here.</Empty>}
     </div>
   );

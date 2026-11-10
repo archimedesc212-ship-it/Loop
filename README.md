@@ -250,3 +250,7 @@ Latest results, the full test-case table and the browser walk-throughs are in [d
 - Collaborative filtering (listeners-like-you) is the largest missing recommendation signal; the per-user preference tables are its input.
 
 See [docs/STATUS.md](docs/STATUS.md) and [docs/ASSUMPTIONS.md](docs/ASSUMPTIONS.md) for the complete list.
+
+## Current implementation status
+
+See [the project completion and verification report](docs/PROJECT_COMPLETION_STATUS.md) for the latest implemented roadmap areas, checks run, and the external services / integration tests that still require a configured deployment environment. The report deliberately distinguishes implemented code from production-verified functionality.
