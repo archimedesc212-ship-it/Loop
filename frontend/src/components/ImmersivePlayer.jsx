@@ -3,6 +3,7 @@ import { usePlayer } from '../hooks/usePlayer';
 import { api } from '../services/api';
 import { getAccentTheme } from '../lib/theme';
 import * as Icon from './Icons';
+import { Cover } from './Art';
 
 const audioGraphs = new WeakMap();
 
@@ -210,6 +211,7 @@ export default function ImmersivePlayer({ open, onClose }) {
   if (!open || !current) return null;
   const selected = lyricsData.lines.find((line) => line.id === selectedLine);
   const external = player.externalPlayback;
+  const youtubeSearchFallback = player.media?.type === 'YOUTUBE_SEARCH' && player.media?.watchUrl;
   return (
     <section className={`loop-immersive-player${artworkVisible && artwork ? ' artwork-on' : ' visualizer-only'}${visualizerEnabled ? ' visualizer-enabled' : ''}`} role="dialog" aria-modal="true" aria-label="Immersive music player">
       {artworkVisible && artwork && <div className="loop-immersive-art" style={{ backgroundImage: `url("${artwork}")` }} />}
@@ -223,13 +225,31 @@ export default function ImmersivePlayer({ open, onClose }) {
         </div>
       </header>
       <div className="loop-immersive-content">
-        <div className="loop-immersive-track">
-          {artworkVisible && artwork && <img src={artwork} alt="" className="loop-immersive-cover" />}
+        <div className="loop-immersive-stage">
+          <div className="loop-immersive-artwork-wrap">
+            {artworkVisible && (artwork
+              ? <img src={artwork} alt={`${current.title} artwork`} className="loop-immersive-cover" />
+              : <Cover colors={current.cover || palette} seed={Number(current.id) || 1} />)}
+          </div>
           <div className="loop-immersive-track-copy">
+            <span className="loop-immersive-album-label">PLAYING FROM LOOP</span>
             <h1>{current.title}</h1>
             <p>{current.artist?.name || 'Unknown artist'}{current.album?.title ? ` · ${current.album.title}` : ''}</p>
+            <div className="loop-immersive-track-meta">
+              <span>{player.media?.label || 'LOOP MUSIC'}</span>
+              <span className={`loop-immersive-live-dot${player.status === 'playing' ? ' is-playing' : ''}`} />
+              <span>{player.status === 'loading' ? 'Loading' : player.status === 'paused' ? 'Paused' : player.status === 'playing' ? 'Playing' : 'Ready'}</span>
+            </div>
           </div>
         </div>
+        {external && player.media?.embedUrl && <div className="loop-immersive-video">
+          <iframe title={`YouTube player: ${current.title}`} src={player.media.embedUrl} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" />
+          <a href={player.media.watchUrl} target="_blank" rel="noreferrer">Having trouble? Open this track on YouTube <Icon.Arrow /></a>
+        </div>}
+        {youtubeSearchFallback && <div className="loop-immersive-video-fallback">
+          <p>We couldn't find an embeddable upload for this track.</p>
+          <a href={player.media.watchUrl} target="_blank" rel="noreferrer">Find and play it on YouTube <Icon.Arrow /></a>
+        </div>}
         <div className="loop-immersive-lower">
           <div className="loop-immersive-controls">
             {!external && <div className="loop-immersive-progress">

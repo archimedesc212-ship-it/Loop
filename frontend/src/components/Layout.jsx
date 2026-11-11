@@ -383,6 +383,12 @@ function PlayerBar({ onOpenImmersive }) {
         </div>
         {queueOpen && <QueuePanel onClose={closeQueue} />}
       </div>
+      {p.media?.type === 'YOUTUBE_SEARCH' && p.media?.watchUrl && (
+        <section className="youtube-inline-fallback" aria-label="YouTube search fallback">
+          <span>We couldn't find an embeddable upload for this track.</span>
+          <a href={p.media.watchUrl} target="_blank" rel="noreferrer">Search and play on YouTube <Icon.Arrow /></a>
+        </section>
+      )}
       {p.externalPlayback && (p.media?.embedUri || p.media?.embedUrl) && (
         <section className="youtube-inline-panel" aria-label="YouTube embedded player">
           <div className="row between youtube-inline-heading">

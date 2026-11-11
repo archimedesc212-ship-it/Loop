@@ -428,3 +428,52 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @media(prefers-reduced-motion:reduce) {
  .accent-theme-option { transition:none; }
 }
+
+/* LOOP V9 — Apple Music-inspired Now Playing experience */
+.loop-immersive-player {
+  background: #090a0d;
+  padding: clamp(16px, 2.8vw, 38px) clamp(18px, 5vw, 72px) 28px;
+}
+.loop-immersive-art { filter: blur(58px) saturate(1.5); opacity: .34; transform: scale(1.2); }
+.loop-immersive-shade {
+  background: radial-gradient(ellipse at 24% 38%, rgba(95,112,145,.24), transparent 52%),
+    linear-gradient(110deg, rgba(5,6,10,.9), rgba(8,9,13,.7) 52%, rgba(5,6,10,.94));
+}
+.loop-immersive-content { width:min(1180px,100%); gap:clamp(20px,4vh,42px); }
+.loop-immersive-stage {
+  display:grid; grid-template-columns:minmax(220px, min(36vw,390px)) minmax(0,1fr);
+  align-items:center; gap:clamp(26px,5vw,64px); width:min(1000px,100%); margin:0 auto;
+}
+.loop-immersive-artwork-wrap { width:100%; aspect-ratio:1; overflow:hidden; border-radius:20px; box-shadow:0 28px 90px rgba(0,0,0,.52),0 0 0 1px rgba(255,255,255,.1); }
+.loop-immersive-cover { display:block; width:100%; height:100%; aspect-ratio:1; object-fit:cover; border-radius:inherit; }
+.loop-immersive-artwork-wrap > div { width:100%; height:100%; }
+.loop-immersive-track-copy { min-width:0; }
+.loop-immersive-album-label { display:block; margin-bottom:14px; color:rgba(255,255,255,.52); font-size:.68rem; letter-spacing:.2em; font-weight:750; }
+.loop-immersive-track-copy h1 { font-size:clamp(2rem,4.6vw,4.4rem); overflow-wrap:anywhere; }
+.loop-immersive-track-copy p { font-size:clamp(1rem,1.6vw,1.3rem); }
+.loop-immersive-track-meta { display:flex; align-items:center; gap:9px; margin-top:22px; color:rgba(255,255,255,.55); font-size:.76rem; }
+.loop-immersive-live-dot { width:7px; height:7px; border-radius:50%; background:#85858b; }
+.loop-immersive-live-dot.is-playing { background:#35d878; box-shadow:0 0 12px rgba(53,216,120,.8); }
+.loop-immersive-lower { width:min(1080px,100%); margin:0 auto; grid-template-columns:minmax(280px,.9fr) minmax(300px,1.1fr); }
+.loop-immersive-controls { padding:22px; border:1px solid rgba(255,255,255,.12); border-radius:22px; background:rgba(18,19,24,.48); backdrop-filter:blur(24px); }
+.loop-immersive-buttons { gap:clamp(12px,2vw,26px); }
+.loop-immersive-buttons .play-btn { width:64px; height:64px; background:#f4f4f5; color:#101014; }
+.loop-immersive-buttons .icon-btn { background:rgba(255,255,255,.06); border-radius:50%; }
+.loop-immersive-progress input { accent-color:#f5f5f7; }
+.loop-annotation-panel { background:rgba(17,18,23,.56); border-color:rgba(255,255,255,.12); }
+.loop-immersive-video { width:min(760px,100%); margin:0 auto; overflow:hidden; border-radius:18px; background:#050505; box-shadow:0 20px 70px rgba(0,0,0,.4); }
+.loop-immersive-video iframe { display:block; width:100%; aspect-ratio:16/9; border:0; }
+.loop-immersive-video > a,.loop-immersive-video-fallback a { display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; color:#fff; font-size:.82rem; }
+.loop-immersive-video-fallback { width:min(760px,100%); margin:0 auto; padding:22px; border:1px solid rgba(255,255,255,.14); border-radius:18px; background:rgba(18,19,24,.72); text-align:center; }
+.loop-immersive-video-fallback p { color:rgba(255,255,255,.7); }
+.loop-immersive-video-fallback a { color:#fff; font-weight:700; }
+.youtube-inline-fallback { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 18px; border:1px solid var(--line); border-radius:0 0 16px 16px; background:var(--surface-2); font-size:.78rem; }
+.youtube-inline-fallback a { color:var(--accent); font-weight:700; display:flex; align-items:center; gap:6px; }
+@media(max-width:760px) {
+ .loop-immersive-stage { grid-template-columns:minmax(0,1fr); width:min(390px,100%); gap:18px; text-align:center; }
+ .loop-immersive-artwork-wrap { width:min(64vw,280px); margin:0 auto; }
+ .loop-immersive-track-meta { justify-content:center; margin-top:12px; }
+ .loop-immersive-lower { grid-template-columns:1fr; }
+ .loop-immersive-controls { padding:16px 12px; }
+ .youtube-inline-fallback { align-items:flex-start; flex-direction:column; }
+}
