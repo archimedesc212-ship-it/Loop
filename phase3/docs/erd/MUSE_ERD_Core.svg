@@ -1,0 +1,903 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2492" height="1532" viewBox="0 0 2492 1532" font-family="Arial, Helvetica, sans-serif">
+<title>MUSE — ER Diagram (16 core entities)</title>
+<rect x="0" y="0" width="2492" height="1532" fill="#FFFFFF"/>
+<text x="28" y="58" font-size="32" font-weight="bold" fill="#1A1A1A">MUSE — ER Diagram (16 core entities)</text>
+<text x="28" y="86" font-size="14" fill="#555555">16 of the 64 tables, with ALL their columns and the 24 real foreign keys between them. "→ table" marks a foreign key to a table not drawn here.</text><text x="28" y="106" font-size="14" fill="#555555">Simplified view for submission: the database is unchanged; each of the other 48 tables belongs to one of these 16 (see MUSE_ERD_Core_GUIDE.md). Complete schema: MUSE_ERD_Full_Schema.</text>
+<svg x="28.0" y="259.0" width="651.2" height="296.2" viewBox="0 0 651.20 296.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 292.6)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-3.6,3.6 -3.6,-292.6 647.6,-292.6 647.6,3.6 -3.6,3.6" />
+<g xmlns="http://www.w3.org/2000/svg" id="clust1" class="cluster">
+<title>cluster_u</title>
+<path fill="#eef3fb" stroke="#5b7db1" stroke-width="1.4" d="M20,-8C20,-8 624,-8 624,-8 630,-8 636,-14 636,-20 636,-20 636,-269 636,-269 636,-275 630,-281 624,-281 624,-281 20,-281 20,-281 14,-281 8,-275 8,-269 8,-269 8,-20 8,-20 8,-14 14,-8 20,-8" />
+<text text-anchor="start" x="16" y="-263.6" font-family="Arial" font-weight="bold" font-size="18.00" fill="#5b7db1">Users</text>
+</g>
+
+</g></svg>
+<svg x="734.2" y="138.0" width="1031.2" height="538.2" viewBox="0 0 1031.20 538.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 534.6)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-3.6,3.6 -3.6,-534.6 1027.6,-534.6 1027.6,3.6 -3.6,3.6" />
+<g xmlns="http://www.w3.org/2000/svg" id="clust1" class="cluster">
+<title>cluster_c</title>
+<path fill="#eef7ef" stroke="#4f8a5b" stroke-width="1.4" d="M20,-8C20,-8 1004,-8 1004,-8 1010,-8 1016,-14 1016,-20 1016,-20 1016,-511 1016,-511 1016,-517 1010,-523 1004,-523 1004,-523 20,-523 20,-523 14,-523 8,-517 8,-511 8,-511 8,-20 8,-20 8,-14 14,-8 20,-8" />
+<text text-anchor="start" x="16" y="-505.6" font-family="Arial" font-weight="bold" font-size="18.00" fill="#4f8a5b">Music Catalogue</text>
+</g>
+
+</g></svg>
+<svg x="1820.4" y="218.0" width="643.2" height="378.2" viewBox="0 0 643.20 378.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 374.6)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-3.6,3.6 -3.6,-374.6 639.6,-374.6 639.6,3.6 -3.6,3.6" />
+<g xmlns="http://www.w3.org/2000/svg" id="clust1" class="cluster">
+<title>cluster_m</title>
+<path fill="#f6f0fa" stroke="#7d5ba6" stroke-width="1.4" d="M20,-8C20,-8 616,-8 616,-8 622,-8 628,-14 628,-20 628,-20 628,-351 628,-351 628,-357 622,-363 616,-363 616,-363 20,-363 20,-363 14,-363 8,-357 8,-351 8,-351 8,-20 8,-20 8,-14 14,-8 20,-8" />
+<text text-anchor="start" x="16" y="-345.6" font-family="Arial" font-weight="bold" font-size="18.00" fill="#7d5ba6">Mood Intelligence</text>
+</g>
+
+</g></svg>
+<svg x="82.5" y="787.2" width="542.2" height="329.2" viewBox="0 0 542.20 329.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 325.6)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-3.6,3.6 -3.6,-325.6 538.6,-325.6 538.6,3.6 -3.6,3.6" />
+<g xmlns="http://www.w3.org/2000/svg" id="clust1" class="cluster">
+<title>cluster_l</title>
+<path fill="#fdf4ea" stroke="#b07a35" stroke-width="1.4" d="M20,-8C20,-8 515,-8 515,-8 521,-8 527,-14 527,-20 527,-20 527,-302 527,-302 527,-308 521,-314 515,-314 515,-314 20,-314 20,-314 14,-314 8,-308 8,-302 8,-302 8,-20 8,-20 8,-14 14,-8 20,-8" />
+<text text-anchor="start" x="16" y="-296.6" font-family="Arial" font-weight="bold" font-size="18.00" fill="#b07a35">Listening History</text>
+</g>
+
+</g></svg>
+<svg x="940.2" y="731.2" width="619.2" height="441.2" viewBox="0 0 619.20 441.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 437.6)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-3.6,3.6 -3.6,-437.6 615.6,-437.6 615.6,3.6 -3.6,3.6" />
+<g xmlns="http://www.w3.org/2000/svg" id="clust1" class="cluster">
+<title>cluster_r</title>
+<path fill="#fceeee" stroke="#b05454" stroke-width="1.4" d="M20,-8C20,-8 592,-8 592,-8 598,-8 604,-14 604,-20 604,-20 604,-414 604,-414 604,-420 598,-426 592,-426 592,-426 20,-426 20,-426 14,-426 8,-420 8,-414 8,-414 8,-20 8,-20 8,-14 14,-8 20,-8" />
+<text text-anchor="start" x="16" y="-408.6" font-family="Arial" font-weight="bold" font-size="18.00" fill="#b05454">Recommendations</text>
+</g>
+
+</g></svg>
+<svg x="1897.4" y="803.7" width="489.2" height="296.2" viewBox="0 0 489.20 296.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 292.6)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-3.6,3.6 -3.6,-292.6 485.6,-292.6 485.6,3.6 -3.6,3.6" />
+<g xmlns="http://www.w3.org/2000/svg" id="clust1" class="cluster">
+<title>cluster_p</title>
+<path fill="#eaf6f6" stroke="#3e8a8a" stroke-width="1.4" d="M20,-8C20,-8 462,-8 462,-8 468,-8 474,-14 474,-20 474,-20 474,-269 474,-269 474,-275 468,-281 462,-281 462,-281 20,-281 20,-281 14,-281 8,-275 8,-269 8,-269 8,-20 8,-20 8,-14 14,-8 20,-8" />
+<text text-anchor="start" x="16" y="-263.6" font-family="Arial" font-weight="bold" font-size="18.00" fill="#3e8a8a">Playlists</text>
+</g>
+
+</g></svg>
+<svg x="999.7" y="1227.4" width="500.2" height="276.2" viewBox="0 0 500.20 276.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 272.6)"><polygon xmlns="http://www.w3.org/2000/svg" fill="white" stroke="transparent" points="-3.6,3.6 -3.6,-272.6 496.6,-272.6 496.6,3.6 -3.6,3.6" />
+<g xmlns="http://www.w3.org/2000/svg" id="clust1" class="cluster">
+<title>cluster_legend</title>
+<path fill="none" stroke="#999999" d="M20,-8C20,-8 473,-8 473,-8 479,-8 485,-14 485,-20 485,-20 485,-249 485,-249 485,-255 479,-261 473,-261 473,-261 20,-261 20,-261 14,-261 8,-255 8,-249 8,-249 8,-20 8,-20 8,-14 14,-8 20,-8" />
+<text text-anchor="start" x="185" y="-248.4" font-family="Arial" font-weight="bold" font-size="12.00">Notation (crow's foot)</text>
+</g>
+
+</g></svg>
+<g fill="none" stroke="#3A3A3A" stroke-width="1.3" stroke-linecap="round"><path d="M276.1,947.1 C536.1,947.1 983.8,826.1 1243.8,826.1" stroke-dasharray="6 4"/><path d="M276.1,931.1 C536.1,931.1 840.8,231.9 1100.8,231.9" stroke-dasharray="6 4"/><path d="M589.1,915.1 C651.9,915.1 386.8,353.9 449.6,353.9" stroke-dasharray="6 4"/><path d="M1933.0,914.6 C1673.7,914.6 1616.1,231.9 1356.8,231.9"/><path d="M2146.0,995.6 C1886.0,995.6 1783.8,826.1 1523.8,826.1" stroke-dasharray="6 4"/><path d="M2146.0,915.6 C1886.0,915.6 903.6,353.9 643.6,353.9" stroke-dasharray="6 4"/><path d="M1243.8,955.1 C1183.8,955.1 1416.8,231.9 1356.8,231.9" stroke-dasharray="6 4"/><path d="M1243.8,843.1 C983.8,843.1 903.6,353.9 643.6,353.9" stroke-dasharray="6 4"/><path d="M1172.8,842.1 C1232.8,842.1 1040.8,231.9 1100.8,231.9"/><path d="M1866.0,474.9 C1636.9,474.9 1585.9,231.9 1356.8,231.9"/><path d="M1866.0,458.9 C1606.0,458.9 903.6,353.9 643.6,353.9"/><path d="M1856.0,312.9 C1631.4,312.9 1581.4,231.9 1356.8,231.9"/></g>
+<svg x="28.0" y="259.0" width="651.2" height="296.2" viewBox="0 0 651.20 296.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 292.6)"><g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>users</title>
+<polygon fill="#ffffff" stroke="transparent" points="418,-27.5 418,-232.5 612,-232.5 612,-27.5 418,-27.5" />
+<polygon fill="#eef3fb" stroke="transparent" points="419,-204 419,-231 611,-231 611,-204 419,-204" />
+<text text-anchor="start" x="496.5" y="-214.8" font-family="Arial" font-weight="bold" font-size="14.00">users</text>
+<text text-anchor="start" x="421" y="-193.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="438" y="-194.2" font-family="Arial" font-weight="bold" font-size="11.00">user_id</text>
+<text text-anchor="start" x="551" y="-193.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="421" y="-177.8" font-family="Arial" font-size="9.00" fill="#555555">U2</text>
+<text text-anchor="start" x="438" y="-177.2" font-family="Arial" font-size="11.00">username</text>
+<text text-anchor="start" x="551" y="-177.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(30)</text>
+<text text-anchor="start" x="421" y="-161.8" font-family="Arial" font-size="9.00" fill="#555555">U1</text>
+<text text-anchor="start" x="438" y="-161.2" font-family="Arial" font-size="11.00">email</text>
+<text text-anchor="start" x="551" y="-161.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(120)</text>
+<text text-anchor="start" x="421" y="-145.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="438" y="-145.2" font-family="Arial" font-size="11.00">password_hash</text>
+<text text-anchor="start" x="551" y="-145.8" font-family="Arial" font-size="9.00" fill="#777777">char(60)</text>
+<text text-anchor="start" x="421" y="-129.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="438" y="-129.2" font-family="Arial" font-size="11.00">password_changed_at</text>
+<text text-anchor="start" x="551" y="-129.8" font-family="Arial" font-size="9.00" fill="#777777">datetime · null</text>
+<text text-anchor="start" x="421" y="-113.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="438" y="-113.2" font-family="Arial" font-size="11.00">role_id</text>
+<text text-anchor="start" x="551" y="-113.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint → roles</text>
+<text text-anchor="start" x="421" y="-97.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="438" y="-97.2" font-family="Arial" font-size="11.00">is_active</text>
+<text text-anchor="start" x="551" y="-97.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint(1)</text>
+<text text-anchor="start" x="421" y="-81.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="438" y="-81.2" font-family="Arial" font-size="11.00">failed_login_count</text>
+<text text-anchor="start" x="551" y="-81.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint</text>
+<text text-anchor="start" x="421" y="-65.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="438" y="-65.2" font-family="Arial" font-size="11.00">locked_until</text>
+<text text-anchor="start" x="551" y="-65.8" font-family="Arial" font-size="9.00" fill="#777777">datetime · null</text>
+<text text-anchor="start" x="421" y="-49.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="438" y="-49.2" font-family="Arial" font-size="11.00">created_at</text>
+<text text-anchor="start" x="551" y="-49.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<text text-anchor="start" x="421" y="-33.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="438" y="-33.2" font-family="Arial" font-size="11.00">last_login_at</text>
+<text text-anchor="start" x="551" y="-33.8" font-family="Arial" font-size="9.00" fill="#777777">datetime · null</text>
+<polygon fill="none" stroke="#5b7db1" points="418,-27.5 418,-232.5 612,-232.5 612,-27.5 418,-27.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>user_profiles</title>
+<polygon fill="#ffffff" stroke="transparent" points="32,-91.5 32,-232.5 306,-232.5 306,-91.5 32,-91.5" />
+<polygon fill="#eef3fb" stroke="transparent" points="33,-204 33,-231 305,-231 305,-204 33,-204" />
+<text text-anchor="start" x="126.5" y="-214.8" font-family="Arial" font-weight="bold" font-size="14.00">user_profiles</text>
+<text text-anchor="start" x="35" y="-193.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="65" y="-194.2" font-family="Arial" font-weight="bold" font-size="11.00">user_id</text>
+<text text-anchor="start" x="194" y="-193.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="35" y="-177.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-177.2" font-family="Arial" font-size="11.00">display_name</text>
+<text text-anchor="start" x="194" y="-177.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(60)</text>
+<text text-anchor="start" x="35" y="-161.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="65" y="-161.2" font-family="Arial" font-size="11.00">region_code</text>
+<text text-anchor="start" x="194" y="-161.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(6) · null → regions</text>
+<text text-anchor="start" x="35" y="-145.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-145.2" font-family="Arial" font-size="11.00">content_filter</text>
+<text text-anchor="start" x="194" y="-145.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="35" y="-129.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-129.2" font-family="Arial" font-size="11.00">listening_habit</text>
+<text text-anchor="start" x="194" y="-129.8" font-family="Arial" font-size="9.00" fill="#777777">enum · null</text>
+<text text-anchor="start" x="35" y="-113.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-113.2" font-family="Arial" font-size="11.00">onboarding_completed_at</text>
+<text text-anchor="start" x="194" y="-113.8" font-family="Arial" font-size="9.00" fill="#777777">datetime · null</text>
+<text text-anchor="start" x="35" y="-97.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-97.2" font-family="Arial" font-size="11.00">updated_at</text>
+<text text-anchor="start" x="194" y="-97.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<polygon fill="none" stroke="#5b7db1" points="32,-91.5 32,-232.5 306,-232.5 306,-91.5 32,-91.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>user_profiles:R_user_id-&gt;users:L_user_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" d="M317.8,-196C355.3,-196 370.27,-196 408.83,-196" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="306.9,-200.5 306.9,-191.5 308.7,-191.5 308.7,-200.5 306.9,-200.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="306,-196 310.5,-196 " />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="314.1" cy="-196" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="417.1,-191.5 417.1,-200.5 415.3,-200.5 415.3,-191.5 417.1,-191.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="418,-196 413.5,-196 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="412.6,-191.5 412.6,-200.5 410.8,-200.5 410.8,-191.5 412.6,-191.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="413.5,-196 409,-196 " />
+<text text-anchor="start" x="330" y="-198.8" font-family="Arial" font-size="9.00">has profile (1:1)</text>
+</g>
+</g></svg>
+<svg x="734.2" y="138.0" width="1031.2" height="538.2" viewBox="0 0 1031.20 538.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 534.6)"><g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>artists</title>
+<polygon fill="#ffffff" stroke="transparent" points="752,-246.5 752,-451.5 992,-451.5 992,-246.5 752,-246.5" />
+<polygon fill="#eef7ef" stroke="transparent" points="753,-423 753,-450 991,-450 991,-423 753,-423" />
+<text text-anchor="start" x="851.5" y="-433.8" font-family="Arial" font-weight="bold" font-size="14.00">artists</text>
+<text text-anchor="start" x="755" y="-412.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="772" y="-413.2" font-family="Arial" font-weight="bold" font-size="11.00">artist_id</text>
+<text text-anchor="start" x="877" y="-412.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="755" y="-396.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="772" y="-396.2" font-family="Arial" font-size="11.00">name</text>
+<text text-anchor="start" x="877" y="-396.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(100)</text>
+<text text-anchor="start" x="755" y="-380.8" font-family="Arial" font-size="9.00" fill="#555555">UK</text>
+<text text-anchor="start" x="772" y="-380.2" font-family="Arial" font-size="11.00">normalized_name</text>
+<text text-anchor="start" x="877" y="-380.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(100) · null · gen</text>
+<text text-anchor="start" x="755" y="-364.8" font-family="Arial" font-size="9.00" fill="#555555">UK</text>
+<text text-anchor="start" x="772" y="-364.2" font-family="Arial" font-size="11.00">disambiguation</text>
+<text text-anchor="start" x="877" y="-364.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(80)</text>
+<text text-anchor="start" x="755" y="-348.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="772" y="-348.2" font-family="Arial" font-size="11.00">artist_type</text>
+<text text-anchor="start" x="877" y="-348.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="755" y="-332.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="772" y="-332.2" font-family="Arial" font-size="11.00">country_code</text>
+<text text-anchor="start" x="877" y="-332.8" font-family="Arial" font-size="9.00" fill="#777777">char(2)</text>
+<text text-anchor="start" x="755" y="-316.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="772" y="-316.2" font-family="Arial" font-size="11.00">region_code</text>
+<text text-anchor="start" x="877" y="-316.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(6) · null → regions</text>
+<text text-anchor="start" x="755" y="-300.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="772" y="-300.2" font-family="Arial" font-size="11.00">primary_language_id</text>
+<text text-anchor="start" x="877" y="-300.8" font-family="Arial" font-size="9.00" fill="#777777">smallint · null → languages</text>
+<text text-anchor="start" x="755" y="-284.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="772" y="-284.2" font-family="Arial" font-size="11.00">formed_year</text>
+<text text-anchor="start" x="877" y="-284.8" font-family="Arial" font-size="9.00" fill="#777777">smallint · null</text>
+<text text-anchor="start" x="755" y="-268.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="772" y="-268.2" font-family="Arial" font-size="11.00">bio</text>
+<text text-anchor="start" x="877" y="-268.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(400) · null</text>
+<text text-anchor="start" x="755" y="-252.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="772" y="-252.2" font-family="Arial" font-size="11.00">created_at</text>
+<text text-anchor="start" x="877" y="-252.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<polygon fill="none" stroke="#4f8a5b" points="752,-246.5 752,-451.5 992,-451.5 992,-246.5 752,-246.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>albums</title>
+<polygon fill="#ffffff" stroke="transparent" points="764.5,-52.5 764.5,-225.5 979.5,-225.5 979.5,-52.5 764.5,-52.5" />
+<polygon fill="#eef7ef" stroke="transparent" points="766,-197 766,-224 979,-224 979,-197 766,-197" />
+<text text-anchor="start" x="848" y="-207.8" font-family="Arial" font-weight="bold" font-size="14.00">albums</text>
+<text text-anchor="start" x="768" y="-186.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="785" y="-187.2" font-family="Arial" font-weight="bold" font-size="11.00">album_id</text>
+<text text-anchor="start" x="865" y="-186.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="768" y="-170.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="785" y="-170.2" font-family="Arial" font-size="11.00">title</text>
+<text text-anchor="start" x="865" y="-170.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(150)</text>
+<text text-anchor="start" x="768" y="-154.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="785" y="-154.2" font-family="Arial" font-size="11.00">normalized_title</text>
+<text text-anchor="start" x="865" y="-154.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(150) · null · gen</text>
+<text text-anchor="start" x="768" y="-138.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="785" y="-138.2" font-family="Arial" font-size="11.00">album_type</text>
+<text text-anchor="start" x="865" y="-138.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="768" y="-122.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="785" y="-122.2" font-family="Arial" font-size="11.00">film_id</text>
+<text text-anchor="start" x="865" y="-122.8" font-family="Arial" font-size="9.00" fill="#777777">int · null → films</text>
+<text text-anchor="start" x="768" y="-106.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="785" y="-106.2" font-family="Arial" font-size="11.00">release_year</text>
+<text text-anchor="start" x="865" y="-106.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="768" y="-90.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="785" y="-90.2" font-family="Arial" font-size="11.00">language_id</text>
+<text text-anchor="start" x="865" y="-90.8" font-family="Arial" font-size="9.00" fill="#777777">smallint · null → languages</text>
+<text text-anchor="start" x="768" y="-74.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="785" y="-74.2" font-family="Arial" font-size="11.00">cover_color_1</text>
+<text text-anchor="start" x="865" y="-74.8" font-family="Arial" font-size="9.00" fill="#777777">char(7)</text>
+<text text-anchor="start" x="768" y="-58.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="785" y="-58.2" font-family="Arial" font-size="11.00">cover_color_2</text>
+<text text-anchor="start" x="865" y="-58.8" font-family="Arial" font-size="9.00" fill="#777777">char(7)</text>
+<polygon fill="none" stroke="#4f8a5b" points="764.5,-52.5 764.5,-225.5 979.5,-225.5 979.5,-52.5 764.5,-52.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node3" class="node">
+<title>songs</title>
+<polygon fill="#ffffff" stroke="transparent" points="363,-158.5 363,-475.5 619,-475.5 619,-158.5 363,-158.5" />
+<polygon fill="#eef7ef" stroke="transparent" points="364,-447 364,-474 618,-474 618,-447 364,-447" />
+<text text-anchor="start" x="471" y="-457.8" font-family="Arial" font-weight="bold" font-size="14.00">songs</text>
+<text text-anchor="start" x="366" y="-436.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="396" y="-437.2" font-family="Arial" font-weight="bold" font-size="11.00">song_id</text>
+<text text-anchor="start" x="504" y="-436.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="366" y="-420.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-420.2" font-family="Arial" font-size="11.00">title</text>
+<text text-anchor="start" x="504" y="-420.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(150)</text>
+<text text-anchor="start" x="366" y="-404.8" font-family="Arial" font-size="9.00" fill="#555555">U1</text>
+<text text-anchor="start" x="396" y="-404.2" font-family="Arial" font-size="11.00">normalized_title</text>
+<text text-anchor="start" x="504" y="-404.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(150) · null · gen</text>
+<text text-anchor="start" x="366" y="-388.8" font-family="Arial" font-size="9.00" fill="#555555">U1</text>
+<text text-anchor="start" x="396" y="-388.2" font-family="Arial" font-size="11.00">version_label</text>
+<text text-anchor="start" x="504" y="-388.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(40)</text>
+<text text-anchor="start" x="366" y="-372.8" font-family="Arial" font-size="9.00" fill="#555555">FK U1</text>
+<text text-anchor="start" x="396" y="-372.2" font-family="Arial" font-size="11.00">primary_artist_id</text>
+<text text-anchor="start" x="504" y="-372.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="366" y="-356.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="396" y="-356.2" font-family="Arial" font-size="11.00">album_id</text>
+<text text-anchor="start" x="504" y="-356.8" font-family="Arial" font-size="9.00" fill="#777777">int · null</text>
+<text text-anchor="start" x="366" y="-340.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-340.2" font-family="Arial" font-size="11.00">track_number</text>
+<text text-anchor="start" x="504" y="-340.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint · null</text>
+<text text-anchor="start" x="366" y="-324.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-324.2" font-family="Arial" font-size="11.00">duration_sec</text>
+<text text-anchor="start" x="504" y="-324.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="366" y="-308.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-308.2" font-family="Arial" font-size="11.00">release_year</text>
+<text text-anchor="start" x="504" y="-308.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="366" y="-292.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="396" y="-292.2" font-family="Arial" font-size="11.00">language_id</text>
+<text text-anchor="start" x="504" y="-292.8" font-family="Arial" font-size="9.00" fill="#777777">smallint · null → languages</text>
+<text text-anchor="start" x="366" y="-276.8" font-family="Arial" font-size="9.00" fill="#555555">U2</text>
+<text text-anchor="start" x="396" y="-276.2" font-family="Arial" font-size="11.00">isrc</text>
+<text text-anchor="start" x="504" y="-276.8" font-family="Arial" font-size="9.00" fill="#777777">char(12) · null</text>
+<text text-anchor="start" x="366" y="-260.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-260.2" font-family="Arial" font-size="11.00">explicit</text>
+<text text-anchor="start" x="504" y="-260.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint(1)</text>
+<text text-anchor="start" x="366" y="-244.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-244.2" font-family="Arial" font-size="11.00">content_rating</text>
+<text text-anchor="start" x="504" y="-244.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="366" y="-228.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-228.2" font-family="Arial" font-size="11.00">popularity</text>
+<text text-anchor="start" x="504" y="-228.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint</text>
+<text text-anchor="start" x="366" y="-212.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-212.2" font-family="Arial" font-size="11.00">status</text>
+<text text-anchor="start" x="504" y="-212.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="366" y="-196.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="396" y="-196.2" font-family="Arial" font-size="11.00">merged_into_song_id</text>
+<text text-anchor="start" x="504" y="-196.8" font-family="Arial" font-size="9.00" fill="#777777">int · null</text>
+<text text-anchor="start" x="366" y="-180.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-180.2" font-family="Arial" font-size="11.00">created_at</text>
+<text text-anchor="start" x="504" y="-180.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<text text-anchor="start" x="366" y="-164.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="396" y="-164.2" font-family="Arial" font-size="11.00">updated_at</text>
+<text text-anchor="start" x="504" y="-164.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<polygon fill="none" stroke="#4f8a5b" points="363,-158.5 363,-475.5 619,-475.5 619,-158.5 363,-158.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge5" class="edge">
+<title>songs:R_primary_artist_id-&gt;artists:L_artist_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" stroke-dasharray="5,2" d="M635.38,-376.03C680.33,-381.94 694.58,-411.38 742.91,-414.7" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="627.98,-375.56 619.25,-370.96 623.49,-375.28 619,-375 619,-375 619,-375 623.49,-375.28 618.75,-379.04 627.98,-375.56 627.98,-375.56" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="631.58" cy="-375.79" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="751.25,-410.47 750.95,-419.47 749.15,-419.41 749.45,-410.41 751.25,-410.47" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="752,-415 747.5,-414.85 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="746.75,-410.32 746.45,-419.32 744.65,-419.26 744.95,-410.26 746.75,-410.32" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="747.5,-414.85 743.01,-414.7 " />
+<text text-anchor="start" x="667" y="-406.8" font-family="Arial" font-size="9.00">performs</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge4" class="edge">
+<title>songs:R_album_id-&gt;albums:L_album_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" stroke-dasharray="5,2" d="M635.48,-357.21C709.24,-339.85 674.9,-202.21 753.18,-189.88" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="627.95,-358.03 618.56,-354.97 623.47,-358.51 619,-359 619,-359 619,-359 623.47,-358.51 619.44,-363.03 627.95,-358.03 627.95,-358.03" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="631.53" cy="-357.64" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="763.77,-184.58 764.44,-193.55 762.64,-193.69 761.97,-184.71 763.77,-184.58" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="765,-189 760.51,-189.34 " />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="756.92" cy="-189.6" rx="3.6" ry="3.6" />
+<text text-anchor="start" x="668" y="-336.8" font-family="Arial" font-size="9.00">contains</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge6" class="edge">
+<title>songs:e-&gt;songs:e</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" stroke-dasharray="5,2" d="M634.15,-197.12C674.27,-194.42 724,-208.07 724,-319 724,-434.13 670.43,-444.48 629.64,-440.51" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="626.94,-197.96 617.53,-194.98 622.47,-198.48 618,-199 618,-199 618,-199 622.47,-198.48 618.47,-203.02 626.94,-197.96 626.94,-197.96" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="630.52" cy="-197.54" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="618.31,-443.58 619.47,-434.65 621.26,-434.88 620.1,-443.81 618.31,-443.58" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="618,-439 622.46,-439.58 " />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="626.03" cy="-440.04" rx="3.6" ry="3.6" />
+<text text-anchor="start" x="675" y="-312.14" font-family="Arial" font-size="9.00">merged into</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node4" class="node">
+<title>genres</title>
+<polygon fill="#ffffff" stroke="transparent" points="400,-28.5 400,-137.5 582,-137.5 582,-28.5 400,-28.5" />
+<polygon fill="#eef7ef" stroke="transparent" points="401,-109 401,-136 581,-136 581,-109 401,-109" />
+<text text-anchor="start" x="468.5" y="-119.8" font-family="Arial" font-weight="bold" font-size="14.00">genres</text>
+<text text-anchor="start" x="403" y="-98.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="420" y="-99.2" font-family="Arial" font-weight="bold" font-size="11.00">genre_id</text>
+<text text-anchor="start" x="503" y="-98.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="403" y="-82.8" font-family="Arial" font-size="9.00" fill="#555555">UK</text>
+<text text-anchor="start" x="420" y="-82.2" font-family="Arial" font-size="11.00">name</text>
+<text text-anchor="start" x="503" y="-82.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(40)</text>
+<text text-anchor="start" x="403" y="-66.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="420" y="-66.2" font-family="Arial" font-size="11.00">parent_genre_id</text>
+<text text-anchor="start" x="503" y="-66.8" font-family="Arial" font-size="9.00" fill="#777777">smallint · null</text>
+<text text-anchor="start" x="403" y="-50.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="420" y="-50.2" font-family="Arial" font-size="11.00">color_hex</text>
+<text text-anchor="start" x="503" y="-50.8" font-family="Arial" font-size="9.00" fill="#777777">char(7)</text>
+<text text-anchor="start" x="403" y="-34.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="420" y="-34.2" font-family="Arial" font-size="11.00">description</text>
+<text text-anchor="start" x="503" y="-34.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(200) · null</text>
+<polygon fill="none" stroke="#4f8a5b" points="400,-28.5 400,-137.5 582,-137.5 582,-28.5 400,-28.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>genres:e-&gt;genres:e</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" stroke-dasharray="5,2" d="M597.15,-66.93C637.27,-62.84 687,-65.27 687,-85 687,-105.48 633.43,-107.32 592.64,-102.58" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="589.93,-67.85 580.48,-64.98 585.46,-68.43 581,-69 581,-69 581,-69 585.46,-68.43 581.52,-73.02 589.93,-67.85 589.93,-67.85" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="593.5" cy="-67.4" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="581.29,-105.58 582.5,-96.66 584.28,-96.9 583.07,-105.82 581.29,-105.58" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="581,-101 585.46,-101.61 " />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="589.03" cy="-102.09" rx="3.6" ry="3.6" />
+<text text-anchor="start" x="592.66" y="-95.38" font-family="Arial" font-size="9.00">sub-genre of</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node5" class="node">
+<title>song_genres</title>
+<polygon fill="#ffffff" stroke="transparent" points="32,-259.5 32,-352.5 216,-352.5 216,-259.5 32,-259.5" />
+<polygon fill="#eef7ef" stroke="transparent" points="33,-324 33,-351 215,-351 215,-324 33,-324" />
+<text text-anchor="start" x="81.5" y="-334.8" font-family="Arial" font-weight="bold" font-size="14.00">song_genres</text>
+<text text-anchor="start" x="35" y="-313.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="65" y="-314.2" font-family="Arial" font-weight="bold" font-size="11.00">song_id</text>
+<text text-anchor="start" x="157" y="-313.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="35" y="-297.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="65" y="-298.2" font-family="Arial" font-weight="bold" font-size="11.00">genre_id</text>
+<text text-anchor="start" x="157" y="-297.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="35" y="-281.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-281.2" font-family="Arial" font-size="11.00">is_primary</text>
+<text text-anchor="start" x="157" y="-281.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint(1)</text>
+<text text-anchor="start" x="35" y="-265.8" font-family="Arial" font-size="9.00" fill="#555555">UK</text>
+<text text-anchor="start" x="65" y="-265.2" font-family="Arial" font-size="11.00">primary_song_key</text>
+<text text-anchor="start" x="157" y="-265.8" font-family="Arial" font-size="9.00" fill="#777777">int · null · gen</text>
+<polygon fill="none" stroke="#4f8a5b" points="32,-259.5 32,-352.5 216,-352.5 216,-259.5 32,-259.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge3" class="edge">
+<title>song_genres:R_song_id-&gt;songs:L_song_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" d="M232.43,-317.74C295.73,-332.08 284.87,-430.43 353.72,-438.48" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="224.95,-316.95 216.43,-311.97 220.48,-316.47 216,-316 216,-316 216,-316 220.48,-316.47 215.57,-320.03 224.95,-316.95 224.95,-316.95" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="228.53" cy="-317.33" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="362.35,-434.46 361.85,-443.44 360.05,-443.34 360.56,-434.36 362.35,-434.46" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="363,-439 358.51,-438.75 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="357.86,-434.2 357.36,-443.19 355.56,-443.09 356.06,-434.1 357.86,-434.2" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="358.51,-438.75 354.01,-438.49 " />
+<text text-anchor="start" x="264" y="-420.8" font-family="Arial" font-size="9.00">classified as</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge2" class="edge">
+<title>song_genres:R_genre_id-&gt;genres:L_genre_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" d="M232.42,-298.62C328.62,-281.52 287.83,-110.72 390.95,-101.4" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="224.97,-299.25 215.66,-295.96 220.48,-299.62 216,-300 216,-300 216,-300 220.48,-299.62 216.34,-304.04 224.97,-299.25 224.97,-299.25" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="228.56" cy="-298.95" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="398.9,-96.54 399.3,-105.54 397.5,-105.61 397.11,-96.62 398.9,-96.54" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="400,-101 395.5,-101.2 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="394.41,-96.74 394.8,-105.73 393,-105.81 392.61,-96.82 394.41,-96.74" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="395.5,-101.2 391.01,-101.39 " />
+<text text-anchor="start" x="272.5" y="-284.8" font-family="Arial" font-size="9.00">genre of</text>
+</g>
+</g></svg>
+<svg x="1820.4" y="218.0" width="643.2" height="378.2" viewBox="0 0 643.20 378.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 374.6)"><g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>moods</title>
+<polygon fill="#ffffff" stroke="transparent" points="353,-44.5 353,-281.5 604,-281.5 604,-44.5 353,-44.5" />
+<polygon fill="#f6f0fa" stroke="transparent" points="354.5,-253 354.5,-280 603.5,-280 603.5,-253 354.5,-253" />
+<text text-anchor="start" x="456" y="-263.8" font-family="Arial" font-weight="bold" font-size="14.00">moods</text>
+<text text-anchor="start" x="356.5" y="-242.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="373.5" y="-243.2" font-family="Arial" font-weight="bold" font-size="11.00">mood_id</text>
+<text text-anchor="start" x="492.5" y="-242.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="356.5" y="-226.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="373.5" y="-226.2" font-family="Arial" font-size="11.00">category_id</text>
+<text text-anchor="start" x="492.5" y="-226.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint → mood_categories</text>
+<text text-anchor="start" x="356.5" y="-210.8" font-family="Arial" font-size="9.00" fill="#555555">UK</text>
+<text text-anchor="start" x="373.5" y="-210.2" font-family="Arial" font-size="11.00">name</text>
+<text text-anchor="start" x="492.5" y="-210.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(30)</text>
+<text text-anchor="start" x="356.5" y="-194.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-194.2" font-family="Arial" font-size="11.00">emoji</text>
+<text text-anchor="start" x="492.5" y="-194.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(8)</text>
+<text text-anchor="start" x="356.5" y="-178.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-178.2" font-family="Arial" font-size="11.00">color_hex</text>
+<text text-anchor="start" x="492.5" y="-178.8" font-family="Arial" font-size="9.00" fill="#777777">char(7)</text>
+<text text-anchor="start" x="356.5" y="-162.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-162.2" font-family="Arial" font-size="11.00">description</text>
+<text text-anchor="start" x="492.5" y="-162.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(200)</text>
+<text text-anchor="start" x="356.5" y="-146.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-146.2" font-family="Arial" font-size="11.00">target_energy</text>
+<text text-anchor="start" x="492.5" y="-146.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="356.5" y="-130.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-130.2" font-family="Arial" font-size="11.00">target_valence</text>
+<text text-anchor="start" x="492.5" y="-130.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="356.5" y="-114.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-114.2" font-family="Arial" font-size="11.00">target_danceability</text>
+<text text-anchor="start" x="492.5" y="-114.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="356.5" y="-98.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-98.2" font-family="Arial" font-size="11.00">target_acousticness</text>
+<text text-anchor="start" x="492.5" y="-98.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="356.5" y="-82.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-82.2" font-family="Arial" font-size="11.00">target_instrumentalness</text>
+<text text-anchor="start" x="492.5" y="-82.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="356.5" y="-66.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-66.2" font-family="Arial" font-size="11.00">tempo_min</text>
+<text text-anchor="start" x="492.5" y="-66.8" font-family="Arial" font-size="9.00" fill="#777777">dec(5,1)</text>
+<text text-anchor="start" x="356.5" y="-50.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="373.5" y="-50.2" font-family="Arial" font-size="11.00">tempo_max</text>
+<text text-anchor="start" x="492.5" y="-50.8" font-family="Arial" font-size="9.00" fill="#777777">dec(5,1)</text>
+<polygon fill="none" stroke="#7d5ba6" points="353,-44.5 353,-281.5 604,-281.5 604,-44.5 353,-44.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>song_moods</title>
+<polygon fill="#ffffff" stroke="transparent" points="32,-189.5 32,-314.5 258,-314.5 258,-189.5 32,-189.5" />
+<polygon fill="#f6f0fa" stroke="transparent" points="33,-286 33,-313 257,-313 257,-286 33,-286" />
+<text text-anchor="start" x="102.5" y="-296.8" font-family="Arial" font-weight="bold" font-size="14.00">song_moods</text>
+<text text-anchor="start" x="35" y="-275.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="65" y="-276.2" font-family="Arial" font-weight="bold" font-size="11.00">song_id</text>
+<text text-anchor="start" x="127" y="-275.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="35" y="-259.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="65" y="-260.2" font-family="Arial" font-weight="bold" font-size="11.00">mood_id</text>
+<text text-anchor="start" x="127" y="-259.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="35" y="-243.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="65" y="-244.2" font-family="Arial" font-weight="bold" font-size="11.00">model_id</text>
+<text text-anchor="start" x="127" y="-243.8" font-family="Arial" font-size="9.00" fill="#777777">smallint → intelligence_models</text>
+<text text-anchor="start" x="35" y="-227.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-227.2" font-family="Arial" font-size="11.00">confidence</text>
+<text text-anchor="start" x="127" y="-227.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="35" y="-211.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="65" y="-211.2" font-family="Arial" font-size="11.00">feature_id</text>
+<text text-anchor="start" x="127" y="-211.8" font-family="Arial" font-size="9.00" fill="#777777">int → audio_features</text>
+<text text-anchor="start" x="35" y="-195.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-195.2" font-family="Arial" font-size="11.00">analyzed_at</text>
+<text text-anchor="start" x="127" y="-195.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<polygon fill="none" stroke="#7d5ba6" points="32,-189.5 32,-314.5 258,-314.5 258,-189.5 32,-189.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge2" class="edge">
+<title>song_moods:R_mood_id-&gt;moods:L_mood_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" d="M274.37,-261.09C301.81,-257.86 314.25,-247.09 344.47,-245.26" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="266.99,-261.5 257.77,-257.96 262.49,-261.75 258,-262 258,-262 258,-262 262.49,-261.75 258.23,-266.04 266.99,-261.5 266.99,-261.5" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="270.58" cy="-261.3" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="352.47,-240.53 352.73,-249.52 350.93,-249.58 350.67,-240.58 352.47,-240.53" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="353.5,-245 349,-245.13 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="347.97,-240.66 348.23,-249.66 346.43,-249.71 346.17,-240.71 347.97,-240.66" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="349,-245.13 344.5,-245.26 " />
+<text text-anchor="start" x="288.5" y="-261.8" font-family="Arial" font-size="9.00">mood of</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node3" class="node">
+<title>song_mood_ratings</title>
+<polygon fill="#ffffff" stroke="transparent" points="42,-27.5 42,-168.5 248,-168.5 248,-27.5 42,-27.5" />
+<polygon fill="#f6f0fa" stroke="transparent" points="43,-140 43,-167 247,-167 247,-140 43,-140" />
+<text text-anchor="start" x="80" y="-150.8" font-family="Arial" font-weight="bold" font-size="14.00">song_mood_ratings</text>
+<text text-anchor="start" x="45" y="-129.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="75" y="-130.2" font-family="Arial" font-weight="bold" font-size="11.00">user_id</text>
+<text text-anchor="start" x="169" y="-129.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="45" y="-113.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="75" y="-114.2" font-family="Arial" font-weight="bold" font-size="11.00">song_id</text>
+<text text-anchor="start" x="169" y="-113.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="45" y="-97.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="75" y="-98.2" font-family="Arial" font-weight="bold" font-size="11.00">mood_id</text>
+<text text-anchor="start" x="169" y="-97.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="45" y="-81.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="75" y="-81.2" font-family="Arial" font-size="11.00">match_percentage</text>
+<text text-anchor="start" x="169" y="-81.8" font-family="Arial" font-size="9.00" fill="#777777">dec(5,2)</text>
+<text text-anchor="start" x="45" y="-65.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="75" y="-65.2" font-family="Arial" font-size="11.00">review_text</text>
+<text text-anchor="start" x="169" y="-65.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(280) · null</text>
+<text text-anchor="start" x="45" y="-49.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="75" y="-49.2" font-family="Arial" font-size="11.00">created_at</text>
+<text text-anchor="start" x="169" y="-49.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<text text-anchor="start" x="45" y="-33.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="75" y="-33.2" font-family="Arial" font-size="11.00">updated_at</text>
+<text text-anchor="start" x="169" y="-33.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<polygon fill="none" stroke="#7d5ba6" points="42,-27.5 42,-168.5 248,-168.5 248,-27.5 42,-27.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>song_mood_ratings:R_mood_id-&gt;moods:L_mood_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" d="M261.1,-110.43C284.74,-139.39 324.67,-220.01 345.58,-240.31" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="255.04,-105.61 250.52,-96.83 251.52,-102.8 248,-100 248,-100 248,-100 251.52,-102.8 245.48,-103.17 255.04,-105.61 255.04,-105.61" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="257.86" cy="-107.85" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="355.02,-240.67 350.43,-248.41 348.88,-247.5 353.47,-239.75 355.02,-240.67" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="353.5,-245 349.63,-242.71 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="351.15,-238.38 346.56,-246.12 345.01,-245.2 349.6,-237.46 351.15,-238.38" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="349.63,-242.71 345.76,-240.42 " />
+<text text-anchor="start" x="282" y="-219.8" font-family="Arial" font-size="9.00">rated mood</text>
+</g>
+</g></svg>
+<svg x="82.5" y="787.2" width="542.2" height="329.2" viewBox="0 0 542.20 329.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 325.6)"><g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>listening_sessions</title>
+<polygon fill="#ffffff" stroke="transparent" points="297,-60.5 297,-249.5 503,-249.5 503,-60.5 297,-60.5" />
+<polygon fill="#fdf4ea" stroke="transparent" points="298,-221 298,-248 502,-248 502,-221 298,-221" />
+<text text-anchor="start" x="339.5" y="-231.8" font-family="Arial" font-weight="bold" font-size="14.00">listening_sessions</text>
+<text text-anchor="start" x="300" y="-210.8" font-family="Arial" font-size="9.00" fill="#555555">PK UK</text>
+<text text-anchor="start" x="332" y="-211.2" font-family="Arial" font-weight="bold" font-size="11.00">session_id</text>
+<text text-anchor="start" x="406" y="-210.8" font-family="Arial" font-size="9.00" fill="#777777">bigint</text>
+<text text-anchor="start" x="300" y="-194.8" font-family="Arial" font-size="9.00" fill="#555555">FK UK</text>
+<text text-anchor="start" x="332" y="-194.2" font-family="Arial" font-size="11.00">user_id</text>
+<text text-anchor="start" x="406" y="-194.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="300" y="-178.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="332" y="-178.2" font-family="Arial" font-size="11.00">context_id</text>
+<text text-anchor="start" x="406" y="-178.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint · null → contexts</text>
+<text text-anchor="start" x="300" y="-162.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="332" y="-162.2" font-family="Arial" font-size="11.00">device</text>
+<text text-anchor="start" x="406" y="-162.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(30)</text>
+<text text-anchor="start" x="300" y="-146.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="332" y="-146.2" font-family="Arial" font-size="11.00">started_at</text>
+<text text-anchor="start" x="406" y="-146.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<text text-anchor="start" x="300" y="-130.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="332" y="-130.2" font-family="Arial" font-size="11.00">last_activity_at</text>
+<text text-anchor="start" x="406" y="-130.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<text text-anchor="start" x="300" y="-114.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="332" y="-114.2" font-family="Arial" font-size="11.00">ended_at</text>
+<text text-anchor="start" x="406" y="-114.8" font-family="Arial" font-size="9.00" fill="#777777">datetime · null</text>
+<text text-anchor="start" x="300" y="-98.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="332" y="-98.2" font-family="Arial" font-size="11.00">status</text>
+<text text-anchor="start" x="406" y="-98.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="300" y="-82.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="332" y="-82.2" font-family="Arial" font-size="11.00">plays</text>
+<text text-anchor="start" x="406" y="-82.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="300" y="-66.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="332" y="-66.2" font-family="Arial" font-size="11.00">listen_sec</text>
+<text text-anchor="start" x="406" y="-66.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<polygon fill="none" stroke="#b07a35" points="297,-60.5 297,-249.5 503,-249.5 503,-60.5 297,-60.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>listening_history</title>
+<polygon fill="#ffffff" stroke="transparent" points="32,-28.5 32,-265.5 190,-265.5 190,-28.5 32,-28.5" />
+<polygon fill="#fdf4ea" stroke="transparent" points="33,-237 33,-264 189,-264 189,-237 33,-237" />
+<text text-anchor="start" x="56.5" y="-247.8" font-family="Arial" font-weight="bold" font-size="14.00">listening_history</text>
+<text text-anchor="start" x="35" y="-226.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="52" y="-227.2" font-family="Arial" font-weight="bold" font-size="11.00">play_id</text>
+<text text-anchor="start" x="129" y="-226.8" font-family="Arial" font-size="9.00" fill="#777777">bigint</text>
+<text text-anchor="start" x="35" y="-210.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="52" y="-210.2" font-family="Arial" font-size="11.00">session_id</text>
+<text text-anchor="start" x="129" y="-210.8" font-family="Arial" font-size="9.00" fill="#777777">bigint</text>
+<text text-anchor="start" x="35" y="-194.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="52" y="-194.2" font-family="Arial" font-size="11.00">user_id</text>
+<text text-anchor="start" x="129" y="-194.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="35" y="-178.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="52" y="-178.2" font-family="Arial" font-size="11.00">song_id</text>
+<text text-anchor="start" x="129" y="-178.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="35" y="-162.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="52" y="-162.2" font-family="Arial" font-size="11.00">batch_id</text>
+<text text-anchor="start" x="129" y="-162.8" font-family="Arial" font-size="9.00" fill="#777777">bigint · null</text>
+<text text-anchor="start" x="35" y="-146.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="52" y="-146.2" font-family="Arial" font-size="11.00">origin</text>
+<text text-anchor="start" x="129" y="-146.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="35" y="-130.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="52" y="-130.2" font-family="Arial" font-size="11.00">started_at</text>
+<text text-anchor="start" x="129" y="-130.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<text text-anchor="start" x="35" y="-114.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="52" y="-114.2" font-family="Arial" font-size="11.00">ended_at</text>
+<text text-anchor="start" x="129" y="-114.8" font-family="Arial" font-size="9.00" fill="#777777">datetime · null</text>
+<text text-anchor="start" x="35" y="-98.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="52" y="-98.2" font-family="Arial" font-size="11.00">listened_sec</text>
+<text text-anchor="start" x="129" y="-98.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="35" y="-82.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="52" y="-82.2" font-family="Arial" font-size="11.00">completion_pct</text>
+<text text-anchor="start" x="129" y="-82.8" font-family="Arial" font-size="9.00" fill="#777777">dec(5,2)</text>
+<text text-anchor="start" x="35" y="-66.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="52" y="-66.2" font-family="Arial" font-size="11.00">completed</text>
+<text text-anchor="start" x="129" y="-66.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint(1)</text>
+<text text-anchor="start" x="35" y="-50.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="52" y="-50.2" font-family="Arial" font-size="11.00">skipped</text>
+<text text-anchor="start" x="129" y="-50.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint(1)</text>
+<text text-anchor="start" x="35" y="-34.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="52" y="-34.2" font-family="Arial" font-size="11.00">is_replay</text>
+<text text-anchor="start" x="129" y="-34.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint(1)</text>
+<polygon fill="none" stroke="#b07a35" points="32,-28.5 32,-265.5 190,-265.5 190,-28.5 32,-28.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>listening_history:R_session_id-&gt;listening_sessions:L_session_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" stroke-dasharray="5,2" d="M206.3,-213C238.37,-213 253.03,-213 287.72,-213" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="199,-213 190,-208.95 194.5,-213 190,-213 190,-213 190,-213 194.5,-213 190,-217.05 199,-213 199,-213" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="202.6" cy="-213" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="296.1,-208.5 296.1,-217.5 294.3,-217.5 294.3,-208.5 296.1,-208.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="297,-213 292.5,-213 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="291.6,-208.5 291.6,-217.5 289.8,-217.5 289.8,-208.5 291.6,-208.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="292.5,-213 288,-213 " />
+<text text-anchor="start" x="214" y="-215.8" font-family="Arial" font-size="9.00">contains plays</text>
+</g>
+</g></svg>
+<svg x="940.2" y="731.2" width="619.2" height="441.2" viewBox="0 0 619.20 441.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 437.6)"><g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>recommendation_batches</title>
+<polygon fill="#ffffff" stroke="transparent" points="300,-28.5 300,-377.5 580,-377.5 580,-28.5 300,-28.5" />
+<polygon fill="#fceeee" stroke="transparent" points="301,-349 301,-376 579,-376 579,-349 301,-349" />
+<text text-anchor="start" x="355.5" y="-359.8" font-family="Arial" font-weight="bold" font-size="14.00">recommendation_batches</text>
+<text text-anchor="start" x="303" y="-338.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="320" y="-339.2" font-family="Arial" font-weight="bold" font-size="11.00">batch_id</text>
+<text text-anchor="start" x="439" y="-338.8" font-family="Arial" font-size="9.00" fill="#777777">bigint</text>
+<text text-anchor="start" x="303" y="-322.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="320" y="-322.2" font-family="Arial" font-size="11.00">user_id</text>
+<text text-anchor="start" x="439" y="-322.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="303" y="-306.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="320" y="-306.2" font-family="Arial" font-size="11.00">incognito_id</text>
+<text text-anchor="start" x="439" y="-306.8" font-family="Arial" font-size="9.00" fill="#777777">bigint · null → incognito_sessions</text>
+<text text-anchor="start" x="303" y="-290.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="320" y="-290.2" font-family="Arial" font-size="11.00">model_id</text>
+<text text-anchor="start" x="439" y="-290.8" font-family="Arial" font-size="9.00" fill="#777777">smallint → intelligence_models</text>
+<text text-anchor="start" x="303" y="-274.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-274.2" font-family="Arial" font-size="11.00">strategy</text>
+<text text-anchor="start" x="439" y="-274.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="303" y="-258.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-258.2" font-family="Arial" font-size="11.00">label</text>
+<text text-anchor="start" x="439" y="-258.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(120) · null</text>
+<text text-anchor="start" x="303" y="-242.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-242.2" font-family="Arial" font-size="11.00">input_text</text>
+<text text-anchor="start" x="439" y="-242.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(280) · null</text>
+<text text-anchor="start" x="303" y="-226.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="320" y="-226.2" font-family="Arial" font-size="11.00">context_id</text>
+<text text-anchor="start" x="439" y="-226.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint · null → contexts</text>
+<text text-anchor="start" x="303" y="-210.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="320" y="-210.2" font-family="Arial" font-size="11.00">seed_song_id</text>
+<text text-anchor="start" x="439" y="-210.8" font-family="Arial" font-size="9.00" fill="#777777">int · null</text>
+<text text-anchor="start" x="303" y="-194.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="320" y="-194.2" font-family="Arial" font-size="11.00">language_id</text>
+<text text-anchor="start" x="439" y="-194.8" font-family="Arial" font-size="9.00" fill="#777777">smallint · null → languages</text>
+<text text-anchor="start" x="303" y="-178.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-178.2" font-family="Arial" font-size="11.00">target_energy</text>
+<text text-anchor="start" x="439" y="-178.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="303" y="-162.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-162.2" font-family="Arial" font-size="11.00">target_valence</text>
+<text text-anchor="start" x="439" y="-162.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="303" y="-146.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-146.2" font-family="Arial" font-size="11.00">target_danceability</text>
+<text text-anchor="start" x="439" y="-146.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="303" y="-130.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-130.2" font-family="Arial" font-size="11.00">target_acousticness</text>
+<text text-anchor="start" x="439" y="-130.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="303" y="-114.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-114.2" font-family="Arial" font-size="11.00">target_instrumentalness</text>
+<text text-anchor="start" x="439" y="-114.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="303" y="-98.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-98.2" font-family="Arial" font-size="11.00">tempo_min</text>
+<text text-anchor="start" x="439" y="-98.8" font-family="Arial" font-size="9.00" fill="#777777">dec(5,1)</text>
+<text text-anchor="start" x="303" y="-82.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-82.2" font-family="Arial" font-size="11.00">tempo_max</text>
+<text text-anchor="start" x="439" y="-82.8" font-family="Arial" font-size="9.00" fill="#777777">dec(5,1)</text>
+<text text-anchor="start" x="303" y="-66.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-66.2" font-family="Arial" font-size="11.00">max_speechiness</text>
+<text text-anchor="start" x="439" y="-66.8" font-family="Arial" font-size="9.00" fill="#777777">dec(4,3)</text>
+<text text-anchor="start" x="303" y="-50.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-50.2" font-family="Arial" font-size="11.00">discovery_only</text>
+<text text-anchor="start" x="439" y="-50.8" font-family="Arial" font-size="9.00" fill="#777777">tinyint(1)</text>
+<text text-anchor="start" x="303" y="-34.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="320" y="-34.2" font-family="Arial" font-size="11.00">created_at</text>
+<text text-anchor="start" x="439" y="-34.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<polygon fill="none" stroke="#b05454" points="300,-28.5 300,-377.5 580,-377.5 580,-28.5 300,-28.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>recommendation_items</title>
+<polygon fill="#ffffff" stroke="transparent" points="32,-140.5 32,-377.5 229,-377.5 229,-140.5 32,-140.5" />
+<polygon fill="#fceeee" stroke="transparent" points="33.5,-349 33.5,-376 228.5,-376 228.5,-349 33.5,-349" />
+<text text-anchor="start" x="54" y="-359.8" font-family="Arial" font-weight="bold" font-size="14.00">recommendation_items</text>
+<text text-anchor="start" x="35.5" y="-338.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK UK</text>
+<text text-anchor="start" x="80.5" y="-339.2" font-family="Arial" font-weight="bold" font-size="11.00">batch_id</text>
+<text text-anchor="start" x="169.5" y="-338.8" font-family="Arial" font-size="9.00" fill="#777777">bigint</text>
+<text text-anchor="start" x="35.5" y="-322.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="80.5" y="-323.2" font-family="Arial" font-weight="bold" font-size="11.00">song_id</text>
+<text text-anchor="start" x="169.5" y="-322.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="35.5" y="-306.8" font-family="Arial" font-size="9.00" fill="#555555">UK</text>
+<text text-anchor="start" x="80.5" y="-306.2" font-family="Arial" font-size="11.00">rank_position</text>
+<text text-anchor="start" x="169.5" y="-306.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="35.5" y="-290.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-290.2" font-family="Arial" font-size="11.00">final_score</text>
+<text text-anchor="start" x="169.5" y="-290.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4)</text>
+<text text-anchor="start" x="35.5" y="-274.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-274.2" font-family="Arial" font-size="11.00">mood_score</text>
+<text text-anchor="start" x="169.5" y="-274.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4) · null</text>
+<text text-anchor="start" x="35.5" y="-258.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-258.2" font-family="Arial" font-size="11.00">audio_score</text>
+<text text-anchor="start" x="169.5" y="-258.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4)</text>
+<text text-anchor="start" x="35.5" y="-242.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-242.2" font-family="Arial" font-size="11.00">preference_score</text>
+<text text-anchor="start" x="169.5" y="-242.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4)</text>
+<text text-anchor="start" x="35.5" y="-226.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-226.2" font-family="Arial" font-size="11.00">recency_score</text>
+<text text-anchor="start" x="169.5" y="-226.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4) · null</text>
+<text text-anchor="start" x="35.5" y="-210.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-210.2" font-family="Arial" font-size="11.00">trend_score</text>
+<text text-anchor="start" x="169.5" y="-210.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4)</text>
+<text text-anchor="start" x="35.5" y="-194.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-194.2" font-family="Arial" font-size="11.00">context_score</text>
+<text text-anchor="start" x="169.5" y="-194.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4) · null</text>
+<text text-anchor="start" x="35.5" y="-178.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-178.2" font-family="Arial" font-size="11.00">regional_score</text>
+<text text-anchor="start" x="169.5" y="-178.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4) · null</text>
+<text text-anchor="start" x="35.5" y="-162.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-162.2" font-family="Arial" font-size="11.00">exploration_score</text>
+<text text-anchor="start" x="169.5" y="-162.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4)</text>
+<text text-anchor="start" x="35.5" y="-146.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="80.5" y="-146.2" font-family="Arial" font-size="11.00">repetition_penalty</text>
+<text text-anchor="start" x="169.5" y="-146.8" font-family="Arial" font-size="9.00" fill="#777777">dec(6,4)</text>
+<polygon fill="none" stroke="#b05454" points="32,-140.5 32,-377.5 229,-377.5 229,-140.5 32,-140.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>recommendation_items:R_batch_id-&gt;recommendation_batches:L_batch_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" d="M245.8,-341C262.43,-341 272.17,-341 291,-341" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="238.5,-341 229.5,-336.95 234,-341 229.5,-341 229.5,-341 229.5,-341 234,-341 229.5,-345.05 238.5,-341 238.5,-341" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="242.1" cy="-341" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="299.1,-336.5 299.1,-345.5 297.3,-345.5 297.3,-336.5 299.1,-336.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="300,-341 295.5,-341 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="294.6,-336.5 294.6,-345.5 292.8,-345.5 292.8,-336.5 294.6,-336.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="295.5,-341 291,-341 " />
+<text text-anchor="start" x="253" y="-343.8" font-family="Arial" font-size="9.00">ranks</text>
+</g>
+</g></svg>
+<svg x="1897.4" y="803.7" width="489.2" height="296.2" viewBox="0 0 489.20 296.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 292.6)"><g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>playlists</title>
+<polygon fill="#ffffff" stroke="transparent" points="245,-27.5 245,-232.5 450,-232.5 450,-27.5 245,-27.5" />
+<polygon fill="#eaf6f6" stroke="transparent" points="246.5,-204 246.5,-231 449.5,-231 449.5,-204 246.5,-204" />
+<text text-anchor="start" x="320.5" y="-214.8" font-family="Arial" font-weight="bold" font-size="14.00">playlists</text>
+<text text-anchor="start" x="248.5" y="-193.8" font-family="Arial" font-size="9.00" fill="#555555">PK</text>
+<text text-anchor="start" x="279.5" y="-194.2" font-family="Arial" font-weight="bold" font-size="11.00">playlist_id</text>
+<text text-anchor="start" x="371.5" y="-193.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="248.5" y="-177.8" font-family="Arial" font-size="9.00" fill="#555555">FK UK</text>
+<text text-anchor="start" x="279.5" y="-177.2" font-family="Arial" font-size="11.00">user_id</text>
+<text text-anchor="start" x="371.5" y="-177.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="248.5" y="-161.8" font-family="Arial" font-size="9.00" fill="#555555">UK</text>
+<text text-anchor="start" x="279.5" y="-161.2" font-family="Arial" font-size="11.00">name</text>
+<text text-anchor="start" x="371.5" y="-161.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(80)</text>
+<text text-anchor="start" x="248.5" y="-145.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="279.5" y="-145.2" font-family="Arial" font-size="11.00">description</text>
+<text text-anchor="start" x="371.5" y="-145.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(255) · null</text>
+<text text-anchor="start" x="248.5" y="-129.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="279.5" y="-129.2" font-family="Arial" font-size="11.00">kind</text>
+<text text-anchor="start" x="371.5" y="-129.8" font-family="Arial" font-size="9.00" fill="#777777">enum</text>
+<text text-anchor="start" x="248.5" y="-113.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="279.5" y="-113.2" font-family="Arial" font-size="11.00">smart_type</text>
+<text text-anchor="start" x="371.5" y="-113.8" font-family="Arial" font-size="9.00" fill="#777777">varchar(30) · null</text>
+<text text-anchor="start" x="248.5" y="-97.8" font-family="Arial" font-size="9.00" fill="#555555">FK</text>
+<text text-anchor="start" x="279.5" y="-97.2" font-family="Arial" font-size="11.00">source_batch_id</text>
+<text text-anchor="start" x="371.5" y="-97.8" font-family="Arial" font-size="9.00" fill="#777777">bigint · null</text>
+<text text-anchor="start" x="248.5" y="-81.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="279.5" y="-81.2" font-family="Arial" font-size="11.00">song_count</text>
+<text text-anchor="start" x="371.5" y="-81.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="248.5" y="-65.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="279.5" y="-65.2" font-family="Arial" font-size="11.00">total_duration_sec</text>
+<text text-anchor="start" x="371.5" y="-65.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="248.5" y="-49.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="279.5" y="-49.2" font-family="Arial" font-size="11.00">created_at</text>
+<text text-anchor="start" x="371.5" y="-49.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<text text-anchor="start" x="248.5" y="-33.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="279.5" y="-33.2" font-family="Arial" font-size="11.00">updated_at</text>
+<text text-anchor="start" x="371.5" y="-33.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<polygon fill="none" stroke="#3e8a8a" points="245,-27.5 245,-232.5 450,-232.5 450,-27.5 245,-27.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>playlist_songs</title>
+<polygon fill="#ffffff" stroke="transparent" points="32,-139.5 32,-232.5 162,-232.5 162,-139.5 32,-139.5" />
+<polygon fill="#eaf6f6" stroke="transparent" points="33,-204 33,-231 161,-231 161,-204 33,-204" />
+<text text-anchor="start" x="50" y="-214.8" font-family="Arial" font-weight="bold" font-size="14.00">playlist_songs</text>
+<text text-anchor="start" x="35" y="-193.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="65" y="-194.2" font-family="Arial" font-weight="bold" font-size="11.00">playlist_id</text>
+<text text-anchor="start" x="123" y="-193.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="35" y="-177.8" font-family="Arial" font-size="9.00" fill="#555555">PK FK</text>
+<text text-anchor="start" x="65" y="-178.2" font-family="Arial" font-weight="bold" font-size="11.00">song_id</text>
+<text text-anchor="start" x="123" y="-177.8" font-family="Arial" font-size="9.00" fill="#777777">int</text>
+<text text-anchor="start" x="35" y="-161.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-161.2" font-family="Arial" font-size="11.00">position</text>
+<text text-anchor="start" x="123" y="-161.8" font-family="Arial" font-size="9.00" fill="#777777">smallint</text>
+<text text-anchor="start" x="35" y="-145.8" font-family="Arial" font-size="9.00" fill="#555555"> </text>
+<text text-anchor="start" x="65" y="-145.2" font-family="Arial" font-size="11.00">added_at</text>
+<text text-anchor="start" x="123" y="-145.8" font-family="Arial" font-size="9.00" fill="#777777">datetime</text>
+<polygon fill="none" stroke="#3e8a8a" points="32,-139.5 32,-232.5 162,-232.5 162,-139.5 32,-139.5" />
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>playlist_songs:R_playlist_id-&gt;playlists:L_playlist_id</title>
+<path fill="none" stroke="#444444" stroke-width="1.1" d="M178.26,-196C200.31,-196 211.89,-196 236.3,-196" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="171,-196 162,-191.95 166.5,-196 162,-196 162,-196 162,-196 166.5,-196 162,-200.05 171,-196 171,-196" />
+<ellipse fill="none" stroke="#444444" stroke-width="1.1" cx="174.6" cy="-196" rx="3.6" ry="3.6" />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="244.6,-191.5 244.6,-200.5 242.8,-200.5 242.8,-191.5 244.6,-191.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="245.5,-196 241,-196 " />
+<polygon fill="#444444" stroke="#444444" stroke-width="1.1" points="240.1,-191.5 240.1,-200.5 238.3,-200.5 238.3,-191.5 240.1,-191.5" />
+<polyline fill="none" stroke="#444444" stroke-width="1.1" points="241,-196 236.5,-196 " />
+<text text-anchor="start" x="186" y="-198.8" font-family="Arial" font-size="9.00">includes</text>
+</g>
+</g></svg>
+<svg x="999.7" y="1227.4" width="500.2" height="276.2" viewBox="0 0 500.20 276.20" overflow="visible"><g transform="scale(1 1) rotate(0) translate(3.6 272.6)"><g xmlns="http://www.w3.org/2000/svg" id="node1" class="node">
+<title>lg_a1</title>
+<path fill="none" stroke="#666666" d="M156.17,-230C156.17,-230 127.83,-230 127.83,-230 124.17,-230 120.5,-226.33 120.5,-222.67 120.5,-222.67 120.5,-215.33 120.5,-215.33 120.5,-211.67 124.17,-208 127.83,-208 127.83,-208 156.17,-208 156.17,-208 159.83,-208 163.5,-211.67 163.5,-215.33 163.5,-215.33 163.5,-222.67 163.5,-222.67 163.5,-226.33 159.83,-230 156.17,-230" />
+<text text-anchor="middle" x="142" y="-216.8" font-family="Arial" font-size="9.00">child</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node2" class="node">
+<title>lg_b1</title>
+<path fill="none" stroke="#666666" d="M467.67,-230C467.67,-230 439.33,-230 439.33,-230 435.67,-230 432,-226.33 432,-222.67 432,-222.67 432,-215.33 432,-215.33 432,-211.67 435.67,-208 439.33,-208 439.33,-208 467.67,-208 467.67,-208 471.33,-208 475,-211.67 475,-215.33 475,-215.33 475,-222.67 475,-222.67 475,-226.33 471.33,-230 467.67,-230" />
+<text text-anchor="middle" x="453.5" y="-216.8" font-family="Arial" font-size="9.00">parent</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge1" class="edge">
+<title>lg_a1-&gt;lg_b1</title>
+<path fill="none" stroke="#444444" d="M182.09,-219C244.41,-219 365.01,-219 421.68,-219" />
+<polygon fill="#444444" stroke="#444444" points="173.79,-219 163.79,-214.5 168.79,-219 163.79,-219 163.79,-219 163.79,-219 168.79,-219 163.79,-223.5 173.79,-219 173.79,-219" />
+<ellipse fill="none" stroke="#444444" cx="177.79" cy="-219" rx="4" ry="4" />
+<polygon fill="#444444" stroke="#444444" points="430.8,-214 430.8,-224 428.8,-224 428.8,-214 430.8,-214" />
+<polyline fill="none" stroke="#444444" points="431.8,-219 426.8,-219 " />
+<polygon fill="#444444" stroke="#444444" points="425.8,-214 425.8,-224 423.8,-224 423.8,-214 425.8,-214" />
+<polyline fill="none" stroke="#444444" points="426.8,-219 421.8,-219 " />
+<text text-anchor="start" x="284" y="-221.8" font-family="Arial" font-size="9.00">0..* → exactly 1 (FK NOT NULL)</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node3" class="node">
+<title>lg_a2</title>
+<path fill="none" stroke="#666666" d="M156.17,-190C156.17,-190 127.83,-190 127.83,-190 124.17,-190 120.5,-186.33 120.5,-182.67 120.5,-182.67 120.5,-175.33 120.5,-175.33 120.5,-171.67 124.17,-168 127.83,-168 127.83,-168 156.17,-168 156.17,-168 159.83,-168 163.5,-171.67 163.5,-175.33 163.5,-175.33 163.5,-182.67 163.5,-182.67 163.5,-186.33 159.83,-190 156.17,-190" />
+<text text-anchor="middle" x="142" y="-176.8" font-family="Arial" font-size="9.00">child</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node4" class="node">
+<title>lg_b2</title>
+<path fill="none" stroke="#666666" d="M467.67,-190C467.67,-190 439.33,-190 439.33,-190 435.67,-190 432,-186.33 432,-182.67 432,-182.67 432,-175.33 432,-175.33 432,-171.67 435.67,-168 439.33,-168 439.33,-168 467.67,-168 467.67,-168 471.33,-168 475,-171.67 475,-175.33 475,-175.33 475,-182.67 475,-182.67 475,-186.33 471.33,-190 467.67,-190" />
+<text text-anchor="middle" x="453.5" y="-176.8" font-family="Arial" font-size="9.00">parent</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge2" class="edge">
+<title>lg_a2-&gt;lg_b2</title>
+<path fill="none" stroke="#444444" stroke-dasharray="5,2" d="M182.09,-179C243.38,-179 361.02,-179 418.8,-179" />
+<polygon fill="#444444" stroke="#444444" points="173.79,-179 163.79,-174.5 168.79,-179 163.79,-179 163.79,-179 163.79,-179 168.79,-179 163.79,-183.5 173.79,-179 173.79,-179" />
+<ellipse fill="none" stroke="#444444" cx="177.79" cy="-179" rx="4" ry="4" />
+<polygon fill="#444444" stroke="#444444" points="430.8,-174 430.8,-184 428.8,-184 428.8,-174 430.8,-174" />
+<polyline fill="none" stroke="#444444" points="431.8,-179 426.8,-179 " />
+<ellipse fill="none" stroke="#444444" cx="422.8" cy="-179" rx="4" ry="4" />
+<text text-anchor="start" x="300.5" y="-181.8" font-family="Arial" font-size="9.00">0..* → 0..1 (FK nullable)</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node5" class="node">
+<title>lg_a3</title>
+<path fill="none" stroke="#666666" d="M156.17,-150C156.17,-150 127.83,-150 127.83,-150 124.17,-150 120.5,-146.33 120.5,-142.67 120.5,-142.67 120.5,-135.33 120.5,-135.33 120.5,-131.67 124.17,-128 127.83,-128 127.83,-128 156.17,-128 156.17,-128 159.83,-128 163.5,-131.67 163.5,-135.33 163.5,-135.33 163.5,-142.67 163.5,-142.67 163.5,-146.33 159.83,-150 156.17,-150" />
+<text text-anchor="middle" x="142" y="-136.8" font-family="Arial" font-size="9.00">child</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node6" class="node">
+<title>lg_b3</title>
+<path fill="none" stroke="#666666" d="M467.67,-150C467.67,-150 439.33,-150 439.33,-150 435.67,-150 432,-146.33 432,-142.67 432,-142.67 432,-135.33 432,-135.33 432,-131.67 435.67,-128 439.33,-128 439.33,-128 467.67,-128 467.67,-128 471.33,-128 475,-131.67 475,-135.33 475,-135.33 475,-142.67 475,-142.67 475,-146.33 471.33,-150 467.67,-150" />
+<text text-anchor="middle" x="453.5" y="-136.8" font-family="Arial" font-size="9.00">parent</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="edge3" class="edge">
+<title>lg_a3-&gt;lg_b3</title>
+<path fill="none" stroke="#444444" d="M177.08,-139C237.75,-139 363.57,-139 421.76,-139" />
+<polygon fill="#444444" stroke="#444444" points="164.79,-144 164.79,-134 166.79,-134 166.79,-144 164.79,-144" />
+<polyline fill="none" stroke="#444444" points="163.79,-139 168.79,-139 " />
+<ellipse fill="none" stroke="#444444" cx="172.79" cy="-139" rx="4" ry="4" />
+<polygon fill="#444444" stroke="#444444" points="430.8,-134 430.8,-144 428.8,-144 428.8,-134 430.8,-134" />
+<polyline fill="none" stroke="#444444" points="431.8,-139 426.8,-139 " />
+<polygon fill="#444444" stroke="#444444" points="425.8,-134 425.8,-144 423.8,-144 423.8,-134 425.8,-134" />
+<polyline fill="none" stroke="#444444" points="426.8,-139 421.8,-139 " />
+<text text-anchor="start" x="285.5" y="-141.8" font-family="Arial" font-size="9.00">1 : 0..1 (FK is the PK or unique)</text>
+</g>
+
+<g xmlns="http://www.w3.org/2000/svg" id="node7" class="node">
+<title>lg_notes</title>
+<text text-anchor="start" x="28" y="-96.8" font-family="Arial" font-size="9.00">Crow's foot = many · bar = one · circle = zero (optional)</text>
+<text text-anchor="start" x="28" y="-82.8" font-family="Arial" font-size="9.00">Solid line: identifying (FK is part of the child's PK)</text>
+<text text-anchor="start" x="28" y="-68.8" font-family="Arial" font-size="9.00">Dashed line: non-identifying relationship</text>
+<text text-anchor="start" x="28" y="-54.8" font-family="Arial" font-size="9.00">PK primary key · FK foreign key</text>
+<text text-anchor="start" x="28" y="-40.8" font-family="Arial" font-size="9.00">UK, U1, U2: unique key (same tag = one composite key)</text>
+<text text-anchor="start" x="28" y="-26.8" font-family="Arial" font-size="9.00">"gen" generated column · "null" nullable</text>
+</g>
+</g></svg>
+<g stroke="#3A3A3A" stroke-width="1.3" fill="none"><line x1="288.1" y1="947.1" x2="276.1" y2="941.1"/><line x1="288.1" y1="947.1" x2="276.1" y2="947.1"/><line x1="288.1" y1="947.1" x2="276.1" y2="953.1"/><circle cx="294.1" cy="947.1" r="4" fill="#FFFFFF"/><line x1="1236.8" y1="820.1" x2="1236.8" y2="832.1"/><circle cx="1228.8" cy="826.1" r="4" fill="#FFFFFF"/><line x1="288.1" y1="931.1" x2="276.1" y2="925.1"/><line x1="288.1" y1="931.1" x2="276.1" y2="931.1"/><line x1="288.1" y1="931.1" x2="276.1" y2="937.1"/><circle cx="294.1" cy="931.1" r="4" fill="#FFFFFF"/><line x1="1093.8" y1="225.9" x2="1093.8" y2="237.9"/><line x1="1088.8" y1="225.9" x2="1088.8" y2="237.9"/><line x1="601.1" y1="915.1" x2="589.1" y2="909.1"/><line x1="601.1" y1="915.1" x2="589.1" y2="915.1"/><line x1="601.1" y1="915.1" x2="589.1" y2="921.1"/><circle cx="607.1" cy="915.1" r="4" fill="#FFFFFF"/><line x1="442.6" y1="347.9" x2="442.6" y2="359.9"/><line x1="437.6" y1="347.9" x2="437.6" y2="359.9"/><line x1="1921.0" y1="914.6" x2="1933.0" y2="908.6"/><line x1="1921.0" y1="914.6" x2="1933.0" y2="914.6"/><line x1="1921.0" y1="914.6" x2="1933.0" y2="920.6"/><circle cx="1915.0" cy="914.6" r="4" fill="#FFFFFF"/><line x1="1363.8" y1="225.9" x2="1363.8" y2="237.9"/><line x1="1368.8" y1="225.9" x2="1368.8" y2="237.9"/><line x1="2134.0" y1="995.6" x2="2146.0" y2="989.6"/><line x1="2134.0" y1="995.6" x2="2146.0" y2="995.6"/><line x1="2134.0" y1="995.6" x2="2146.0" y2="1001.6"/><circle cx="2128.0" cy="995.6" r="4" fill="#FFFFFF"/><line x1="1530.8" y1="820.1" x2="1530.8" y2="832.1"/><circle cx="1538.8" cy="826.1" r="4" fill="#FFFFFF"/><line x1="2134.0" y1="915.6" x2="2146.0" y2="909.6"/><line x1="2134.0" y1="915.6" x2="2146.0" y2="915.6"/><line x1="2134.0" y1="915.6" x2="2146.0" y2="921.6"/><circle cx="2128.0" cy="915.6" r="4" fill="#FFFFFF"/><line x1="650.6" y1="347.9" x2="650.6" y2="359.9"/><line x1="655.6" y1="347.9" x2="655.6" y2="359.9"/><line x1="1231.8" y1="955.1" x2="1243.8" y2="949.1"/><line x1="1231.8" y1="955.1" x2="1243.8" y2="955.1"/><line x1="1231.8" y1="955.1" x2="1243.8" y2="961.1"/><circle cx="1225.8" cy="955.1" r="4" fill="#FFFFFF"/><line x1="1363.8" y1="225.9" x2="1363.8" y2="237.9"/><circle cx="1371.8" cy="231.9" r="4" fill="#FFFFFF"/><line x1="1231.8" y1="843.1" x2="1243.8" y2="837.1"/><line x1="1231.8" y1="843.1" x2="1243.8" y2="843.1"/><line x1="1231.8" y1="843.1" x2="1243.8" y2="849.1"/><circle cx="1225.8" cy="843.1" r="4" fill="#FFFFFF"/><line x1="650.6" y1="347.9" x2="650.6" y2="359.9"/><line x1="655.6" y1="347.9" x2="655.6" y2="359.9"/><line x1="1184.8" y1="842.1" x2="1172.8" y2="836.1"/><line x1="1184.8" y1="842.1" x2="1172.8" y2="842.1"/><line x1="1184.8" y1="842.1" x2="1172.8" y2="848.1"/><circle cx="1190.8" cy="842.1" r="4" fill="#FFFFFF"/><line x1="1093.8" y1="225.9" x2="1093.8" y2="237.9"/><line x1="1088.8" y1="225.9" x2="1088.8" y2="237.9"/><line x1="1854.0" y1="474.9" x2="1866.0" y2="468.9"/><line x1="1854.0" y1="474.9" x2="1866.0" y2="474.9"/><line x1="1854.0" y1="474.9" x2="1866.0" y2="480.9"/><circle cx="1848.0" cy="474.9" r="4" fill="#FFFFFF"/><line x1="1363.8" y1="225.9" x2="1363.8" y2="237.9"/><line x1="1368.8" y1="225.9" x2="1368.8" y2="237.9"/><line x1="1854.0" y1="458.9" x2="1866.0" y2="452.9"/><line x1="1854.0" y1="458.9" x2="1866.0" y2="458.9"/><line x1="1854.0" y1="458.9" x2="1866.0" y2="464.9"/><circle cx="1848.0" cy="458.9" r="4" fill="#FFFFFF"/><line x1="650.6" y1="347.9" x2="650.6" y2="359.9"/><line x1="655.6" y1="347.9" x2="655.6" y2="359.9"/><line x1="1844.0" y1="312.9" x2="1856.0" y2="306.9"/><line x1="1844.0" y1="312.9" x2="1856.0" y2="312.9"/><line x1="1844.0" y1="312.9" x2="1856.0" y2="318.9"/><circle cx="1838.0" cy="312.9" r="4" fill="#FFFFFF"/><line x1="1363.8" y1="225.9" x2="1363.8" y2="237.9"/><line x1="1368.8" y1="225.9" x2="1368.8" y2="237.9"/></g>
+<g font-size="12" fill="#222222" stroke="#FFFFFF" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round"><text x="760.0" y="890.6" text-anchor="middle">came from list</text><text x="688.5" y="585.5" text-anchor="middle">played</text><text x="519.4" y="638.5" text-anchor="middle">opens</text><text x="1680.7" y="653.5" text-anchor="middle">listed in</text><text x="1834.9" y="914.9" text-anchor="middle">saved from list</text><text x="1394.8" y="638.8" text-anchor="middle">owns</text><text x="1281.1" y="678.2" text-anchor="middle">seeded by</text><text x="943.7" y="602.5" text-anchor="middle">receives</text><text x="1164.8" y="674.2" text-anchor="middle">recommends</text><text x="1773.7" y="464.1" text-anchor="middle">mood-rated as</text><text x="1433.5" y="429.7" text-anchor="middle">rates mood fit</text><text x="1779.3" y="313.4" text-anchor="middle">tagged with</text></g>
+</svg>

@@ -1,0 +1,716 @@
+{
+  "feed": "MUSE Catalogue Partner Feed",
+  "issued_at": "2026-10-05",
+  "license": "Project-authored fictional catalogue (CC0)",
+  "note": "Exercises every ingestion path: new songs, ISRC match, exact match via artist alias, fuzzy duplicate, validation failures, suspicious metadata and a song without analysis.",
+  "records": [
+    {
+      "external_id": "mcf-1001",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 72,
+      "release_year": 2026,
+      "title": "Sirivennela",
+      "artist": "Varsha Kondapally",
+      "language": "te",
+      "genre": "Film Melody",
+      "duration_sec": 236,
+      "isrc": "INMSE2600101",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.41,
+        "valence": 0.621,
+        "danceability": 0.55,
+        "acousticness": 0.723,
+        "instrumentalness": 0.027,
+        "speechiness": 0.048,
+        "loudness_db": -8.1,
+        "tempo_bpm": 89.8,
+        "key": 3,
+        "mode": 1,
+        "segments": [
+          {
+            "start": 0,
+            "end": 35,
+            "energy": 0.26,
+            "valence": 0.591
+          },
+          {
+            "start": 35,
+            "end": 118,
+            "energy": 0.41,
+            "valence": 0.621
+          },
+          {
+            "start": 118,
+            "end": 189,
+            "energy": 0.53,
+            "valence": 0.681
+          },
+          {
+            "start": 189,
+            "end": 236,
+            "energy": 0.35,
+            "valence": 0.621
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1002",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 85,
+      "release_year": 2026,
+      "title": "Pandaga Pilupu",
+      "artist": "Godavari Echoes",
+      "language": "te",
+      "genre": "Indie Pop",
+      "duration_sec": 204,
+      "isrc": "INMSE2500010",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.895,
+        "valence": 0.84,
+        "danceability": 0.875,
+        "acousticness": 0.155,
+        "instrumentalness": 0.05,
+        "speechiness": 0.065,
+        "loudness_db": -2.97,
+        "tempo_bpm": 134,
+        "key": 0,
+        "mode": 1,
+        "segments": [
+          {
+            "start": 0,
+            "end": 31,
+            "energy": 0.745,
+            "valence": 0.81
+          },
+          {
+            "start": 31,
+            "end": 102,
+            "energy": 0.895,
+            "valence": 0.84
+          },
+          {
+            "start": 102,
+            "end": 163,
+            "energy": 1,
+            "valence": 0.9
+          },
+          {
+            "start": 163,
+            "end": 204,
+            "energy": 0.835,
+            "valence": 0.84
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1003",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 88,
+      "release_year": 2026,
+      "title": "Kaathal Mazhai!",
+      "artist": "Ilan Madhivanan",
+      "language": "ta",
+      "genre": "Film Melody",
+      "duration_sec": 241,
+      "isrc": null
+    },
+    {
+      "external_id": "mcf-1004",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 70,
+      "release_year": 2026,
+      "title": "Neon Melaa",
+      "artist": "DJ Tara",
+      "language": "hi",
+      "genre": "EDM",
+      "duration_sec": 233,
+      "isrc": null,
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.906,
+        "valence": 0.912,
+        "danceability": 0.819,
+        "acousticness": 0.148,
+        "instrumentalness": 0.037,
+        "speechiness": 0.061,
+        "loudness_db": -3.7,
+        "tempo_bpm": 122.9,
+        "key": 2,
+        "mode": 0,
+        "segments": [
+          {
+            "start": 0,
+            "end": 35,
+            "energy": 0.756,
+            "valence": 0.882
+          },
+          {
+            "start": 35,
+            "end": 117,
+            "energy": 0.906,
+            "valence": 0.912
+          },
+          {
+            "start": 117,
+            "end": 187,
+            "energy": 1,
+            "valence": 0.972
+          },
+          {
+            "start": 187,
+            "end": 233,
+            "energy": 0.846,
+            "valence": 0.912
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1005",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 50,
+      "release_year": 2026,
+      "title": "Kutch Lanterns",
+      "artist": "Rann Utsav Collective",
+      "language": "gu",
+      "genre": "Folk",
+      "duration_sec": null,
+      "isrc": "INMSE2600105"
+    },
+    {
+      "external_id": "mcf-1006",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 50,
+      "release_year": 2026,
+      "title": "Garba Circle",
+      "artist": "Rann Utsav Collective",
+      "language": "gu",
+      "genre": "Folk",
+      "duration_sec": 228,
+      "isrc": "12345"
+    },
+    {
+      "external_id": "mcf-1007",
+      "type": "SONG",
+      "explicit": true,
+      "content_rating": "ALL",
+      "popularity": 50,
+      "release_year": 2026,
+      "title": "Thunder Mela",
+      "artist": "Dhol Theory",
+      "language": "pa",
+      "genre": "Bhangra",
+      "duration_sec": 214,
+      "isrc": "INMSE2600107",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.924,
+        "valence": 0.873,
+        "danceability": 0.889,
+        "acousticness": 0.143,
+        "instrumentalness": 0.055,
+        "speechiness": 0.088,
+        "loudness_db": -4.08,
+        "tempo_bpm": 122.8,
+        "key": 4,
+        "mode": 1,
+        "segments": [
+          {
+            "start": 0,
+            "end": 32,
+            "energy": 0.774,
+            "valence": 0.843
+          },
+          {
+            "start": 32,
+            "end": 107,
+            "energy": 0.924,
+            "valence": 0.873
+          },
+          {
+            "start": 107,
+            "end": 171,
+            "energy": 1,
+            "valence": 0.933
+          },
+          {
+            "start": 171,
+            "end": 214,
+            "energy": 0.864,
+            "valence": 0.873
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1008",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 64,
+      "release_year": 2026,
+      "title": "Rann Ki Raat",
+      "artist": "Rann Utsav Collective",
+      "artist_region": "IN-GJ",
+      "artist_language": "gu",
+      "language": "gu",
+      "genre": "Folk",
+      "duration_sec": 242,
+      "isrc": "INMSE2600108",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.909,
+        "valence": 0.811,
+        "danceability": 0.813,
+        "acousticness": 0.127,
+        "instrumentalness": 0.066,
+        "speechiness": 0.066,
+        "loudness_db": -5.72,
+        "tempo_bpm": 123.9,
+        "key": 9,
+        "mode": 1,
+        "segments": [
+          {
+            "start": 0,
+            "end": 36,
+            "energy": 0.759,
+            "valence": 0.781
+          },
+          {
+            "start": 36,
+            "end": 121,
+            "energy": 0.909,
+            "valence": 0.811
+          },
+          {
+            "start": 121,
+            "end": 194,
+            "energy": 1,
+            "valence": 0.871
+          },
+          {
+            "start": 194,
+            "end": 242,
+            "energy": 0.849,
+            "valence": 0.811
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1009",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 58,
+      "release_year": 2026,
+      "title": "Kutch Breeze",
+      "artist": "Rann Utsav Collective",
+      "artist_region": "IN-GJ",
+      "artist_language": "gu",
+      "language": "gu",
+      "genre": "Folk",
+      "duration_sec": 221,
+      "isrc": "INMSE2600109",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.475,
+        "valence": 0.565,
+        "danceability": 0.519,
+        "acousticness": 0.769,
+        "instrumentalness": 0.165,
+        "speechiness": 0.066,
+        "loudness_db": -9.8,
+        "tempo_bpm": 91.6,
+        "key": 0,
+        "mode": 1,
+        "segments": [
+          {
+            "start": 0,
+            "end": 33,
+            "energy": 0.325,
+            "valence": 0.535
+          },
+          {
+            "start": 33,
+            "end": 110,
+            "energy": 0.475,
+            "valence": 0.565
+          },
+          {
+            "start": 110,
+            "end": 176,
+            "energy": 0.595,
+            "valence": 0.625
+          },
+          {
+            "start": 176,
+            "end": 221,
+            "energy": 0.415,
+            "valence": 0.565
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1010",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 61,
+      "release_year": 2026,
+      "title": "Puri Shoreline",
+      "artist": "Konark Skyline",
+      "language": "or",
+      "genre": "Indie Pop",
+      "duration_sec": 205,
+      "isrc": "INMSE2600110",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.456,
+        "valence": 0.702,
+        "danceability": 0.611,
+        "acousticness": 0.487,
+        "instrumentalness": 0.03,
+        "speechiness": 0.068,
+        "loudness_db": -9.08,
+        "tempo_bpm": 109.5,
+        "key": 7,
+        "mode": 1,
+        "segments": [
+          {
+            "start": 0,
+            "end": 31,
+            "energy": 0.306,
+            "valence": 0.672
+          },
+          {
+            "start": 31,
+            "end": 103,
+            "energy": 0.456,
+            "valence": 0.702
+          },
+          {
+            "start": 103,
+            "end": 165,
+            "energy": 0.576,
+            "valence": 0.762
+          },
+          {
+            "start": 165,
+            "end": 205,
+            "energy": 0.396,
+            "valence": 0.702
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1011",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 66,
+      "release_year": 2026,
+      "title": "Bihu Drums",
+      "artist": "Brahmaputra Drift",
+      "language": "as",
+      "genre": "Folk",
+      "duration_sec": 219,
+      "isrc": "INMSE2600111",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.864,
+        "valence": 0.816,
+        "danceability": 0.883,
+        "acousticness": 0.092,
+        "instrumentalness": 0.042,
+        "speechiness": 0.088,
+        "loudness_db": -4.04,
+        "tempo_bpm": 127.9,
+        "key": 4,
+        "mode": 1,
+        "segments": [
+          {
+            "start": 0,
+            "end": 33,
+            "energy": 0.714,
+            "valence": 0.786
+          },
+          {
+            "start": 33,
+            "end": 110,
+            "energy": 0.864,
+            "valence": 0.816
+          },
+          {
+            "start": 110,
+            "end": 176,
+            "energy": 0.984,
+            "valence": 0.876
+          },
+          {
+            "start": 176,
+            "end": 219,
+            "energy": 0.804,
+            "valence": 0.816
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1012",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 69,
+      "release_year": 2026,
+      "title": "Dadar Flyover Rain",
+      "artist": "Bombay Lofi Society",
+      "language": null,
+      "genre": "Lo-fi",
+      "duration_sec": 168,
+      "isrc": "INMSE2600112",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.314,
+        "valence": 0.606,
+        "danceability": 0.523,
+        "acousticness": 0.533,
+        "instrumentalness": 0.879,
+        "speechiness": 0.045,
+        "loudness_db": -13.69,
+        "tempo_bpm": 79.7,
+        "key": 11,
+        "mode": 0,
+        "segments": [
+          {
+            "start": 0,
+            "end": 25,
+            "energy": 0.164,
+            "valence": 0.576
+          },
+          {
+            "start": 25,
+            "end": 84,
+            "energy": 0.314,
+            "valence": 0.606
+          },
+          {
+            "start": 84,
+            "end": 134,
+            "energy": 0.434,
+            "valence": 0.666
+          },
+          {
+            "start": 134,
+            "end": 168,
+            "energy": 0.254,
+            "valence": 0.606
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1013",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 67,
+      "release_year": 2026,
+      "title": "Mungaru Maathu",
+      "artist": "Meghana Hosmane",
+      "language": "kn",
+      "genre": "Film Melody",
+      "duration_sec": 251,
+      "isrc": "INMSE2600113",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.371,
+        "valence": 0.63,
+        "danceability": 0.573,
+        "acousticness": 0.694,
+        "instrumentalness": 0.043,
+        "speechiness": 0.034,
+        "loudness_db": -9.13,
+        "tempo_bpm": 97.2,
+        "key": 1,
+        "mode": 0,
+        "segments": [
+          {
+            "start": 0,
+            "end": 38,
+            "energy": 0.221,
+            "valence": 0.6
+          },
+          {
+            "start": 38,
+            "end": 126,
+            "energy": 0.371,
+            "valence": 0.63
+          },
+          {
+            "start": 126,
+            "end": 201,
+            "energy": 0.491,
+            "valence": 0.69
+          },
+          {
+            "start": 201,
+            "end": 251,
+            "energy": 0.311,
+            "valence": 0.63
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1014",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 71,
+      "release_year": 2026,
+      "title": "Biryani Bars",
+      "artist": "Kaali Beats",
+      "language": "te",
+      "genre": "Desi Hip-Hop",
+      "duration_sec": 198,
+      "isrc": "INMSE2600114",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.682,
+        "valence": 0.618,
+        "danceability": 0.867,
+        "acousticness": 0.076,
+        "instrumentalness": 0,
+        "speechiness": 0.29,
+        "loudness_db": -5.32,
+        "tempo_bpm": 87.5,
+        "key": 11,
+        "mode": 0,
+        "segments": [
+          {
+            "start": 0,
+            "end": 30,
+            "energy": 0.532,
+            "valence": 0.588
+          },
+          {
+            "start": 30,
+            "end": 99,
+            "energy": 0.682,
+            "valence": 0.618
+          },
+          {
+            "start": 99,
+            "end": 158,
+            "energy": 0.802,
+            "valence": 0.678
+          },
+          {
+            "start": 158,
+            "end": 198,
+            "energy": 0.622,
+            "valence": 0.618
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1015",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 63,
+      "release_year": 2026,
+      "title": "Besant Nagar Sunset",
+      "artist": "Marina Lights",
+      "language": "ta",
+      "genre": "Indie Pop",
+      "duration_sec": 214,
+      "isrc": "INMSE2600115",
+      "analysis": {
+        "analyzer": "muse-analyzer",
+        "version": "2.1",
+        "energy": 0.481,
+        "valence": 0.69,
+        "danceability": 0.581,
+        "acousticness": 0.462,
+        "instrumentalness": 0.048,
+        "speechiness": 0.061,
+        "loudness_db": -6.19,
+        "tempo_bpm": 97,
+        "key": 7,
+        "mode": 1,
+        "segments": [
+          {
+            "start": 0,
+            "end": 32,
+            "energy": 0.331,
+            "valence": 0.66
+          },
+          {
+            "start": 32,
+            "end": 107,
+            "energy": 0.481,
+            "valence": 0.69
+          },
+          {
+            "start": 107,
+            "end": 171,
+            "energy": 0.601,
+            "valence": 0.75
+          },
+          {
+            "start": 171,
+            "end": 214,
+            "energy": 0.421,
+            "valence": 0.69
+          }
+        ]
+      }
+    },
+    {
+      "external_id": "mcf-1016",
+      "type": "SONG",
+      "explicit": false,
+      "content_rating": "ALL",
+      "popularity": 52,
+      "release_year": 2026,
+      "title": "Uncharted Tide",
+      "artist": "Northbound Choir",
+      "language": null,
+      "genre": "Cinematic",
+      "duration_sec": 287,
+      "isrc": "INMSE2600116"
+    }
+  ]
+}

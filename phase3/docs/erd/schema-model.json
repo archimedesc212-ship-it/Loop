@@ -1,0 +1,6712 @@
+{
+ "database": "muse",
+ "generatedAt": "2026-10-12T20:06:34.743Z",
+ "migrations": [
+  {
+   "version": "0000",
+   "name": "baseline (database/01-06)"
+  },
+  {
+   "version": "0001",
+   "name": "sessions_and_accounts"
+  },
+  {
+   "version": "0002",
+   "name": "recommendation_and_world_feedback"
+  },
+  {
+   "version": "0003",
+   "name": "playback_media_and_providers"
+  },
+  {
+   "version": "0004",
+   "name": "song_mood_ratings"
+  }
+ ],
+ "views": [
+  "v_artist_popularity",
+  "v_current_audio_features",
+  "v_current_song_moods",
+  "v_daily_listening_summary",
+  "v_data_quality",
+  "v_genre_statistics",
+  "v_incognito_memory",
+  "v_latest_trends",
+  "v_muse_world_summary",
+  "v_recommendation_candidates",
+  "v_recommendation_explanations",
+  "v_song_catalog",
+  "v_song_mood_rating_stats",
+  "v_song_playback",
+  "v_song_primary_mood",
+  "v_song_stats",
+  "v_trending_songs",
+  "v_user_music_profile",
+  "v_user_permissions",
+  "v_weekly_mood_summary"
+ ],
+ "tables": {
+  "album_artists": {
+   "name": "album_artists",
+   "columns": [
+    {
+     "name": "album_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "artist_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "credit_order",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "album_id",
+    "artist_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_aa_album",
+     "table": "album_artists",
+     "ref": "albums",
+     "cols": [
+      "album_id"
+     ],
+     "refCols": [
+      "album_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_aa_artist",
+     "table": "album_artists",
+     "ref": "artists",
+     "cols": [
+      "artist_id"
+     ],
+     "refCols": [
+      "artist_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "albums": {
+   "name": "albums",
+   "columns": [
+    {
+     "name": "album_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "title",
+     "type": "varchar(150)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "normalized_title",
+     "type": "varchar(150)",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "album_type",
+     "type": "enum('ALBUM','EP','SINGLE','SOUNDTRACK','COMPILATION')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "film_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "release_year",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "language_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "cover_color_1",
+     "type": "char(7)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "cover_color_2",
+     "type": "char(7)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "album_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_albums_film",
+     "table": "albums",
+     "ref": "films",
+     "cols": [
+      "film_id"
+     ],
+     "refCols": [
+      "film_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_albums_lang",
+     "table": "albums",
+     "ref": "languages",
+     "cols": [
+      "language_id"
+     ],
+     "refCols": [
+      "language_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "archetype_moods": {
+   "name": "archetype_moods",
+   "columns": [
+    {
+     "name": "archetype_code",
+     "type": "varchar(20)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "weight",
+     "type": "decimal(3,2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "archetype_code",
+    "mood_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_am_arch",
+     "table": "archetype_moods",
+     "ref": "world_archetypes",
+     "cols": [
+      "archetype_code"
+     ],
+     "refCols": [
+      "archetype_code"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_am_mood",
+     "table": "archetype_moods",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "artist_aliases": {
+   "name": "artist_aliases",
+   "columns": [
+    {
+     "name": "alias_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "artist_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "alias",
+     "type": "varchar(100)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "normalized_alias",
+     "type": "varchar(100)",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "alias_type",
+     "type": "enum('SPELLING','TRANSLITERATION','NATIVE_SCRIPT','STAGE_NAME')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "alias_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_aliases_artist_alias",
+     "cols": [
+      "artist_id",
+      "normalized_alias"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_aliases_artist",
+     "table": "artist_aliases",
+     "ref": "artists",
+     "cols": [
+      "artist_id"
+     ],
+     "refCols": [
+      "artist_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "artists": {
+   "name": "artists",
+   "columns": [
+    {
+     "name": "artist_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "name",
+     "type": "varchar(100)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "normalized_name",
+     "type": "varchar(100)",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "disambiguation",
+     "type": "varchar(80)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "artist_type",
+     "type": "enum('SOLO','GROUP','COMPOSER','ORCHESTRA')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "country_code",
+     "type": "char(2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "region_code",
+     "type": "varchar(6)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "primary_language_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "formed_year",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "bio",
+     "type": "varchar(400)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "artist_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_artists_identity",
+     "cols": [
+      "normalized_name",
+      "disambiguation"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_artists_lang",
+     "table": "artists",
+     "ref": "languages",
+     "cols": [
+      "primary_language_id"
+     ],
+     "refCols": [
+      "language_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_artists_region",
+     "table": "artists",
+     "ref": "regions",
+     "cols": [
+      "region_code"
+     ],
+     "refCols": [
+      "region_code"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "audio_features": {
+   "name": "audio_features",
+   "columns": [
+    {
+     "name": "feature_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "energy",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "valence",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "danceability",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "acousticness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "instrumentalness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "speechiness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "loudness_db",
+     "type": "decimal(5,2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "tempo_bpm",
+     "type": "decimal(5,1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "musical_key",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mode",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "analyzed_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "is_current",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "current_song_key",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "feature_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_af_one_current",
+     "cols": [
+      "current_song_key"
+     ]
+    },
+    {
+     "name": "uq_af_song_model",
+     "cols": [
+      "song_id",
+      "model_id"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_af_model",
+     "table": "audio_features",
+     "ref": "intelligence_models",
+     "cols": [
+      "model_id"
+     ],
+     "refCols": [
+      "model_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_af_song",
+     "table": "audio_features",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "audit_logs": {
+   "name": "audit_logs",
+   "columns": [
+    {
+     "name": "audit_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "actor_user_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "action",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "entity_type",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "entity_id",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "old_values",
+     "type": "json",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "new_values",
+     "type": "json",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "ip_address",
+     "type": "varchar(45)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime(3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "audit_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_audit_actor",
+     "table": "audit_logs",
+     "ref": "users",
+     "cols": [
+      "actor_user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "auth_sessions": {
+   "name": "auth_sessions",
+   "columns": [
+    {
+     "name": "session_id",
+     "type": "char(16)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "token_hash",
+     "type": "char(64)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_seen_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "expires_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "revoked_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "revoke_reason",
+     "type": "enum('LOGOUT','LOGOUT_ALL','PASSWORD_CHANGED','ADMIN_DEACTIVATED','REVOKED_BY_USER','ACCOUNT_DELETED')",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "user_agent",
+     "type": "varchar(160)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "ip_hash",
+     "type": "char(64)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "session_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_session_token",
+     "cols": [
+      "token_hash"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_session_user",
+     "table": "auth_sessions",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "context_keywords": {
+   "name": "context_keywords",
+   "columns": [
+    {
+     "name": "phrase",
+     "type": "varchar(60)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "context_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "phrase"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_ck_ctx",
+     "table": "context_keywords",
+     "ref": "contexts",
+     "cols": [
+      "context_id"
+     ],
+     "refCols": [
+      "context_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "context_moods": {
+   "name": "context_moods",
+   "columns": [
+    {
+     "name": "context_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "weight",
+     "type": "decimal(3,2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "context_id",
+    "mood_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_cm_ctx",
+     "table": "context_moods",
+     "ref": "contexts",
+     "cols": [
+      "context_id"
+     ],
+     "refCols": [
+      "context_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_cm_mood",
+     "table": "context_moods",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "contexts": {
+   "name": "contexts",
+   "columns": [
+    {
+     "name": "context_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "code",
+     "type": "varchar(20)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "emoji",
+     "type": "varchar(8)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(200)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_energy",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_valence",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_danceability",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_acousticness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_instrumentalness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "tempo_min",
+     "type": "decimal(5,1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "tempo_max",
+     "type": "decimal(5,1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "max_speechiness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "sort_order",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "context_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_contexts_code",
+     "cols": [
+      "code"
+     ]
+    }
+   ],
+   "fks": []
+  },
+  "films": {
+   "name": "films",
+   "columns": [
+    {
+     "name": "film_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "title",
+     "type": "varchar(150)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "release_year",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "language_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "film_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_films_identity",
+     "cols": [
+      "title",
+      "release_year",
+      "language_id"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_films_lang",
+     "table": "films",
+     "ref": "languages",
+     "cols": [
+      "language_id"
+     ],
+     "refCols": [
+      "language_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "genres": {
+   "name": "genres",
+   "columns": [
+    {
+     "name": "genre_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "name",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "parent_genre_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "color_hex",
+     "type": "char(7)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(200)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "genre_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_genres_name",
+     "cols": [
+      "name"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_genres_parent",
+     "table": "genres",
+     "ref": "genres",
+     "cols": [
+      "parent_genre_id"
+     ],
+     "refCols": [
+      "genre_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "incognito_events": {
+   "name": "incognito_events",
+   "columns": [
+    {
+     "name": "event_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "incognito_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "listened_sec",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "completed",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "skipped",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "occurred_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "event_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_ie_session",
+     "table": "incognito_events",
+     "ref": "incognito_sessions",
+     "cols": [
+      "incognito_id"
+     ],
+     "refCols": [
+      "incognito_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ie_song",
+     "table": "incognito_events",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "incognito_sessions": {
+   "name": "incognito_sessions",
+   "columns": [
+    {
+     "name": "incognito_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "current_mood_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "status",
+     "type": "enum('ACTIVE','ENDED','EXPIRED')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "active_user_key",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "started_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "expires_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "ended_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "incognito_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_incog_one_active",
+     "cols": [
+      "active_user_key"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_incog_mood",
+     "table": "incognito_sessions",
+     "ref": "moods",
+     "cols": [
+      "current_mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_incog_user",
+     "table": "incognito_sessions",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "intelligence_models": {
+   "name": "intelligence_models",
+   "columns": [
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "kind",
+     "type": "enum('AUDIO_FEATURES','MOOD','SEGMENTS','PREFERENCE','RECOMMENDER','WORLD')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "version",
+     "type": "varchar(20)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(300)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "active_kind",
+     "type": "varchar(20)",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "model_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_models_one_active",
+     "cols": [
+      "active_kind"
+     ]
+    },
+    {
+     "name": "uq_models_version",
+     "cols": [
+      "kind",
+      "name",
+      "version"
+     ]
+    }
+   ],
+   "fks": []
+  },
+  "languages": {
+   "name": "languages",
+   "columns": [
+    {
+     "name": "language_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "iso_code",
+     "type": "varchar(3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "native_name",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "script",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "language_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_languages_iso",
+     "cols": [
+      "iso_code"
+     ]
+    },
+    {
+     "name": "uq_languages_name",
+     "cols": [
+      "name"
+     ]
+    }
+   ],
+   "fks": []
+  },
+  "listening_history": {
+   "name": "listening_history",
+   "columns": [
+    {
+     "name": "play_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "session_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "batch_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "origin",
+     "type": "enum('HOME','MOOD','CONTEXT','WORLD','SEARCH','PLAYLIST','LIBRARY','SMART_PLAYLIST')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "started_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "ended_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "listened_sec",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "completion_pct",
+     "type": "decimal(5,2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "completed",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "skipped",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "is_replay",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "play_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_lh_batch",
+     "table": "listening_history",
+     "ref": "recommendation_batches",
+     "cols": [
+      "batch_id"
+     ],
+     "refCols": [
+      "batch_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_lh_session_user",
+     "table": "listening_history",
+     "ref": "listening_sessions",
+     "cols": [
+      "session_id",
+      "user_id"
+     ],
+     "refCols": [
+      "session_id",
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_lh_song",
+     "table": "listening_history",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "listening_sessions": {
+   "name": "listening_sessions",
+   "columns": [
+    {
+     "name": "session_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "context_id",
+     "type": "tinyint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "device",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "started_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_activity_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "ended_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "status",
+     "type": "enum('OPEN','CLOSED')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "plays",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "listen_sec",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "session_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_ls_session_user",
+     "cols": [
+      "session_id",
+      "user_id"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_ls_ctx",
+     "table": "listening_sessions",
+     "ref": "contexts",
+     "cols": [
+      "context_id"
+     ],
+     "refCols": [
+      "context_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ls_user",
+     "table": "listening_sessions",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "model_parameters": {
+   "name": "model_parameters",
+   "columns": [
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "param_code",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "param_value",
+     "type": "decimal(10,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "min_value",
+     "type": "decimal(10,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "max_value",
+     "type": "decimal(10,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(200)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "model_id",
+    "param_code"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_mp_model",
+     "table": "model_parameters",
+     "ref": "intelligence_models",
+     "cols": [
+      "model_id"
+     ],
+     "refCols": [
+      "model_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "mood_categories": {
+   "name": "mood_categories",
+   "columns": [
+    {
+     "name": "category_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "name",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "quadrant",
+     "type": "enum('BRIGHT_HIGH','BRIGHT_LOW','DARK_HIGH','DARK_LOW')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(200)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "category_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_mc_name",
+     "cols": [
+      "name"
+     ]
+    },
+    {
+     "name": "uq_mc_quadrant",
+     "cols": [
+      "quadrant"
+     ]
+    }
+   ],
+   "fks": []
+  },
+  "mood_keywords": {
+   "name": "mood_keywords",
+   "columns": [
+    {
+     "name": "keyword_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "phrase",
+     "type": "varchar(60)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "weight",
+     "type": "decimal(3,2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "keyword_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_mk",
+     "cols": [
+      "phrase",
+      "mood_id"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_mk_mood",
+     "table": "mood_keywords",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "mood_segments": {
+   "name": "mood_segments",
+   "columns": [
+    {
+     "name": "segment_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "segment_index",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "start_sec",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "end_sec",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "confidence",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "energy",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "valence",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "analyzed_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "segment_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_ms_order",
+     "cols": [
+      "song_id",
+      "model_id",
+      "segment_index"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_ms_model",
+     "table": "mood_segments",
+     "ref": "intelligence_models",
+     "cols": [
+      "model_id"
+     ],
+     "refCols": [
+      "model_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ms_mood",
+     "table": "mood_segments",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ms_song",
+     "table": "mood_segments",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "moods": {
+   "name": "moods",
+   "columns": [
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "category_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "emoji",
+     "type": "varchar(8)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "color_hex",
+     "type": "char(7)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(200)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_energy",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_valence",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_danceability",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_acousticness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_instrumentalness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "tempo_min",
+     "type": "decimal(5,1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "tempo_max",
+     "type": "decimal(5,1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "mood_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_moods_name",
+     "cols": [
+      "name"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_moods_category",
+     "table": "moods",
+     "ref": "mood_categories",
+     "cols": [
+      "category_id"
+     ],
+     "refCols": [
+      "category_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "music_sources": {
+   "name": "music_sources",
+   "columns": [
+    {
+     "name": "source_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "code",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(80)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "source_type",
+     "type": "enum('MUSIC_METADATA','AUDIO_ANALYSIS','MUSIC_AUDIO','PLAYBACK','MOVIE_METADATA','ARTWORK','VIDEO_METADATA')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "access_method",
+     "type": "enum('API','FILE_FEED','GENERATED','USER_UPLOAD','MANUAL')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "base_url",
+     "type": "varchar(255)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "license_name",
+     "type": "varchar(120)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "rights_scope",
+     "type": "set('METADATA','AUDIO_FEATURES','AUDIO_PREVIEW','AUDIO_FULL','ARTWORK')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "requires_attribution",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "attribution_text",
+     "type": "varchar(255)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "priority",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "fallback_source_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "is_enabled",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "requires_credentials",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_success_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "notes",
+     "type": "varchar(300)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "source_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_sources_code",
+     "cols": [
+      "code"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_sources_fallback",
+     "table": "music_sources",
+     "ref": "music_sources",
+     "cols": [
+      "fallback_source_id"
+     ],
+     "refCols": [
+      "source_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "permissions": {
+   "name": "permissions",
+   "columns": [
+    {
+     "name": "permission_code",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(200)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "permission_code"
+   ],
+   "uniques": [],
+   "fks": []
+  },
+  "pipeline_job_logs": {
+   "name": "pipeline_job_logs",
+   "columns": [
+    {
+     "name": "log_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "job_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "level",
+     "type": "enum('INFO','WARN','ERROR')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "stage",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "message",
+     "type": "varchar(500)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "record_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime(3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "log_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_logs_job",
+     "table": "pipeline_job_logs",
+     "ref": "pipeline_jobs",
+     "cols": [
+      "job_id"
+     ],
+     "refCols": [
+      "job_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_logs_record",
+     "table": "pipeline_job_logs",
+     "ref": "source_records",
+     "cols": [
+      "record_id"
+     ],
+     "refCols": [
+      "record_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "pipeline_jobs": {
+   "name": "pipeline_jobs",
+   "columns": [
+    {
+     "name": "job_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "job_type",
+     "type": "enum('INGEST_SOURCE','AUDIO_ANALYSIS','MOOD_ANALYSIS','TREND_SNAPSHOT','WORLD_GENERATION','WEEKLY_INTELLIGENCE','PREFERENCE_REFRESH','INCOGNITO_CLEANUP','SESSION_CLOSE')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "parent_job_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "source_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "idempotency_key",
+     "type": "varchar(120)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "status",
+     "type": "enum('DISCOVERED','VALIDATING','PROCESSING','COMPLETED','SKIPPED','FAILED')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "params",
+     "type": "json",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "processing_version",
+     "type": "varchar(20)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "retry_count",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "max_retries",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "next_attempt_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "locked_by",
+     "type": "varchar(64)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "locked_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "requested_by",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "stats",
+     "type": "json",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_error",
+     "type": "varchar(500)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "started_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "completed_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "job_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_jobs_idem",
+     "cols": [
+      "idempotency_key"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_jobs_parent",
+     "table": "pipeline_jobs",
+     "ref": "pipeline_jobs",
+     "cols": [
+      "parent_job_id"
+     ],
+     "refCols": [
+      "job_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_jobs_source",
+     "table": "pipeline_jobs",
+     "ref": "music_sources",
+     "cols": [
+      "source_id"
+     ],
+     "refCols": [
+      "source_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_jobs_user",
+     "table": "pipeline_jobs",
+     "ref": "users",
+     "cols": [
+      "requested_by"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "playback_events": {
+   "name": "playback_events",
+   "columns": [
+    {
+     "name": "event_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "play_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "event_type",
+     "type": "enum('PLAY_STARTED','PAUSE','RESUME','SEEK','SKIP','COMPLETED','REPLAY')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "position_sec",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "seek_to_sec",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "occurred_at",
+     "type": "datetime(3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "event_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_pe_play",
+     "table": "playback_events",
+     "ref": "listening_history",
+     "cols": [
+      "play_id"
+     ],
+     "refCols": [
+      "play_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "playlist_songs": {
+   "name": "playlist_songs",
+   "columns": [
+    {
+     "name": "playlist_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "position",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "added_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "playlist_id",
+    "song_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_ps_playlist",
+     "table": "playlist_songs",
+     "ref": "playlists",
+     "cols": [
+      "playlist_id"
+     ],
+     "refCols": [
+      "playlist_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_ps_song",
+     "table": "playlist_songs",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "playlists": {
+   "name": "playlists",
+   "columns": [
+    {
+     "name": "playlist_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(80)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(255)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "kind",
+     "type": "enum('MANUAL','SMART','SAVED_MIX','WORLD')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "smart_type",
+     "type": "varchar(30)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "source_batch_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_count",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "total_duration_sec",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "playlist_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_playlists_user_name",
+     "cols": [
+      "user_id",
+      "name"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_pl_batch",
+     "table": "playlists",
+     "ref": "recommendation_batches",
+     "cols": [
+      "source_batch_id"
+     ],
+     "refCols": [
+      "batch_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_pl_user",
+     "table": "playlists",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "ratings": {
+   "name": "ratings",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "rating",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "rated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "song_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_ratings_song",
+     "table": "ratings",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_ratings_user",
+     "table": "ratings",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "reason_types": {
+   "name": "reason_types",
+   "columns": [
+    {
+     "name": "reason_code",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "template",
+     "type": "varchar(160)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "score_family",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "reason_code"
+   ],
+   "uniques": [],
+   "fks": []
+  },
+  "recommendation_batch_moods": {
+   "name": "recommendation_batch_moods",
+   "columns": [
+    {
+     "name": "batch_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "weight",
+     "type": "decimal(3,2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "batch_id",
+    "mood_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_rbm_batch",
+     "table": "recommendation_batch_moods",
+     "ref": "recommendation_batches",
+     "cols": [
+      "batch_id"
+     ],
+     "refCols": [
+      "batch_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_rbm_mood",
+     "table": "recommendation_batch_moods",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "recommendation_batches": {
+   "name": "recommendation_batches",
+   "columns": [
+    {
+     "name": "batch_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "incognito_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "strategy",
+     "type": "enum('MOOD','TEXT','CONTEXT','DAILY','SIMILAR','TRENDING','DISCOVERY','REGIONAL','WORLD','SMART_PLAYLIST','RECOVERY')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "label",
+     "type": "varchar(120)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "input_text",
+     "type": "varchar(280)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "context_id",
+     "type": "tinyint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "seed_song_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "language_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_energy",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_valence",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_danceability",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_acousticness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "target_instrumentalness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "tempo_min",
+     "type": "decimal(5,1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "tempo_max",
+     "type": "decimal(5,1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "max_speechiness",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "discovery_only",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "batch_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_rb_ctx",
+     "table": "recommendation_batches",
+     "ref": "contexts",
+     "cols": [
+      "context_id"
+     ],
+     "refCols": [
+      "context_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_rb_incognito",
+     "table": "recommendation_batches",
+     "ref": "incognito_sessions",
+     "cols": [
+      "incognito_id"
+     ],
+     "refCols": [
+      "incognito_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_rb_lang",
+     "table": "recommendation_batches",
+     "ref": "languages",
+     "cols": [
+      "language_id"
+     ],
+     "refCols": [
+      "language_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_rb_model",
+     "table": "recommendation_batches",
+     "ref": "intelligence_models",
+     "cols": [
+      "model_id"
+     ],
+     "refCols": [
+      "model_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_rb_seed",
+     "table": "recommendation_batches",
+     "ref": "songs",
+     "cols": [
+      "seed_song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_rb_user",
+     "table": "recommendation_batches",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "recommendation_items": {
+   "name": "recommendation_items",
+   "columns": [
+    {
+     "name": "batch_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "rank_position",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "final_score",
+     "type": "decimal(6,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_score",
+     "type": "decimal(6,4)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "audio_score",
+     "type": "decimal(6,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "preference_score",
+     "type": "decimal(6,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "recency_score",
+     "type": "decimal(6,4)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "trend_score",
+     "type": "decimal(6,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "context_score",
+     "type": "decimal(6,4)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "regional_score",
+     "type": "decimal(6,4)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "exploration_score",
+     "type": "decimal(6,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "repetition_penalty",
+     "type": "decimal(6,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "batch_id",
+    "song_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_ri_rank",
+     "cols": [
+      "batch_id",
+      "rank_position"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_ri_batch",
+     "table": "recommendation_items",
+     "ref": "recommendation_batches",
+     "cols": [
+      "batch_id"
+     ],
+     "refCols": [
+      "batch_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_ri_song",
+     "table": "recommendation_items",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "recommendation_reasons": {
+   "name": "recommendation_reasons",
+   "columns": [
+    {
+     "name": "batch_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "reason_code",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "strength",
+     "type": "decimal(5,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "params",
+     "type": "json",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "batch_id",
+    "song_id",
+    "reason_code"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_rr_item",
+     "table": "recommendation_reasons",
+     "ref": "recommendation_items",
+     "cols": [
+      "batch_id",
+      "song_id"
+     ],
+     "refCols": [
+      "batch_id",
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_rr_type",
+     "table": "recommendation_reasons",
+     "ref": "reason_types",
+     "cols": [
+      "reason_code"
+     ],
+     "refCols": [
+      "reason_code"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "regions": {
+   "name": "regions",
+   "columns": [
+    {
+     "name": "region_code",
+     "type": "varchar(6)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(60)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "country_code",
+     "type": "char(2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "primary_language_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "region_code"
+   ],
+   "uniques": [
+    {
+     "name": "uq_regions_name",
+     "cols": [
+      "name"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_regions_language",
+     "table": "regions",
+     "ref": "languages",
+     "cols": [
+      "primary_language_id"
+     ],
+     "refCols": [
+      "language_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "review_queue": {
+   "name": "review_queue",
+   "columns": [
+    {
+     "name": "review_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "review_type",
+     "type": "enum('POSSIBLE_DUPLICATE','SUSPICIOUS_METADATA','FAILED_INGESTION','SOURCE_CONFLICT')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "record_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "candidate_song_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "job_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "score",
+     "type": "decimal(4,3)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "details",
+     "type": "json",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "status",
+     "type": "enum('PENDING','APPROVED','REJECTED','MERGED','IGNORED','REPROCESS')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "pending_key",
+     "type": "varchar(80)",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "decided_by",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "decided_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "decision_note",
+     "type": "varchar(300)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "review_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_review_one_pending",
+     "cols": [
+      "pending_key"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_rq_job",
+     "table": "review_queue",
+     "ref": "pipeline_jobs",
+     "cols": [
+      "job_id"
+     ],
+     "refCols": [
+      "job_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_rq_record",
+     "table": "review_queue",
+     "ref": "source_records",
+     "cols": [
+      "record_id"
+     ],
+     "refCols": [
+      "record_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_rq_song",
+     "table": "review_queue",
+     "ref": "songs",
+     "cols": [
+      "candidate_song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_rq_user",
+     "table": "review_queue",
+     "ref": "users",
+     "cols": [
+      "decided_by"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "role_permissions": {
+   "name": "role_permissions",
+   "columns": [
+    {
+     "name": "role_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "permission_code",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "role_id",
+    "permission_code"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_rp_perm",
+     "table": "role_permissions",
+     "ref": "permissions",
+     "cols": [
+      "permission_code"
+     ],
+     "refCols": [
+      "permission_code"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_rp_role",
+     "table": "role_permissions",
+     "ref": "roles",
+     "cols": [
+      "role_id"
+     ],
+     "refCols": [
+      "role_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "roles": {
+   "name": "roles",
+   "columns": [
+    {
+     "name": "role_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "code",
+     "type": "varchar(20)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "role_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_roles_code",
+     "cols": [
+      "code"
+     ]
+    }
+   ],
+   "fks": []
+  },
+  "schema_migrations": {
+   "name": "schema_migrations",
+   "columns": [
+    {
+     "name": "version",
+     "type": "char(4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(120)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "checksum",
+     "type": "char(64)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "applied_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "execution_ms",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "version"
+   ],
+   "uniques": [],
+   "fks": []
+  },
+  "search_history": {
+   "name": "search_history",
+   "columns": [
+    {
+     "name": "search_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "query_text",
+     "type": "varchar(120)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "normalized_query",
+     "type": "varchar(120)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "result_count",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "searched_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "search_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_sh_user",
+     "table": "search_history",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "song_artists": {
+   "name": "song_artists",
+   "columns": [
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "artist_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "role",
+     "type": "enum('FEATURED','COMPOSER','LYRICIST','PRODUCER')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "credit_order",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "song_id",
+    "artist_id",
+    "role"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_sa_artist",
+     "table": "song_artists",
+     "ref": "artists",
+     "cols": [
+      "artist_id"
+     ],
+     "refCols": [
+      "artist_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_sa_song",
+     "table": "song_artists",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "song_dismissals": {
+   "name": "song_dismissals",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "batch_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "dismissed_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "song_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_dismiss_batch",
+     "table": "song_dismissals",
+     "ref": "recommendation_batches",
+     "cols": [
+      "batch_id"
+     ],
+     "refCols": [
+      "batch_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_dismiss_song",
+     "table": "song_dismissals",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_dismiss_user",
+     "table": "song_dismissals",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "song_genres": {
+   "name": "song_genres",
+   "columns": [
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "genre_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "is_primary",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "primary_song_key",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "song_id",
+    "genre_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_sg_one_primary",
+     "cols": [
+      "primary_song_key"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_sg_genre",
+     "table": "song_genres",
+     "ref": "genres",
+     "cols": [
+      "genre_id"
+     ],
+     "refCols": [
+      "genre_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_sg_song",
+     "table": "song_genres",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "song_media": {
+   "name": "song_media",
+   "columns": [
+    {
+     "name": "media_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "source_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "media_type",
+     "type": "enum('PREVIEW','FULL','GENERATED_SKETCH','USER_LOCAL')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "uri",
+     "type": "varchar(500)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "rights_status",
+     "type": "enum('PERMITTED','ATTRIBUTION_REQUIRED','RESTRICTED')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "availability",
+     "type": "enum('AVAILABLE','UNAVAILABLE','UNCHECKED')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_checked_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "attribution",
+     "type": "varchar(200)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "priority",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "media_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_media",
+     "cols": [
+      "song_id",
+      "source_id",
+      "media_type"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_media_song",
+     "table": "song_media",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_media_source",
+     "table": "song_media",
+     "ref": "music_sources",
+     "cols": [
+      "source_id"
+     ],
+     "refCols": [
+      "source_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "song_mood_curations": {
+   "name": "song_mood_curations",
+   "columns": [
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "action",
+     "type": "enum('ADD','REMOVE')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "confidence",
+     "type": "decimal(4,3)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "note",
+     "type": "varchar(200)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "curated_by",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "curated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "song_id",
+    "mood_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_smc_curator",
+     "table": "song_mood_curations",
+     "ref": "users",
+     "cols": [
+      "curated_by"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_smc_mood",
+     "table": "song_mood_curations",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_smc_song",
+     "table": "song_mood_curations",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "song_mood_ratings": {
+   "name": "song_mood_ratings",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "match_percentage",
+     "type": "decimal(5,2)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "review_text",
+     "type": "varchar(280)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "song_id",
+    "mood_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_smr_mood",
+     "table": "song_mood_ratings",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_smr_song",
+     "table": "song_mood_ratings",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_smr_user",
+     "table": "song_mood_ratings",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "song_moods": {
+   "name": "song_moods",
+   "columns": [
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "confidence",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "feature_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "analyzed_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "song_id",
+    "mood_id",
+    "model_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_sm_feature",
+     "table": "song_moods",
+     "ref": "audio_features",
+     "cols": [
+      "feature_id"
+     ],
+     "refCols": [
+      "feature_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_sm_model",
+     "table": "song_moods",
+     "ref": "intelligence_models",
+     "cols": [
+      "model_id"
+     ],
+     "refCols": [
+      "model_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_sm_mood",
+     "table": "song_moods",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_sm_song",
+     "table": "song_moods",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "songs": {
+   "name": "songs",
+   "columns": [
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "title",
+     "type": "varchar(150)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "normalized_title",
+     "type": "varchar(150)",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "version_label",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "primary_artist_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "album_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "track_number",
+     "type": "tinyint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "duration_sec",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "release_year",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "language_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "isrc",
+     "type": "char(12)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "explicit",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "content_rating",
+     "type": "enum('ALL','TEEN','MATURE')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "popularity",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "status",
+     "type": "enum('ACTIVE','PENDING_ANALYSIS','HIDDEN','MERGED')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "merged_into_song_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "song_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_songs_identity",
+     "cols": [
+      "primary_artist_id",
+      "normalized_title",
+      "version_label"
+     ]
+    },
+    {
+     "name": "uq_songs_isrc",
+     "cols": [
+      "isrc"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_songs_album",
+     "table": "songs",
+     "ref": "albums",
+     "cols": [
+      "album_id"
+     ],
+     "refCols": [
+      "album_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_songs_artist",
+     "table": "songs",
+     "ref": "artists",
+     "cols": [
+      "primary_artist_id"
+     ],
+     "refCols": [
+      "artist_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_songs_lang",
+     "table": "songs",
+     "ref": "languages",
+     "cols": [
+      "language_id"
+     ],
+     "refCols": [
+      "language_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_songs_merged",
+     "table": "songs",
+     "ref": "songs",
+     "cols": [
+      "merged_into_song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "source_records": {
+   "name": "source_records",
+   "columns": [
+    {
+     "name": "record_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "source_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "entity_type",
+     "type": "enum('SONG','ARTIST','ALBUM','FILM')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "external_id",
+     "type": "varchar(100)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "isrc",
+     "type": "char(12)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "artist_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "album_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "film_id",
+     "type": "int unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "source_url",
+     "type": "varchar(500)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "rights_status",
+     "type": "enum('PERMITTED','ATTRIBUTION_REQUIRED','METADATA_ONLY','RESTRICTED','UNKNOWN')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "payload",
+     "type": "json",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "payload_hash",
+     "type": "char(64)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "status",
+     "type": "enum('DISCOVERED','VALIDATING','PROCESSING','COMPLETED','SKIPPED','FAILED','IN_REVIEW')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "match_method",
+     "type": "enum('EXTERNAL_ID','ISRC','EXACT','FUZZY','NEW','MANUAL')",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "match_confidence",
+     "type": "decimal(4,3)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "quality_score",
+     "type": "decimal(4,3)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "processing_version",
+     "type": "varchar(20)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_job_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "first_seen_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_verified_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "record_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_sr_external",
+     "cols": [
+      "source_id",
+      "entity_type",
+      "external_id"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_sr_album",
+     "table": "source_records",
+     "ref": "albums",
+     "cols": [
+      "album_id"
+     ],
+     "refCols": [
+      "album_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_sr_artist",
+     "table": "source_records",
+     "ref": "artists",
+     "cols": [
+      "artist_id"
+     ],
+     "refCols": [
+      "artist_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_sr_film",
+     "table": "source_records",
+     "ref": "films",
+     "cols": [
+      "film_id"
+     ],
+     "refCols": [
+      "film_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_sr_job",
+     "table": "source_records",
+     "ref": "pipeline_jobs",
+     "cols": [
+      "last_job_id"
+     ],
+     "refCols": [
+      "job_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_sr_song",
+     "table": "source_records",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_sr_source",
+     "table": "source_records",
+     "ref": "music_sources",
+     "cols": [
+      "source_id"
+     ],
+     "refCols": [
+      "source_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "trend_snapshots": {
+   "name": "trend_snapshots",
+   "columns": [
+    {
+     "name": "snapshot_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "job_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "window_code",
+     "type": "enum('24H','7D','30D')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "entity_type",
+     "type": "enum('SONG','ARTIST','GENRE','MOOD','LANGUAGE')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "entity_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "region_code",
+     "type": "varchar(6)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "region_key",
+     "type": "varchar(6)",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "curr_plays",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "prev_plays",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "curr_listeners",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "velocity_pct",
+     "type": "decimal(8,2)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "momentum_rank",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "computed_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "snapshot_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_trend",
+     "cols": [
+      "job_id",
+      "window_code",
+      "entity_type",
+      "region_key",
+      "entity_id"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_trend_job",
+     "table": "trend_snapshots",
+     "ref": "pipeline_jobs",
+     "cols": [
+      "job_id"
+     ],
+     "refCols": [
+      "job_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_trend_region",
+     "table": "trend_snapshots",
+     "ref": "regions",
+     "cols": [
+      "region_code"
+     ],
+     "refCols": [
+      "region_code"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "user_artist_preferences": {
+   "name": "user_artist_preferences",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "artist_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "onboarding_weight",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "plays",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "completes",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "skips",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "replays",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "listen_sec",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "short_term_score",
+     "type": "decimal(9,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "long_term_score",
+     "type": "decimal(9,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "blended_score",
+     "type": "decimal(5,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_played_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "computed_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "artist_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_uap_artist",
+     "table": "user_artist_preferences",
+     "ref": "artists",
+     "cols": [
+      "artist_id"
+     ],
+     "refCols": [
+      "artist_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_uap_model",
+     "table": "user_artist_preferences",
+     "ref": "intelligence_models",
+     "cols": [
+      "model_id"
+     ],
+     "refCols": [
+      "model_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_uap_user",
+     "table": "user_artist_preferences",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "user_context_preferences": {
+   "name": "user_context_preferences",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "context_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "onboarding_weight",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "sessions",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "listen_sec",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "blended_score",
+     "type": "decimal(5,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "computed_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "context_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_ucp_ctx",
+     "table": "user_context_preferences",
+     "ref": "contexts",
+     "cols": [
+      "context_id"
+     ],
+     "refCols": [
+      "context_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_ucp_user",
+     "table": "user_context_preferences",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "user_genre_preferences": {
+   "name": "user_genre_preferences",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "genre_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "onboarding_weight",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "plays",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "completes",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "skips",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "replays",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "listen_sec",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "short_term_score",
+     "type": "decimal(9,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "long_term_score",
+     "type": "decimal(9,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "blended_score",
+     "type": "decimal(5,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_played_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "computed_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "genre_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_ugp_genre",
+     "table": "user_genre_preferences",
+     "ref": "genres",
+     "cols": [
+      "genre_id"
+     ],
+     "refCols": [
+      "genre_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_ugp_model",
+     "table": "user_genre_preferences",
+     "ref": "intelligence_models",
+     "cols": [
+      "model_id"
+     ],
+     "refCols": [
+      "model_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ugp_user",
+     "table": "user_genre_preferences",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "user_languages": {
+   "name": "user_languages",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "language_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "priority",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "language_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_ul_priority",
+     "cols": [
+      "user_id",
+      "priority"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_ul_lang",
+     "table": "user_languages",
+     "ref": "languages",
+     "cols": [
+      "language_id"
+     ],
+     "refCols": [
+      "language_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_ul_user",
+     "table": "user_languages",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "user_likes": {
+   "name": "user_likes",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "song_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "liked_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "song_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_likes_song",
+     "table": "user_likes",
+     "ref": "songs",
+     "cols": [
+      "song_id"
+     ],
+     "refCols": [
+      "song_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_likes_user",
+     "table": "user_likes",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "user_mood_preferences": {
+   "name": "user_mood_preferences",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "onboarding_weight",
+     "type": "decimal(4,3)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "plays",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "short_term_score",
+     "type": "decimal(9,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "long_term_score",
+     "type": "decimal(9,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "blended_score",
+     "type": "decimal(5,4)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_played_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "model_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "computed_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "mood_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_ump_model",
+     "table": "user_mood_preferences",
+     "ref": "intelligence_models",
+     "cols": [
+      "model_id"
+     ],
+     "refCols": [
+      "model_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ump_mood",
+     "table": "user_mood_preferences",
+     "ref": "moods",
+     "cols": [
+      "mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_ump_user",
+     "table": "user_mood_preferences",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  },
+  "user_profiles": {
+   "name": "user_profiles",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "display_name",
+     "type": "varchar(60)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "region_code",
+     "type": "varchar(6)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "content_filter",
+     "type": "enum('OFF','NO_EXPLICIT','FAMILY')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "listening_habit",
+     "type": "enum('BACKGROUND','ACTIVE','MIXED')",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "onboarding_completed_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_up_region",
+     "table": "user_profiles",
+     "ref": "regions",
+     "cols": [
+      "region_code"
+     ],
+     "refCols": [
+      "region_code"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_up_user",
+     "table": "user_profiles",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": true
+    }
+   ]
+  },
+  "users": {
+   "name": "users",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "username",
+     "type": "varchar(30)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "email",
+     "type": "varchar(120)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "password_hash",
+     "type": "char(60)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "password_changed_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "role_id",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "is_active",
+     "type": "tinyint(1)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "failed_login_count",
+     "type": "tinyint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "locked_until",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "last_login_at",
+     "type": "datetime",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_users_email",
+     "cols": [
+      "email"
+     ]
+    },
+    {
+     "name": "uq_users_username",
+     "cols": [
+      "username"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_users_role",
+     "table": "users",
+     "ref": "roles",
+     "cols": [
+      "role_id"
+     ],
+     "refCols": [
+      "role_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "weekly_worlds": {
+   "name": "weekly_worlds",
+   "columns": [
+    {
+     "name": "world_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": true
+    },
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "week_start",
+     "type": "date",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "version",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "archetype_code",
+     "type": "varchar(20)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "title",
+     "type": "varchar(80)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(300)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "primary_mood_id",
+     "type": "smallint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "language_id",
+     "type": "smallint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "region_code",
+     "type": "varchar(6)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "theme",
+     "type": "json",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "signals",
+     "type": "json",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "batch_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "job_id",
+     "type": "bigint unsigned",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "status",
+     "type": "enum('ACTIVE','SUPERSEDED','ROLLED_BACK')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "active_key",
+     "type": "varchar(30)",
+     "nullable": true,
+     "generated": true,
+     "autoInc": false
+    },
+    {
+     "name": "generated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "expires_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "world_id"
+   ],
+   "uniques": [
+    {
+     "name": "uq_world_batch",
+     "cols": [
+      "batch_id"
+     ]
+    },
+    {
+     "name": "uq_world_one_active",
+     "cols": [
+      "active_key"
+     ]
+    },
+    {
+     "name": "uq_world_version",
+     "cols": [
+      "user_id",
+      "week_start",
+      "version"
+     ]
+    }
+   ],
+   "fks": [
+    {
+     "name": "fk_ww_arch",
+     "table": "weekly_worlds",
+     "ref": "world_archetypes",
+     "cols": [
+      "archetype_code"
+     ],
+     "refCols": [
+      "archetype_code"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "CASCADE",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ww_batch",
+     "table": "weekly_worlds",
+     "ref": "recommendation_batches",
+     "cols": [
+      "batch_id"
+     ],
+     "refCols": [
+      "batch_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": true
+    },
+    {
+     "name": "fk_ww_job",
+     "table": "weekly_worlds",
+     "ref": "pipeline_jobs",
+     "cols": [
+      "job_id"
+     ],
+     "refCols": [
+      "job_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ww_lang",
+     "table": "weekly_worlds",
+     "ref": "languages",
+     "cols": [
+      "language_id"
+     ],
+     "refCols": [
+      "language_id"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "NO ACTION",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ww_mood",
+     "table": "weekly_worlds",
+     "ref": "moods",
+     "cols": [
+      "primary_mood_id"
+     ],
+     "refCols": [
+      "mood_id"
+     ],
+     "onDelete": "RESTRICT",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ww_region",
+     "table": "weekly_worlds",
+     "ref": "regions",
+     "cols": [
+      "region_code"
+     ],
+     "refCols": [
+      "region_code"
+     ],
+     "onDelete": "SET NULL",
+     "onUpdate": "CASCADE",
+     "nullable": true,
+     "inPk": false,
+     "unique": false
+    },
+    {
+     "name": "fk_ww_user",
+     "table": "weekly_worlds",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": false,
+     "unique": false
+    }
+   ]
+  },
+  "world_archetypes": {
+   "name": "world_archetypes",
+   "columns": [
+    {
+     "name": "archetype_code",
+     "type": "varchar(20)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(40)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(200)",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "motif",
+     "type": "enum('ORBITS','WAVES','PEAKS','RAIN','SUNBURST','GRID','STARS','EMBERS')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "palette",
+     "type": "json",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "title_words",
+     "type": "json",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "season_months",
+     "type": "varchar(30)",
+     "nullable": true,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "archetype_code"
+   ],
+   "uniques": [
+    {
+     "name": "uq_archetype_name",
+     "cols": [
+      "name"
+     ]
+    }
+   ],
+   "fks": []
+  },
+  "world_feedback": {
+   "name": "world_feedback",
+   "columns": [
+    {
+     "name": "user_id",
+     "type": "int unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "world_id",
+     "type": "bigint unsigned",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "feedback",
+     "type": "enum('LOVE','NOT_FOR_ME')",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "created_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    },
+    {
+     "name": "updated_at",
+     "type": "datetime",
+     "nullable": false,
+     "generated": false,
+     "autoInc": false
+    }
+   ],
+   "pk": [
+    "user_id",
+    "world_id"
+   ],
+   "uniques": [],
+   "fks": [
+    {
+     "name": "fk_wf_user",
+     "table": "world_feedback",
+     "ref": "users",
+     "cols": [
+      "user_id"
+     ],
+     "refCols": [
+      "user_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    },
+    {
+     "name": "fk_wf_world",
+     "table": "world_feedback",
+     "ref": "weekly_worlds",
+     "cols": [
+      "world_id"
+     ],
+     "refCols": [
+      "world_id"
+     ],
+     "onDelete": "CASCADE",
+     "onUpdate": "NO ACTION",
+     "nullable": false,
+     "inPk": true,
+     "unique": false
+    }
+   ]
+  }
+ }
+}
