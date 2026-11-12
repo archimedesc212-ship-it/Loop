@@ -117,6 +117,17 @@ export function PlayerProvider({ children }) {
     if (!isPlayable(song)) { toast.info(`“${song.title}” has metadata only — skipped.`); await startAt(i + 1, q, tried + 1); return; }
     const ctx = ctxRef.current;
     try {
+      // Spotify audio stays in Spotify's unmodified official Embed player.
+      // LOOP records the request to open a track, but does not extract or host audio.
+      if (song.playback?.type === 'SPOTIFY_EMBED' && song.spotify?.embedUrl) {
+        handle.current = null;
+        setMedia({ type: 'SPOTIFY_EMBED', label: 'Spotify official player', embedUrl: song.spotify.embedUrl,
+          spotifyUrl: song.spotify.spotifyUrl, trackName: song.title, artistName: song.artist?.name || 'Unknown artist',
+          trackId: song.spotify.trackId, artworkUrl: song.artworkUrl || null });
+        setStatus('external');
+        if (song.spotify.trackId) api.spotifyEmbedOpened(song.spotify.trackId).catch(() => {});
+        return;
+      }
       // Openverse audio is played directly from the original HTTPS source URL.
       // LOOP never downloads, caches, proxies, or re-hosts Openverse audio.
       // External catalogue plays do not write LOOP's local song-history rows.
@@ -414,7 +425,7 @@ export function PlayerProvider({ children }) {
     current, queue, index, status, position, length, speed, volume, muted, shuffle, repeat, media, audioElement, lastResult, sleepRemaining,
     play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setShuffle: () => setShuffle((value) => !value), setRepeat: () => setRepeat((value) => value === 'off' ? 'all' : value === 'all' ? 'one' : 'off'), setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset,
     realAudio: !!(media && media.uri),
-    externalPlayback: !!(media && media.type === 'YOUTUBE_EMBED' && media.embedUrl),
+    externalPlayback: !!(media && ['YOUTUBE_EMBED', 'SPOTIFY_EMBED'].includes(media.type) && media.embedUrl),
     isCurrent: (id) => current && current.id === id,
     isPlaying: (id) => current && current.id === id && status === 'playing',
   }), [current, queue, index, status, position, length, speed, volume, muted, media, audioElement, lastResult, shuffle, repeat, play, pause, resume, toggle, next, prev, seek, setSpeed, setVolume, toggleMute, setSleepTimer, cancelSleepTimer, jumpTo, removeAt, playNext, reset]);

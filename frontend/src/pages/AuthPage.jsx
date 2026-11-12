@@ -13,6 +13,12 @@ export default function AuthPage({ mode = 'login' }) {
   const location = useLocation();
   const [form, setForm] = useState({ username: '', email: '', displayName: '', login: '', password: '', confirm: '' });
   const [busy, setBusy] = useState(false);
+  const showDemoCredentials = import.meta.env.VITE_SHOW_DEMO_CREDENTIALS === 'true';
+  const demoAccounts = [
+    { role: 'Listener', login: 'meera', password: 'Listener@123' },
+    { role: 'Curator', login: 'kavya', password: 'Curator@123' },
+    { role: 'Administrator', login: 'admin', password: 'Admin@123' },
+  ];
   const change = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
   const submit = async (event) => {
@@ -62,6 +68,26 @@ export default function AuthPage({ mode = 'login' }) {
           <p className="small"><Link className="link" to="/">← Keep listening as a guest</Link></p>
           <p className="tiny muted">LOOP stores passwords as bcrypt hashes and uses secure, HTTP-only session cookies. Never share your password with anyone.</p>
         </form>
+      )}
+      {!registering && !isDemoMode && showDemoCredentials && (
+        <section className="card stack" style={{ marginTop: 14 }} aria-labelledby="demo-credentials-title">
+          <div className="stack" style={{ '--gap': 4 }}>
+            <h2 id="demo-credentials-title">DBMS demonstration accounts</h2>
+            <p className="small muted">Seeded test users for your academic project demonstration. Select an account to fill the sign-in form.</p>
+          </div>
+          <div className="stack" style={{ '--gap': 8 }}>
+            {demoAccounts.map((account) => (
+              <div className="row between wrap" key={account.login}>
+                <div className="stack" style={{ '--gap': 2 }}>
+                  <strong>{account.role}</strong>
+                  <span className="small muted"><code>{account.login}</code> · <code>{account.password}</code></span>
+                </div>
+                <button className="btn ghost sm" type="button" onClick={() => setForm((current) => ({ ...current, login: account.login, password: account.password }))}>Use account</button>
+              </div>
+            ))}
+          </div>
+          <p className="tiny muted">Demo credentials are for local/classroom use only. Set <code>VITE_SHOW_DEMO_CREDENTIALS=false</code> before any public deployment and change or remove seeded passwords.</p>
+        </section>
       )}
     </div>
   );

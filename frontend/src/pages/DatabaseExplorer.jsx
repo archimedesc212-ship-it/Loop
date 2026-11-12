@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import schema from '../data/muse-schema-model.json';
 import { filterSchemaTables, incomingReferences, outgoingReferences } from '../lib/schemaExplorer';
-import { PageHead, Empty, Stat } from '../components/ui';
+import { PageHead, Empty, Stat, ErrorState } from '../components/ui';
+import { useApi } from '../hooks/useApi';
+import { api } from '../services/api';
 
 const tables = schema.tables || {};
 const allTables = Object.values(tables);
@@ -12,6 +14,7 @@ export default function DatabaseExplorer() {
   const [search, setSearch] = useState('');
   const [selectedName, setSelectedName] = useState('users');
   const [tab, setTab] = useState('columns');
+  const live = useApi(() => api.databaseSummary(), []);
   const filtered = useMemo(() => filterSchemaTables(tables, search), [search]);
   const selected = filtered.find((table) => table.name === selectedName) || filtered[0] || null;
   const incoming = useMemo(() => selected ? incomingReferences(tables, selected.name) : [], [selected]);
@@ -27,14 +30,40 @@ export default function DatabaseExplorer() {
 
   return (
     <div className="page stack" style={{ '--gap': '18px' }}>
-      <PageHead kicker="DBMS / READ-ONLY EXPLORER" title="MUSE database explorer">
-        <p className="soft small">Browse the academic schema snapshot, inspect columns and keys, and follow foreign-key relationships across tables.</p>
+      <PageHead kicker="DBMS / READ-ONLY EXPLORER" title="LOOP DBMS explorer">
+        <p className="soft small">Inspect LOOP’s MySQL schema, primary and foreign keys, normalised entities, views and migrations.</p>
       </PageHead>
+      <section className="card stack" aria-labelledby="live-dbms-title" style={{ '--gap': 12 }}>
+        <div className="row between wrap">
+          <div className="stack" style={{ '--gap': 3 }}>
+            <h2 id="live-dbms-title">Live MySQL database</h2>
+            <p className="small muted">Counts queried from the connected backend, not copied from the frontend schema file.</p>
+          </div>
+          <span className={`chip ${live.data ? 'success' : ''}`}>{live.data ? 'Live connection' : live.loading ? 'Checking…' : 'Not verified'}</span>
+        </div>
+        {live.error && <ErrorState error={live.error} onRetry={live.reload} />}
+        {live.data && <>
+          <div className="grid-4">
+            <Stat label="Base tables" value={live.data.tables ?? '—'} />
+            <Stat label="Views" value={live.data.views ?? '—'} />
+            <Stat label="Columns" value={live.data.columns ?? '—'} />
+            <Stat label="Foreign keys" value={live.data.foreignKeys ?? '—'} />
+          </div>
+          <div className="grid-4">
+            <Stat label="Indexes" value={live.data.indexes ?? '—'} />
+            <Stat label="Functions" value={live.data.functions ?? '—'} />
+            <Stat label="Procedures" value={live.data.procedures ?? '—'} />
+            <Stat label="Triggers" value={live.data.triggers ?? '—'} />
+          </div>
+          <p className="tiny muted">Latest applied migration: {live.data.latestMigration ?? 'not reported'} · Sampled {live.data.sampledAt ? new Date(live.data.sampledAt).toLocaleString() : 'just now'}</p>
+        </>}
+        {!live.data && !live.loading && !live.error && <p className="small muted">No live database summary was returned. Confirm DB mode and MySQL connectivity.</p>}
+      </section>
       <div className="grid-4">
-        <Stat label="Tables" value={allTables.length} />
-        <Stat label="Columns" value={totalColumns} />
-        <Stat label="Foreign keys" value={totalKeys} />
-        <Stat label="Views" value={schema.views?.length || 0} />
+        <Stat label="Snapshot tables" value={allTables.length} />
+        <Stat label="Snapshot columns" value={totalColumns} />
+        <Stat label="Snapshot foreign keys" value={totalKeys} />
+        <Stat label="Snapshot views" value={schema.views?.length || 0} />
       </div>
       <div className="card schema-explorer-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 0.78fr) minmax(0, 1.7fr)', gap: 18, padding: 16, alignItems: 'start' }}>
         <aside className="stack" style={{ '--gap': '10px', minWidth: 0 }} aria-label="Database tables">
@@ -98,7 +127,7 @@ export default function DatabaseExplorer() {
       </div>
       <section className="panel stack" style={{ '--gap': '10px' }}>
         <div className="row between wrap"><h3>Schema snapshot notes</h3><span className="tiny muted">Generated {schema.generatedAt ? new Date(schema.generatedAt).toLocaleDateString() : 'date not recorded'}</span></div>
-        <p className="small soft">This is a read-only snapshot from <code>docs/erd/schema-model.json</code>, not a live connection to MySQL. It describes the 64-table academic baseline and migrations listed below. Newer artist-upload and private Mood Diary migration objects may not appear here until the schema snapshot is regenerated from a database where those migrations have been applied.</p>
+        <p className="small soft">This is a read-only schema snapshot from <code>docs/erd/schema-model.json</code>, not a live connection. The running backend uses MySQL for authentication, catalogue records, playlists, search history, playback events and audit data. Apply the listed migrations before the DBMS demonstration.</p>
         <div className="row wrap">{(schema.migrations || []).map((migration) => <span className="chip" key={migration.version}>{migration.version} · {migration.name}</span>)}</div>
         <details><summary className="small muted">Views ({schema.views?.length || 0})</summary>
           <div className="row wrap" style={{ marginTop: 10 }}>{(schema.views || []).map((name) => <span className="chip" key={name}>{name}</span>)}</div>

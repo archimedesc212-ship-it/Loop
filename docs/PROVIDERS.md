@@ -1,9 +1,11 @@
 # External providers — integration guide and credentials checklist
 
-MUSE runs completely **without** any external provider or key: the catalogue,
-recommendations, worlds, search, playback of the labelled demo sketch, accounts and
-admin all work offline against MySQL. Every provider below is **off by default** and
-stays off until its settings are in `.env` and the API is restarted.
+The DBMS academic edition of LOOP has a focused listener workflow: Spotify catalogue
+search plus Spotify's official embedded player, with LOOP-owned accounts, playlists,
+search history and database reporting in MySQL. Older Openverse, Jamendo, YouTube,
+MusicBrainz and other adapters remain in the codebase for optional experiments but
+are not combined with Spotify in the primary listening UI. Keep those adapters off
+for the Spotify-focused classroom demonstration.
 
 Code: `backend/src/providers/` (one adapter per provider, shared HTTP client in
 `http.js`, configuration in `config.js`, registry and status in `index.js`).
@@ -35,12 +37,15 @@ Admin UI: **Admin › Providers & media**. Status without secrets: `GET /api/rea
 - **Test**: `frontend/src/lib/openverse.test.js` covers mapping, HTTPS-only URLs, licence allow-list, bounded requests and rate-limit errors with mock responses. A browser/live-source playback test is still required for the chosen tracks.
 - **References**: https://api.openverse.org/v1/ · https://docs.openverse.org/api/reference/made_with_ov.html · https://docs.openverse.org/_preview/2205/terms_of_service.html
 
-### Spotify — external hand-off only (no in-app Spotify streams)
+### Spotify — catalogue search + official embedded player
 
-- **Purpose**: the Search page offers `Open in Spotify`, which opens Spotify's own search page or app. This does not call Spotify's Web API or display Spotify catalogue content. No Spotify credential is used.
-- **Why no SDK in this build**: Spotify's Developer Policy prohibits products integrating Spotify streams or content with another service and products that mimic or replace Spotify's core experience without prior written permission. Streaming is limited to Premium subscribers; the Web Playback SDK also requires prior written approval for commercial projects. LOOP is already a multi-provider music discovery/listening app, so embedding Spotify streams alongside YouTube/Openverse/Jamendo is not enabled. A Client ID, Client Secret, Access Token or Premium account does not override these restrictions.
-- **Credentials**: do not add Spotify Client Secret or access token to frontend code, `VITE_*` variables, source control, or this project. For this external link-out feature no Spotify API key is required.
-- **References**: https://developer.spotify.com/policy · https://developer.spotify.com/documentation/web-playback-sdk · https://developer.spotify.com/documentation/web-api/concepts/authorization
+- **Purpose**: Spotify catalogue search is authorised with the signed-in user's OAuth token (Authorization Code with PKCE). Search results are displayed in LOOP with Spotify-provided artwork/metadata and a link to the Spotify source. Selecting a track opens Spotify's own official embedded player inside LOOP; the Spotify iframe owns its playback controls and stream.
+- **Credentials**: enter the Spotify **Client ID** in **Settings → Spotify connection**. This browser PKCE client does not need the Client Secret. Do not add a Spotify secret to `VITE_*`, source control, screenshots, or the browser. Tokens stay in browser session storage; the access token is sent to the backend only on the authenticated search request.
+- **DBMS records**: successful search requests insert the query, normalized query and result count into MySQL `search_history`. Opening a selected embed inserts the LOOP user ID, Spotify track ID, event type and timestamp into `spotify_embed_events`. LOOP does not persist Spotify tokens, copy the Spotify catalogue into its own song tables, or store audio.
+- **Playback boundary**: the official embed may provide full-track playback depending on the user's Spotify account, market, selected track and Spotify's embed experience. A Client ID is not an audio-stream key. No Spotify audio extraction, download, cache, proxy or re-hosting is implemented.
+- **Redirect URI**: use the exact URI shown in Settings. Local development uses `http://127.0.0.1:5173/spotify/callback`; do not open the app as `localhost`. Deployed sites use their HTTPS origin plus `/spotify/callback`.
+- **Policy**: Spotify restricts mixing Spotify streams/content with another music service, replacing/mimicking Spotify's core experience without written permission, and commercial use of its streaming SDK without prior written approval. This project keeps the official Spotify player separate from other provider adapters. Do not advertise commercial streaming access unless Spotify has approved the use case.
+- **References**: https://developer.spotify.com/policy · https://developer.spotify.com/documentation/embeds/tutorials/creating-an-embed · https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow
 
 ### Jamendo — non-commercial catalogue search and streaming
 

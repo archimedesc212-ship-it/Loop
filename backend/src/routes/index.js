@@ -49,6 +49,9 @@ router.post('/auth/session', optionalAuth, guestSessionLimiter, h(c.auth.createG
 
 router.use(requireAuth);
 
+// Live read-only MySQL object counts for the academic DBMS explorer.
+router.get('/database/summary', h(c.databaseSummary));
+
 // Worldwide provider search (credentials stay on the API server).
 router.get('/music/jamendo', v({ q: r.str(2, 120), limit: opt(r.int(1, 30), 12) }, 'query'), h(c.music.jamendoSearch));
 router.get('/music/youtube', v({ q: r.str(2, 120), limit: opt(r.int(1, 20), 10) }, 'query'), h(c.music.youtubeSearch));
@@ -56,6 +59,11 @@ router.get('/music/musicbrainz', v({ q: r.str(2, 120), limit: opt(r.int(1, 12), 
 router.get('/music/cover-art', v({ mbid: r.str(36, 36, /^[0-9a-f-]{36}$/i) }, 'query'), h(c.music.coverArt));
 
 router.use((req, res, next) => (req.method === 'GET' ? next() : writeLimiter(req, res, next)));
+
+// Spotify catalogue metadata is fetched on demand using a listener's PKCE token.
+// Only search queries and Spotify track identifiers are recorded in MySQL.
+router.post('/music/spotify/search', v({ q: r.str(2, 120), limit: opt(r.int(1, 20), 12), market: opt(r.str(2, 2, /^[A-Z]{2}$/), 'IN'), logSearch: opt(r.bool(), true) }), h(c.music.spotifySearch));
+router.post('/music/spotify/events', v({ spotifyTrackId: r.str(10, 32, /^[A-Za-z0-9]{10,32}$/) }), h(c.music.spotifyEmbedOpened));
 
 router.get('/auth/me', h(c.auth.me));
 router.post('/auth/logout', h(c.auth.logout));

@@ -8,7 +8,7 @@ import { demoRequest } from '../lib/demoMode';
 // No token is ever stored in localStorage.
 
 // Vercel static hosting is database-free by default. Opt into the Express/MySQL API only when explicitly configured.
-export const isDemoMode = import.meta.env.VITE_DEMO_MODE !== 'false';
+export const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true';
 
 export class ApiError extends Error {
   constructor(status, code, message, details) {
@@ -53,16 +53,16 @@ export function buildHeaders(method, hasBody, cookieSource) {
 
 const QUIET_401 = new Set(['/auth/me', '/auth/login', '/auth/register']);
 
-export async function request(method, path, body) {
+export async function request(method, path, body, extraHeaders = {}) {
   // Presentation mode is intentionally database-free: all demo data stays in this browser.
-  if (isDemoMode) return demoRequest(method, path, body);
+  if (isDemoMode && !path.startsWith('/music/spotify/')) return demoRequest(method, path, body);
   let res;
   let text;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 12000);
   try {
     res = await fetch(`/api${path}`, {
-      method, credentials: 'same-origin', headers: buildHeaders(method, body !== undefined),
+      method, credentials: 'same-origin', headers: { ...buildHeaders(method, body !== undefined), ...extraHeaders },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
@@ -144,6 +144,9 @@ export const api = {
   languages: () => request('GET', '/languages'),
   regions: () => request('GET', '/regions'),
   search: (q) => request('GET', `/search${qs({ q })}`),
+  spotifySearch: (q, accessToken, limit = 12, market = 'IN', logSearch = true) => request('POST', '/music/spotify/search', { q, limit, market, logSearch }, { 'X-Spotify-Access-Token': accessToken }),
+  spotifyEmbedOpened: (spotifyTrackId) => request('POST', '/music/spotify/events', { spotifyTrackId }),
+  databaseSummary: () => request('GET', '/database/summary'),
   searchSuggestions: (q) => request('GET', `/search/suggest${qs({ q })}`),
   jamendoSearch: (q, limit = 12) => request('GET', `/music/jamendo${qs({ q, limit })}`),
   youtubeSearch: (q, limit = 10) => request('GET', `/music/youtube${qs({ q, limit })}`),

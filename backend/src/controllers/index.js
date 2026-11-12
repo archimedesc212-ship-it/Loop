@@ -446,6 +446,23 @@ exports.music = {
     const videos = await providers.youtube.searchVideos({ q: q(req).q, max: q(req).limit });
     res.json({ videos });
   },
+  spotifySearch: async (req, res) => {
+    const providers = require('../providers');
+    const tracks = await providers.spotify.searchTracks({ q: b(req).q, limit: b(req).limit, market: b(req).market,
+      accessToken: req.get('x-spotify-access-token') });
+    const rawQuery = String(b(req).q || '').trim().slice(0, 120);
+    const normalized = rawQuery.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ');
+    if (b(req).logSearch !== false) {
+      await query('INSERT INTO search_history (user_id, query_text, normalized_query, result_count) VALUES (?, ?, ?, ?)',
+        [req.user.id, rawQuery, normalized, tracks.length]);
+    }
+    res.json({ tracks, source: 'Spotify', resultCount: tracks.length, market: b(req).market || 'IN' });
+  },
+  spotifyEmbedOpened: async (req, res) => {
+    await query("INSERT INTO spotify_embed_events (user_id, spotify_track_id, event_type) VALUES (?, ?, 'EMBED_OPENED')",
+      [req.user.id, b(req).spotifyTrackId]);
+    res.status(201).json({ recorded: true });
+  },
   musicbrainzSearch: async (req, res) => {
     const providers = require('../providers');
     const recordings = await providers.musicbrainz.searchRecordings({ q: q(req).q, limit: q(req).limit });
@@ -474,4 +491,38 @@ exports.lyrics = {
   annotate: async (req, res) => res.status(201).json(await lyricsSvc.addAnnotation(p(req).id, b(req).lineId, req.user.id, b(req).text, b(req).sourceUrl)),
   deleteAnnotation: async (req, res) => res.json(await lyricsSvc.deleteAnnotation(p(req).annotationId, req.user.id)),
   saveNote: async (req, res) => res.json(await lyricsSvc.saveNote(p(req).id, req.user.id, b(req).text)),
+};
+
+
+// Read-only DBMS dashboard. Counts are computed from MySQL information_schema
+// at request time, so this panel reflects the database the API is actually using.
+exports.databaseSummary = async (_req, res) => {
+  const scalar = async (sql, field) => {
+    try {
+      const rows = await query(sql);
+      const value = rows[0]?.[field];
+      return value === null || value === undefined ? null : Number(value);
+    } catch {
+      return null; // Least-privilege accounts may not see routine/trigger metadata.
+    }
+  };
+  const [tableCount, viewCount, columnCount, foreignKeyCount, indexCount, functionCount, procedureCount, triggerCount, migration] = await Promise.all([
+    scalar("SELECT COUNT(*) AS n FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'", 'n'),
+    scalar("SELECT COUNT(*) AS n FROM information_schema.VIEWS WHERE TABLE_SCHEMA = DATABASE()", 'n'),
+    scalar('SELECT COUNT(*) AS n FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()', 'n'),
+    scalar('SELECT COUNT(*) AS n FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL', 'n'),
+    scalar("SELECT COUNT(DISTINCT CONCAT(TABLE_NAME, '#', INDEX_NAME)) AS n FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = DATABASE()", 'n'),
+    scalar("SELECT COUNT(*) AS n FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = DATABASE() AND ROUTINE_TYPE = 'FUNCTION'", 'n'),
+    scalar("SELECT COUNT(*) AS n FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA = DATABASE() AND ROUTINE_TYPE = 'PROCEDURE'", 'n'),
+    scalar('SELECT COUNT(*) AS n FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA = DATABASE()', 'n'),
+    scalar('SELECT MAX(version) AS n FROM schema_migrations', 'n'),
+  ]);
+  res.json({
+    source: 'MySQL information_schema',
+    database: 'current connection',
+    tables: tableCount, views: viewCount, columns: columnCount, foreignKeys: foreignKeyCount,
+    indexes: indexCount, functions: functionCount, procedures: procedureCount, triggers: triggerCount,
+    latestMigration: migration,
+    sampledAt: new Date().toISOString(),
+  });
 };

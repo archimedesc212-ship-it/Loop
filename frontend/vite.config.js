@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 // Prod: `npm run build` then the API serves frontend/dist on the same origin.
 export default defineConfig({
   plugins: [react()],
+  envDir: '..', // share the repository-root .env with the frontend VITE_* flags
   server: { port: 5173, proxy: { '/api': 'http://localhost:4000' } },
   preview: { port: 5173, proxy: { '/api': 'http://localhost:4000' } },
   build: { outDir: 'dist', sourcemap: false, chunkSizeWarningLimit: 900 },

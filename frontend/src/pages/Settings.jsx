@@ -1,28 +1,26 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { useApi } from '../hooks/useApi';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
-import { Field, PageHead, ErrorState, ListSkeleton } from '../components/ui';
-import { accentThemes, applyAccentTheme, getAccentTheme } from '../lib/theme';
-import { getMusicProviderSettings, saveMusicProviderSettings } from '../lib/providerSettings';
-import { verifyYouTubeApiKey } from '../lib/youtubeBrowser';
+import { Field, PageHead, ErrorState } from '../components/ui';
+import { beginSpotifyAuth, disconnectSpotify, getSpotifyClientId, getSpotifyRedirectUri, isSpotifyConnected, saveSpotifyClientId } from '../lib/spotifyAuth';
 
 export default function Settings() {
   const { user, setUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
-    const opts = useApi(() => api.onboardingOptions(), []);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const opts = useApi(() => api.onboardingOptions(), []);
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
   const [exportPassword, setExportPassword] = useState('');
   const [exportBusy, setExportBusy] = useState(false);
-  const [accentTheme, setAccentTheme] = useState(() => getAccentTheme().id);
-  const [youtubeApiKey, setYoutubeApiKey] = useState(() => getMusicProviderSettings().youtubeApiKey);
-  const [showYoutubeKey, setShowYoutubeKey] = useState(false);
-  const [providerBusy, setProviderBusy] = useState(false);
-  const [providerStatus, setProviderStatus] = useState('');
+  const [spotifyClientId, setSpotifyClientId] = useState(() => getSpotifyClientId());
+  const [spotifyConnected, setSpotifyConnected] = useState(() => isSpotifyConnected());
+  const [spotifyStatus, setSpotifyStatus] = useState('');
+  const [spotifyBusy, setSpotifyBusy] = useState(false);
   useEffect(() => {
     if (!user) { setForm(null); return; }
     setForm({ displayName: user.displayName || '', regionCode: user.region ? user.region.code : '', contentFilter: user.contentFilter || 'OFF',
@@ -39,28 +37,41 @@ export default function Settings() {
       toast.success('Settings saved');
     } catch (err) { toast.error(err); } finally { setBusy(false); }
   };
-  const saveProviderKey = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (searchParams.get('spotify') === 'connected') {
+      setSpotifyConnected(isSpotifyConnected());
+      setSpotifyStatus('Spotify account connected. Search now uses your authorised Spotify session.');
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+  const saveSpotifyId = (event) => {
+    event.preventDefault();
     try {
-      saveMusicProviderSettings({ youtubeApiKey });
-      setProviderStatus(youtubeApiKey.trim() ? 'YouTube key saved on this device.' : 'YouTube key cleared.');
-      toast.success(youtubeApiKey.trim() ? 'YouTube API key saved' : 'YouTube API key cleared');
+      saveSpotifyClientId(spotifyClientId);
+      setSpotifyStatus(spotifyClientId.trim() ? 'Spotify Client ID saved in this browser.' : 'Spotify Client ID cleared.');
+      toast.success('Spotify Client ID saved');
     } catch (error) {
-      setProviderStatus(error.message || 'Could not save the key in this browser.');
+      setSpotifyStatus(error.message || 'Could not save the Spotify Client ID.');
       toast.error(error);
     }
   };
-  const testProviderKey = async () => {
-    setProviderBusy(true);
-    setProviderStatus('Checking the key…');
+  const connectSpotify = async () => {
+    setSpotifyBusy(true);
     try {
-      await verifyYouTubeApiKey(youtubeApiKey);
-      setProviderStatus('Key verified. YouTube music search and home banners are ready.');
-      toast.success('YouTube API key verified');
+      saveSpotifyClientId(spotifyClientId);
+      setSpotifyStatus('Redirecting to Spotify for secure account authorisation…');
+      await beginSpotifyAuth(spotifyClientId);
     } catch (error) {
-      setProviderStatus(error.message || 'The key could not be verified.');
+      setSpotifyStatus(error.message || 'Spotify connection could not start.');
       toast.error(error);
-    } finally { setProviderBusy(false); }
+      setSpotifyBusy(false);
+    }
+  };
+  const clearSpotify = () => {
+    disconnectSpotify();
+    setSpotifyConnected(false);
+    setSpotifyStatus('Spotify account disconnected from this browser session.');
+    toast.info('Spotify disconnected');
   };
   const exportData = async (e) => {
     e.preventDefault();
@@ -83,55 +94,32 @@ export default function Settings() {
   };
   return (
     <div className="page" style={{ maxWidth: 760 }}>
-      <PageHead title="Settings" />
-      <section className="card stack appearance-card" aria-labelledby="appearance-title">
-        <div className="appearance-heading">
-          <div>
-            <h2 id="appearance-title">Appearance</h2>
-            <p className="small soft">Make LOOP feel like yours. Your colour is used across navigation, buttons, highlights, the player and visualizer.</p>
-          </div>
-          <span className="appearance-live-dot" aria-hidden="true" />
-        </div>
-        <div className="appearance-label-row"><strong>Accent colour</strong><span className="small muted">Saved on this device</span></div>
-        <div className="accent-theme-grid" role="group" aria-label="Choose accent colour">
-          {accentThemes.map((theme) => (
-            <button type="button" key={theme.id} className={`accent-theme-option${accentTheme === theme.id ? ' selected' : ''}`}
-              onClick={() => { setAccentTheme(theme.id); applyAccentTheme(theme.id); }}
-              aria-pressed={accentTheme === theme.id} aria-label={`Use ${theme.label}`}>
-              <span className="accent-theme-swatch" style={{ '--swatch': theme.color }} />
-              <span>{theme.label}</span>
-              {accentTheme === theme.id && <span className="accent-theme-check" aria-hidden="true">✓</span>}
-            </button>
-          ))}
-        </div>
-        <div className="appearance-preview" aria-live="polite">
-          <div className="appearance-preview-copy"><span className="tiny muted">LIVE PREVIEW</span><strong>Colour your listening space</strong><span className="small soft">Your selection updates instantly and stays after you reopen LOOP.</span></div>
-          <div className="appearance-preview-actions"><span className="appearance-preview-pill">Selected theme</span><span className="appearance-preview-play">▶</span></div>
-        </div>
-      </section>
-      <section className="card stack section provider-settings-card" aria-labelledby="provider-settings-title">
+      <PageHead kicker="DBMS / ACCOUNT & API CONFIGURATION" title="Settings"><p className="small muted">Connect the music catalogue, manage your database-backed profile and protect your account.</p></PageHead>
+      <section className="card stack section provider-settings-card" aria-labelledby="provider-settings-title" id="spotify">
         <div className="stack" style={{ '--gap': '5px' }}>
-          <h2 id="provider-settings-title">Music sources</h2>
-          <p className="small soft">Add your YouTube Data API v3 key here once. LOOP uses it for worldwide song discovery, YouTube thumbnails and the rotating Home spotlight. The key stays in this browser and is not sent to LOOP's database.</p>
+          <h2 id="provider-settings-title">Spotify connection</h2>
+          <p className="small soft">Add your Spotify Client ID, save it here, and connect your Spotify account. LOOP uses the Spotify Web API for catalogue search and the official Spotify Embed for listening.</p>
         </div>
-        <form className="stack" onSubmit={saveProviderKey}>
-          <Field label="YouTube Data API v3 key" hint="This is a public browser API key, not an account password. Restrict it in Google Cloud to YouTube Data API v3 and your LOOP website's HTTP referrers.">
-            <div className="provider-key-input">
-              <input className="input" type={showYoutubeKey ? 'text' : 'password'} value={youtubeApiKey} onChange={(event) => { setYoutubeApiKey(event.target.value); setProviderStatus(''); }} autoComplete="off" spellCheck="false" maxLength={256} placeholder="Paste your YouTube API key" aria-label="YouTube Data API v3 key" />
-              <button type="button" className="btn ghost sm" onClick={() => setShowYoutubeKey((value) => !value)}>{showYoutubeKey ? 'Hide' : 'Show'}</button>
-            </div>
+        <form className="stack" onSubmit={saveSpotifyId}>
+          <Field label="Spotify Client ID" hint="Use the Client ID from Spotify Developer Dashboard. Do not enter your account password or Client Secret here.">
+            <input className="input" type="text" value={spotifyClientId} onChange={(event) => { setSpotifyClientId(event.target.value); setSpotifyStatus(''); }} autoComplete="off" spellCheck="false" maxLength={128} placeholder="Paste Spotify Client ID" />
           </Field>
-          <div className="row wrap">
-            <button className="btn primary" type="submit">Save key in Settings</button>
-            <button className="btn ghost" type="button" onClick={testProviderKey} disabled={providerBusy || !youtubeApiKey.trim()}>{providerBusy ? 'Checking…' : 'Test key'}</button>
-            <button className="btn ghost" type="button" onClick={() => { setYoutubeApiKey(''); saveMusicProviderSettings({ youtubeApiKey: '' }); setProviderStatus('YouTube key cleared.'); }}>Clear key</button>
+          <div className="stack" style={{ '--gap': 4 }}>
+            <span className="tiny muted">Redirect URI — add this exact address to your Spotify app settings</span>
+            <code style={{ wordBreak: 'break-all' }}>{getSpotifyRedirectUri()}</code>
           </div>
-          {providerStatus && <p className="small" role="status">{providerStatus}</p>}
+          <div className="row wrap">
+            <button className="btn primary" type="submit">Save Client ID</button>
+            <button className="btn ghost" type="button" onClick={connectSpotify} disabled={spotifyBusy || !spotifyClientId.trim()}>{spotifyBusy ? 'Connecting…' : 'Connect Spotify'}</button>
+            {spotifyConnected && <button className="btn ghost" type="button" onClick={clearSpotify}>Disconnect</button>}
+          </div>
+          <div className="row wrap"><span className={`chip ${spotifyConnected ? 'success' : ''}`}>{spotifyConnected ? 'Spotify account connected' : 'Spotify account not connected'}</span></div>
+          {spotifyStatus && <p className="small" role="status">{spotifyStatus}</p>}
         </form>
         <div className="provider-policy-note">
-          <strong>Spotify credentials are not used in this multi-source player.</strong> Spotify's current developer policy prohibits combining Spotify streams or content with another service. LOOP can keep a separate “Open in Spotify” link, but it cannot combine Spotify API music with YouTube/Openverse playback here.
+          <strong>Playback and data policy:</strong> Search metadata is requested with the connected user's OAuth access token. Listening happens in Spotify's unmodified official embedded player; LOOP does not download, extract, cache or re-host Spotify audio. Full playback and availability are controlled by Spotify, the user's Premium status, market and embed experience.
         </div>
-        <p className="tiny muted">Openverse needs no API key. It returns openly licensed recordings with source and licence information. YouTube playback stays inside its official embedded player; LOOP does not extract audio from videos.</p>
+        <p className="tiny muted">Spotify developer app: <a className="link" href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer">Open Dashboard ↗</a>. Keep your Client Secret private; this browser PKCE flow does not need it.</p>
       </section>
       {opts.error && <ErrorState error={opts.error} onRetry={opts.reload} />}
       <form className="stack" style={{ '--gap': '18px' }} onSubmit={save}>
@@ -161,8 +149,6 @@ export default function Settings() {
           </div>
       </form>
       <AccountSecurity user={user} setUser={setUser} navigate={navigate} />
-      <HiddenSongs />
-
       <form className="card stack section" style={{ '--gap': '10px' }} onSubmit={exportData}>
         <h3>Download your data</h3>
         <p className="small soft">Export the personal data LOOP stores for this account as a JSON file. The export includes your profile, preferences, listening history, ratings, likes, playlists, searches and artist-account records where applicable. Password hashes, session credentials, token hashes, IP hashes and other users’ data are excluded. Your current password is required, and exports are limited to once per hour.</p>
@@ -183,33 +169,6 @@ export default function Settings() {
     </div>
   );
 }
-
-function HiddenSongs() {
-  const toast = useToast();
-  const list = useApi(() => api.dismissals(), []);
-  const undo = async (s) => {
-    try { await api.undismiss(s.id); list.setData(list.data.filter((x) => x.id !== s.id)); toast.success(`“${s.title}” can be recommended again`); } catch (e) { toast.error(e); }
-  };
-  return (
-    <div className="card stack section" style={{ '--gap': '10px' }}>
-      <h3>Hidden songs</h3>
-      <p className="small soft">Songs you marked “Not for me” are left out of every recommendation. They still appear in search and on artist pages.</p>
-      {list.loading && <ListSkeleton n={2} />}
-      {list.error && <ErrorState error={list.error} onRetry={list.reload} />}
-      {list.data && (list.data.length === 0 ? <p className="small muted">Nothing hidden.</p> : (
-        <ul className="stack" style={{ '--gap': '6px', listStyle: 'none', padding: 0, margin: 0 }}>
-          {list.data.map((s) => (
-            <li key={s.id} className="row between small">
-              <span><Link className="link" to={`/song/${s.id}`}>{s.title}</Link> <span className="muted">· {s.artist.name}</span></span>
-              <button className="btn ghost sm" onClick={() => undo(s)}>Show again</button>
-            </li>
-          ))}
-        </ul>
-      ))}
-    </div>
-  );
-}
-
 
 
 function AccountSecurity({ user, setUser, navigate }) {

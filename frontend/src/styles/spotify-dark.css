@@ -574,3 +574,46 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .online-feature-shade { display:none; }
   .online-feature-content { width:100%; max-width:none; min-height:0; padding:20px; }
 }
+
+
+/* Spotify-backed DBMS home spotlight. Artwork is rendered as supplied and the
+   slide rotation is independent of audio playback. */
+.spotify-feature-banner {
+  display: grid; grid-template-columns: minmax(150px, 235px) minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 28px); align-items: center; overflow: hidden;
+  padding: clamp(14px, 2.5vw, 22px);
+  background: linear-gradient(120deg, rgba(39,39,39,.96), rgba(22,22,22,.98));
+}
+.spotify-feature-art { display: block; width: 100%; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #181818; }
+.spotify-feature-art img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.spotify-feature-art > span { display: grid; width: 100%; height: 100%; place-items: center; color: var(--text-2); }
+.spotify-feature-copy { display: grid; gap: 9px; min-width: 0; }
+.spotify-feature-copy h2 { font-size: clamp(1.5rem, 3vw, 2.4rem); overflow-wrap: anywhere; }
+.spotify-feature-dots { display: flex; gap: 7px; align-items: center; padding-top: 4px; }
+.spotify-feature-dots button { width: 7px; height: 7px; border: 0; border-radius: 99px; padding: 0; background: rgba(255,255,255,.28); cursor: pointer; }
+.spotify-feature-dots button.active { width: 22px; background: var(--accent); }
+@media (max-width: 580px) { .spotify-feature-banner { grid-template-columns: 96px minmax(0,1fr); gap: 13px; } .spotify-feature-copy h2 { font-size: 1.25rem; } }
+
+/* Spotify official player: compact in the dock, full audio embed in Now Playing. */
+.spotify-inline-panel { height: 222px; }
+.spotify-inline-panel:not(.is-immersive) iframe { width: 100%; max-width: none; height: 152px; min-height: 152px; aspect-ratio: auto; }
+.spotify-inline-panel.is-immersive { width: min(420px, calc(100vw - 28px)); height: 430px; }
+.spotify-inline-panel.is-immersive iframe { width: 100%; height: 352px; min-height: 352px; aspect-ratio: auto; }
+.loop-immersive-player.has-youtube .loop-immersive-content { margin-top: 465px; }
+.loop-immersive-provider-card { width: min(520px, 100%); margin: 0 auto; padding: 18px 20px; border: 1px solid rgba(255,255,255,.13); border-radius: 16px; background: rgba(255,255,255,.045); color: var(--text-2); line-height: 1.55; text-align: left; }
+.loop-immersive-provider-card strong { display: block; margin-bottom: 6px; color: var(--text); }
+.loop-immersive-provider-card p { margin: 0 0 8px; font-size: .86rem; }
+.loop-immersive-provider-card a { display: inline-block; margin: 4px 14px 0 0; font-size: .82rem; }
+@media (max-width: 760px) {
+  .spotify-inline-panel.is-immersive { top: 62px; height: 430px; }
+  .loop-immersive-player.has-youtube .loop-immersive-content { margin-top: 465px; }
+}
+
+/* Album art is a primary LOOP playback action; keep Spotify source links separate. */
+.spotify-home-track-art { display:block; width:100%; aspect-ratio:1; padding:0; border:0; border-radius:12px; overflow:hidden; background:#181818; cursor:pointer; }
+.spotify-home-track-art img { display:block; width:100%; height:100%; object-fit:contain; }
+.spotify-home-track-art:disabled { cursor:not-allowed; opacity:.5; }
+.world-artwork-button { display:block; width:64px; height:64px; flex:0 0 64px; padding:0; border:0; border-radius:10px; overflow:hidden; background:transparent; cursor:pointer; }
+.world-artwork-button:disabled { cursor:not-allowed; opacity:.5; }
+.spotify-feature-art { padding:0; border:0; cursor:pointer; text-align:initial; }
+.spotify-feature-art:focus-visible,.spotify-home-track-art:focus-visible,.world-artwork-button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }

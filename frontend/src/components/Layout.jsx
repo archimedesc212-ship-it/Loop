@@ -10,7 +10,7 @@ import { api, isDemoMode } from '../services/api';
 import { duration } from '../lib/format';
 import { buildSearchSuggestions } from '../lib/searchSuggestions';
 import { formatSleepRemaining } from '../lib/sleepTimer';
-import { registerMoodColors, LikeButton } from './Songs';
+import { LikeButton } from './Songs';
 import ImmersivePlayer from './ImmersivePlayer';
 
 function youtubeEmbedWithOrigin(value) {
@@ -26,10 +26,9 @@ function youtubeEmbedWithOrigin(value) {
 
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
-  { to: '/mood', label: 'Discover', short: 'Discover', icon: Icon.Mood },
-  { to: '/assistant', label: 'Assistant', short: 'Assistant', icon: Icon.Spark },
   { to: '/search', label: 'Search', short: 'Search', icon: Icon.Search },
   { to: '/library', label: 'Library', short: 'Library', icon: Icon.Library },
+  { to: '/database', label: 'Database', short: 'Database', icon: Icon.Database },
 ];
 
 function Sidebar({ collapsed = false }) {
@@ -56,7 +55,6 @@ function Sidebar({ collapsed = false }) {
           <NavLink to="/admin" className="nav-link" title={collapsed ? 'Admin' : undefined}><Icon.Shield /><span className="nav-text">Admin</span></NavLink>
         </>
       )}
-      <NavLink to={user.role === 'ARTIST' ? '/artist/studio' : '/artist/apply'} className="nav-link" title={collapsed ? (user.role === 'ARTIST' ? 'Artist Studio' : 'Become an artist') : undefined}>{user.role === 'ARTIST' ? <Icon.Music /> : <Icon.Mic />}<span className="nav-text">{user.role === 'ARTIST' ? 'Artist Studio' : 'Become an artist'}</span></NavLink>
       <div className="sidebar-foot stack" style={{ '--gap': '10px' }}>
         <div className="row" style={{ '--gap': '10px' }}>
           <span className="avatar">{user.displayName.slice(0, 1)}</span>
@@ -87,34 +85,6 @@ function MobileNav() {
         <NavLink key={to} to={to} end={end}><Ico />{short}</NavLink>
       ))}
     </nav>
-  );
-}
-
-function PrivateToggle() {
-  const { user, refresh } = useAuth();
-  const player = usePlayer();
-  const toast = useToast();
-  const [busy, setBusy] = useState(false);
-  const flip = async () => {
-    setBusy(true);
-    try {
-      await player.reset();
-      if (user?.incognito) {
-        const r = await api.endIncognito();
-        toast.success(`Private session ended — ${r.purged.events} plays and ${r.purged.lists} mixes deleted`);
-      } else {
-        await api.startIncognito();
-        toast.info('Private session on. Mood ratings are paused, and this archive view does not collect playback history.');
-      }
-      await refresh();
-    } catch (e) { toast.error(e); } finally { setBusy(false); }
-  };
-  return (
-    <button className={`btn sm${user?.incognito ? '' : ' ghost'}`} onClick={flip} disabled={busy}
-      style={user?.incognito ? { background: 'rgba(169,148,240,0.18)', color: 'var(--private)', borderColor: 'transparent' } : undefined}
-      aria-pressed={user?.incognito} title="Private session: listening is not saved to your profile">
-      {user?.incognito ? <Icon.EyeOff /> : <Icon.Eye />}<span>{user?.incognito ? 'Private on' : 'Private'}</span>
-    </button>
   );
 }
 
@@ -202,7 +172,7 @@ function TopBar({ onToggleSidebar, sidebarCollapsed }) {
           onChange={(e) => { setQ(e.target.value); setSuggestionsOpen(true); }}
           onFocus={() => setSuggestionsOpen(true)}
           onKeyDown={onSearchKeyDown}
-          placeholder="Search songs, artists, albums worldwide…"
+          placeholder="Search Spotify songs and artists…"
           aria-label="Search songs, artists and albums"
           role="combobox"
           aria-autocomplete="list"
@@ -232,14 +202,13 @@ function TopBar({ onToggleSidebar, sidebarCollapsed }) {
             ))}
             <button type="submit" className="search-suggestion search-suggestion-all">
               <span className="search-suggestion-icon" aria-hidden="true">⌕</span>
-              <span className="search-suggestion-copy"><strong>Search all music sources</strong><small>YouTube · LOOP</small></span>
+              <span className="search-suggestion-copy"><strong>Search Spotify catalogue</strong><small>Spotify · MySQL search history</small></span>
               <span className="search-suggestion-kind">Enter</span>
             </button>
           </div>
         )}
       </form>
       <div className="grow" />
-      <PrivateToggle />
       <Link to="/settings" className="avatar mobile-only" aria-label="Settings">{user.displayName.slice(0, 1)}</Link>
     </div>
   );
@@ -299,7 +268,7 @@ function PlayerBar({ onOpenImmersive, immersiveOpen = false }) {
       const target = event.target;
       const tag = target?.tagName?.toLowerCase();
       if (target?.isContentEditable || ['input', 'textarea', 'select', 'button'].includes(tag)) return;
-      if (event.code === 'Space') {
+      if (event.code === 'Space' && !p.externalPlayback) {
         event.preventDefault();
         p.toggle();
       } else if (event.key === 'ArrowLeft' && p.current && !p.externalPlayback) {
@@ -335,17 +304,13 @@ function PlayerBar({ onOpenImmersive, immersiveOpen = false }) {
               {s.artist?.name || 'Unknown artist'} · {mediaNote(p.media, user?.incognito)}
             </span>
           </button>
-          {!(String(s.id).startsWith('yt-')) && <span className="hide-sm"><LikeButton song={s} /></span>}
+          {!p.externalPlayback && !(String(s.id).startsWith('yt-')) && <span className="hide-sm"><LikeButton song={s} /></span>}
         </div>
         {p.externalPlayback ? (
           <div className="center external-player-center">
-            <div className="controls" title="Keyboard: Space play/pause · ←/→ seek 10s · N next · P previous · M mute">
-              <button className={`icon-btn${p.shuffle ? ' on' : ''}`} onClick={p.setShuffle} aria-label="Toggle shuffle" aria-pressed={p.shuffle}>⤨</button>
-              <button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button>
-              <button className="play-btn" onClick={p.toggle} aria-label={p.status === 'playing' ? 'Pause' : 'Play'}>{p.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}</button>
-              <button className="icon-btn" onClick={p.next} aria-label="Next"><Icon.Next /></button>
-              <button className={`icon-btn${p.repeat !== 'off' ? ' on' : ''}`} onClick={p.setRepeat} aria-label={`Repeat ${p.repeat}`} aria-pressed={p.repeat !== 'off'}>{p.repeat === 'one' ? '↻¹' : '↻'}</button>
-            </div>
+            {p.media?.type === 'SPOTIFY_EMBED'
+              ? <span className="tiny muted">Use Spotify’s official player controls below</span>
+              : <div className="controls"><button className="icon-btn" onClick={p.prev} aria-label="Previous"><Icon.Prev /></button><button className="play-btn" onClick={p.toggle} aria-label={p.status === 'playing' ? 'Pause' : 'Play'}>{p.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}</button><button className="icon-btn" onClick={p.next} aria-label="Next"><Icon.Next /></button></div>}
             <button className="player-expand-btn" onClick={onOpenImmersive} aria-label="Open Now Playing" title="Open full-screen player">Open Now Playing</button>
           </div>
         ) : (
@@ -411,24 +376,27 @@ function PlayerBar({ onOpenImmersive, immersiveOpen = false }) {
           <a href={p.media.watchUrl} target="_blank" rel="noreferrer">Search and play on YouTube <Icon.Arrow /></a>
         </section>
       )}
-      {p.externalPlayback && (p.media?.embedUri || p.media?.embedUrl) && (
+      {p.externalPlayback && p.media?.type === 'SPOTIFY_EMBED' && p.media?.embedUrl && (
+        <section className={`youtube-inline-panel spotify-inline-panel${immersiveOpen ? ' is-immersive' : ''}`} aria-label="Spotify official embedded player">
+          <div className="row between youtube-inline-heading">
+            <div className="tiny muted">NOW PLAYING · {p.media.trackName} — {p.media.artistName}</div>
+            <a className="tiny link" href={p.media.spotifyUrl} target="_blank" rel="noreferrer">Spotify ↗</a>
+          </div>
+          <iframe title={`Spotify player: ${p.media.trackName}`} src={p.media.embedUrl} width="100%" height={immersiveOpen ? 352 : 152}
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="eager"
+            referrerPolicy="strict-origin-when-cross-origin" />
+          <p className="tiny muted">Official Spotify player · Premium playback and track availability depend on Spotify, account and market.</p>
+        </section>
+      )}
+      {p.externalPlayback && p.media?.type === 'YOUTUBE_EMBED' && p.media?.embedUrl && (
         <section className={`youtube-inline-panel${immersiveOpen ? ' is-immersive' : ''}`} aria-label="YouTube embedded player">
           <div className="row between youtube-inline-heading">
             <div className="tiny muted">NOW PLAYING · {p.media.trackName} — {p.media.artistName}</div>
             {p.media?.watchUrl ? <a className="tiny link" href={p.media.watchUrl} target="_blank" rel="noreferrer">Open in YouTube</a> : null}
           </div>
-          <iframe
-            title={`YouTube player: ${p.media.trackName}`}
-            src={youtubeEmbedWithOrigin(p.media.embedUrl)}
-            width="100%"
-            height="315"
-            allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *"
-            frameBorder="0"
-            allowFullScreen
-            loading="eager"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-          <p className="tiny muted"><>Playback is provided by YouTube’s official embedded player. Some videos may be unavailable for embedding. {p.media.watchUrl && <a href={p.media.watchUrl} target="_blank" rel="noreferrer" className="player-provider-fallback">Open directly on YouTube</a>}</></p>
+          <iframe title={`YouTube player: ${p.media.trackName}`} src={youtubeEmbedWithOrigin(p.media.embedUrl)} width="100%" height="315"
+            allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *" frameBorder="0" allowFullScreen loading="eager" referrerPolicy="strict-origin-when-cross-origin" />
+          <p className="tiny muted">Playback is provided by YouTube’s official embedded player.</p>
         </section>
       )}
 
@@ -466,7 +434,6 @@ export default function Layout() {
   const [immersiveOpen, setImmersiveOpen] = useState(false);
   useEffect(() => { try { localStorage.setItem('loop.sidebarCollapsed', String(sidebarCollapsed)); } catch { /* preference storage is optional */ } }, [sidebarCollapsed]);
   const nav = useNavigate();
-  useEffect(() => { api.moods().then(registerMoodColors).catch(() => {}); }, []);
   useEffect(() => { if (user && !user.onboarded) nav('/welcome'); }, [user, nav]);
   return (
     <div className={`app${sidebarCollapsed ? ' sidebar-collapsed' : ''}`}>
@@ -475,12 +442,6 @@ export default function Layout() {
       <main className="main" id="main" tabIndex={-1}>
         <TopBar onToggleSidebar={() => setSidebarCollapsed((value) => !value)} sidebarCollapsed={sidebarCollapsed} />
         <OfflineBanner />
-        {user?.incognito && (
-          <div className="private-banner" role="status">
-            <Icon.EyeOff width={18} height={18} style={{ color: 'var(--private)' }} />
-            <span className="grow">Private session. No listening history or audio playback is collected in this metadata-only archive view; mood ratings are paused. <Link to="/private" style={{ color: 'var(--private)', fontWeight: 600 }}>See what this session remembers</Link></span>
-          </div>
-        )}
         <Outlet />
       </main>
       <PlayerBar onOpenImmersive={() => setImmersiveOpen(true)} immersiveOpen={immersiveOpen} />

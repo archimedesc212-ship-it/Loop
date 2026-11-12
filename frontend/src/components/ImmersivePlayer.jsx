@@ -226,7 +226,7 @@ export default function ImmersivePlayer({ open, onClose }) {
     <section className={`loop-immersive-player${artworkVisible && artwork ? ' artwork-on' : ' visualizer-only'}${visualizerEnabled ? ' visualizer-enabled' : ''}${external && player.media?.embedUrl ? ' has-youtube' : ''}`} role="dialog" aria-modal="true" aria-label="Immersive music player">
       {artworkVisible && artwork && <div className="loop-immersive-art" style={{ backgroundImage: `url("${artwork}")` }} />}
       <div className="loop-immersive-shade" />
-      <div className="loop-immersive-visualizer"><VisualizerCanvas audioElement={player.audioElement} active={player.status === 'playing'} enabled={visualizerEnabled} palette={palette} /></div>
+      <div className="loop-immersive-visualizer"><VisualizerCanvas audioElement={player.audioElement} active={player.status === 'playing'} enabled={visualizerEnabled && !external} palette={palette} /></div>
       <header className="loop-immersive-top">
         <div><span className="loop-immersive-kicker">NOW PLAYING</span><div className="loop-immersive-provider">{player.media?.label || 'LOOP MUSIC'}</div></div>
         <div className="loop-immersive-top-actions">
@@ -242,13 +242,13 @@ export default function ImmersivePlayer({ open, onClose }) {
               : <Cover colors={current.cover || palette} seed={Number(current.id) || 1} />)}
           </div>
           <div className="loop-immersive-track-copy">
-            <span className="loop-immersive-album-label">PLAYING FROM LOOP</span>
+            <span className="loop-immersive-album-label">NOW PLAYING</span>
             <h1>{current.title}</h1>
             <p>{current.artist?.name || 'Unknown artist'}{current.album?.title ? ` · ${current.album.title}` : ''}</p>
             <div className="loop-immersive-track-meta">
               <span>{player.media?.label || 'LOOP MUSIC'}</span>
               <span className={`loop-immersive-live-dot${player.status === 'playing' ? ' is-playing' : ''}`} />
-              <span>{player.status === 'loading' ? 'Loading' : player.status === 'paused' ? 'Paused' : player.status === 'playing' ? 'Playing' : 'Ready'}</span>
+              <span>{player.externalPlayback ? 'Official player' : player.status === 'loading' ? 'Loading' : player.status === 'paused' ? 'Paused' : player.status === 'playing' ? 'Playing' : 'Ready'}</span>
             </div>
           </div>
         </div>
@@ -257,42 +257,52 @@ export default function ImmersivePlayer({ open, onClose }) {
           <a href={player.media.watchUrl} target="_blank" rel="noreferrer">Find and play it on YouTube <Icon.Arrow /></a>
         </div>}
         <div className="loop-immersive-lower">
-          <div className="loop-immersive-controls">
-            {!external && <div className="loop-immersive-progress">
-              <span>{clock(player.position)}</span>
-              <input type="range" min="0" max={Math.max(1, Math.floor(player.length))} value={Math.min(Math.floor(player.length), Math.round(player.position))} onChange={(event) => player.seek(Number(event.target.value))} aria-label="Seek song" />
-              <span>{clock(player.length)}</span>
-            </div>}
-            <div className="loop-immersive-buttons">
-              <button className="icon-btn" onClick={player.setShuffle} aria-label="Toggle shuffle" aria-pressed={player.shuffle}>⇄</button>
-              <button className="icon-btn" onClick={player.prev} aria-label="Previous track"><Icon.Prev /></button>
-              <button className="play-btn" onClick={player.toggle} aria-label={player.status === 'playing' ? 'Pause' : 'Play'}>{player.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}</button>
-              <button className="icon-btn" onClick={player.next} aria-label="Next track"><Icon.Next /></button>
-              <button className="icon-btn" onClick={player.setRepeat} aria-label="Toggle repeat" aria-pressed={player.repeat !== 'off'}>↻</button>
+          {external ? (
+            <div className="loop-immersive-provider-card" role="status">
+              <strong>{player.media?.type === 'SPOTIFY_EMBED' ? 'Spotify playback' : 'YouTube playback'}</strong>
+              <p>Use the official embedded player above for play, pause, seeking and track controls. LOOP records the selected track activity in its database; it does not control or copy the external audio stream.</p>
+              {player.media?.spotifyUrl && <a className="link" href={player.media.spotifyUrl} target="_blank" rel="noreferrer">Open this track on Spotify ↗</a>}
+              {player.media?.watchUrl && <a className="link" href={player.media.watchUrl} target="_blank" rel="noreferrer">Open this video on YouTube ↗</a>}
             </div>
-            <div className="loop-immersive-toggles">
-              <button className={lyricsData.favourite ? 'active' : ''} onClick={toggleFavourite} aria-pressed={lyricsData.favourite} disabled={!canSaveSongData} title={!canSaveSongData ? 'Favourites are available for LOOP catalogue songs' : undefined}>{lyricsData.favourite ? '♥ Favourited' : '♡ Favourite'}</button>
-              <button className={artworkVisible ? 'active' : ''} onClick={() => setArtworkVisible((v) => !v)}>{artworkVisible ? 'Hide artwork' : 'Show artwork'}</button>
-              <button className={visualizerEnabled ? 'active' : ''} onClick={() => setVisualizerEnabled((v) => !v)}>{visualizerEnabled ? 'Visualizer on' : 'Visualizer off'}</button>
-              <button className={annotationsVisible ? 'active' : ''} onClick={() => setAnnotationsVisible((v) => !v)}>{annotationsVisible ? 'Hide lyrics' : 'Show lyrics'}</button>
-            </div>
-          </div>
-          {annotationsVisible && <aside className="loop-annotation-panel" aria-label="Lyrics and annotations">
-            <div className="loop-annotation-heading"><span>LYRICS & YOUR ANNOTATIONS</span><span className="loop-annotation-dot" /></div>
-            {lyricsData.lyric && <p className="loop-lyric-source">Lyrics: {lyricsData.lyric.sourceLabel} · {lyricsData.lyric.sourceType === 'LICENSED' ? 'licensed' : 'user provided'}</p>}
-            {lyricLines.length ? <div className="loop-lyrics-list">
-              {lyricLines.map((line) => <div key={line.id} className={`loop-lyric-line${activeLine === line.id ? ' active' : ''}${selectedLine === line.id ? ' selected' : ''}`}>
-                <button onClick={() => setSelectedLine(line.id)}>{line.text}</button>
-                {line.annotations?.map((annotation) => <div className="loop-lyric-annotation" key={annotation.id}><span>{annotation.text}</span>{annotation.mine && <button onClick={async () => { try { await api.deleteLyricAnnotation(annotation.id); setLyricsData((old) => ({ ...old, lines: (Array.isArray(old.lines) ? old.lines : []).map((l) => l.id === line.id ? { ...l, annotations: (l.annotations || []).filter((a) => a.id !== annotation.id) } : l) })); } catch (e) { setMessage(e.message); } }}>Delete</button>}</div>)}
-              </div>)}
-            </div> : <p className="loop-annotation-empty">No licensed or user-provided lyrics are saved for this song yet. LOOP will not invent lyrics.</p>}
-            {selected && canSaveSongData && <div className="loop-annotation-compose"><label htmlFor="loop-annotation-text">Add a private note to this lyric</label><textarea id="loop-annotation-text" value={annotationText} onChange={(e) => setAnnotationText(e.target.value)} maxLength={2000} placeholder="Meaning, context, slang, personal interpretation…" /><button disabled={saving || !annotationText.trim()} onClick={addAnnotation}>{saving ? 'Saving…' : 'Save annotation'}</button></div>}
-            <div className="loop-note-compose"><label htmlFor="loop-song-note">Your song note</label><textarea id="loop-song-note" value={noteText} onChange={(e) => setNoteText(e.target.value)} maxLength={5000} placeholder={canSaveSongData ? 'Save what this song means to you…' : 'Private notes are available for LOOP catalogue songs.'} disabled={!canSaveSongData} /><button disabled={saving || !canSaveSongData} onClick={saveNote}>{saving ? 'Saving…' : 'Save note'}</button></div>
-            {message && <p className="loop-player-message" role="status">{message}</p>}
-          </aside>}
+          ) : (
+            <>
+              <div className="loop-immersive-controls">
+                <div className="loop-immersive-progress">
+                  <span>{clock(player.position)}</span>
+                  <input type="range" min="0" max={Math.max(1, Math.floor(player.length))} value={Math.min(Math.floor(player.length), Math.round(player.position))} onChange={(event) => player.seek(Number(event.target.value))} aria-label="Seek song" />
+                  <span>{clock(player.length)}</span>
+                </div>
+                <div className="loop-immersive-buttons">
+                  <button className="icon-btn" onClick={player.setShuffle} aria-label="Toggle shuffle" aria-pressed={player.shuffle}>⇄</button>
+                  <button className="icon-btn" onClick={player.prev} aria-label="Previous track"><Icon.Prev /></button>
+                  <button className="play-btn" onClick={player.toggle} aria-label={player.status === 'playing' ? 'Pause' : 'Play'}>{player.status === 'playing' ? <Icon.Pause /> : <Icon.Play />}</button>
+                  <button className="icon-btn" onClick={player.next} aria-label="Next track"><Icon.Next /></button>
+                  <button className="icon-btn" onClick={player.setRepeat} aria-label="Toggle repeat" aria-pressed={player.repeat !== 'off'}>↻</button>
+                </div>
+                <div className="loop-immersive-toggles">
+                  <button className={lyricsData.favourite ? 'active' : ''} onClick={toggleFavourite} aria-pressed={lyricsData.favourite} disabled={!canSaveSongData} title={!canSaveSongData ? 'Favourites are available for LOOP catalogue songs' : undefined}>{lyricsData.favourite ? '♥ Favourited' : '♡ Favourite'}</button>
+                  <button className={artworkVisible ? 'active' : ''} onClick={() => setArtworkVisible((v) => !v)}>{artworkVisible ? 'Hide artwork' : 'Show artwork'}</button>
+                  <button className={visualizerEnabled ? 'active' : ''} onClick={() => setVisualizerEnabled((v) => !v)}>{visualizerEnabled ? 'Visualizer on' : 'Visualizer off'}</button>
+                  <button className={annotationsVisible ? 'active' : ''} onClick={() => setAnnotationsVisible((v) => !v)}>{annotationsVisible ? 'Hide lyrics' : 'Show lyrics'}</button>
+                </div>
+              </div>
+              {annotationsVisible && <aside className="loop-annotation-panel" aria-label="Lyrics and annotations">
+                <div className="loop-annotation-heading"><span>LYRICS & YOUR ANNOTATIONS</span><span className="loop-annotation-dot" /></div>
+                {lyricsData.lyric && <p className="loop-lyric-source">Lyrics: {lyricsData.lyric.sourceLabel} · {lyricsData.lyric.sourceType === 'LICENSED' ? 'licensed' : 'user provided'}</p>}
+                {lyricLines.length ? <div className="loop-lyrics-list">
+                  {lyricLines.map((line) => <div key={line.id} className={`loop-lyric-line${activeLine === line.id ? ' active' : ''}${selectedLine === line.id ? ' selected' : ''}`}>
+                    <button onClick={() => setSelectedLine(line.id)}>{line.text}</button>
+                    {line.annotations?.map((annotation) => <div className="loop-lyric-annotation" key={annotation.id}><span>{annotation.text}</span>{annotation.mine && <button onClick={async () => { try { await api.deleteLyricAnnotation(annotation.id); setLyricsData((old) => ({ ...old, lines: (Array.isArray(old.lines) ? old.lines : []).map((l) => l.id === line.id ? { ...l, annotations: (l.annotations || []).filter((a) => a.id !== annotation.id) } : l) })); } catch (e) { setMessage(e.message); } }}>Delete</button>}</div>)}
+                  </div>)}
+                </div> : <p className="loop-annotation-empty">No licensed or user-provided lyrics are saved for this song yet. LOOP will not invent lyrics.</p>}
+                {selected && canSaveSongData && <div className="loop-annotation-compose"><label htmlFor="loop-annotation-text">Add a private note to this lyric</label><textarea id="loop-annotation-text" value={annotationText} onChange={(e) => setAnnotationText(e.target.value)} maxLength={2000} placeholder="Meaning, context, slang, personal interpretation…" /><button disabled={saving || !annotationText.trim()} onClick={addAnnotation}>{saving ? 'Saving…' : 'Save annotation'}</button></div>}
+                <div className="loop-note-compose"><label htmlFor="loop-song-note">Your song note</label><textarea id="loop-song-note" value={noteText} onChange={(e) => setNoteText(e.target.value)} maxLength={5000} placeholder={canSaveSongData ? 'Save what this song means to you…' : 'Private notes are available for LOOP catalogue songs.'} disabled={!canSaveSongData} /><button disabled={saving || !canSaveSongData} onClick={saveNote}>{saving ? 'Saving…' : 'Save note'}</button></div>
+                {message && <p className="loop-player-message" role="status">{message}</p>}
+              </aside>}
+            </>
+          )}
         </div>
       </div>
-      {external && <p className="loop-immersive-provider-note">YouTube playback stays in its official embedded player above. LOOP cannot extract its audio or read its playback clock, so seek and live visualization are controlled by YouTube.</p>}
     </section>
   );
 }

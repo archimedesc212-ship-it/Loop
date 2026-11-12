@@ -29,10 +29,10 @@ app.use(helmet({
       scriptSrc: ["'self'", 'https://itunes.apple.com'],
       styleSrc: ["'self'", "'unsafe-inline'"],
       fontSrc: ["'self'", 'data:'],
-      imgSrc: ["'self'", 'data:', 'https://r2.theaudiodb.com', 'https://www.theaudiodb.com', 'https://is1-ssl.mzstatic.com', 'https://is2-ssl.mzstatic.com', 'https://is3-ssl.mzstatic.com', 'https://is4-ssl.mzstatic.com', 'https://*.mzstatic.com', 'https://i.ytimg.com', 'https://coverartarchive.org', 'https://*.archive.org', 'https://usercontent.jamendo.com', 'https://api.openverse.org'],
-      connectSrc: ["'self'", 'https://api.openverse.org', 'https://www.googleapis.com'],
+      imgSrc: ["'self'", 'data:', 'https://i.scdn.co', 'https://r2.theaudiodb.com', 'https://www.theaudiodb.com', 'https://is1-ssl.mzstatic.com', 'https://is2-ssl.mzstatic.com', 'https://is3-ssl.mzstatic.com', 'https://is4-ssl.mzstatic.com', 'https://*.mzstatic.com', 'https://i.ytimg.com', 'https://coverartarchive.org', 'https://*.archive.org', 'https://usercontent.jamendo.com', 'https://api.openverse.org'],
+      connectSrc: ["'self'", 'https://accounts.spotify.com', 'https://api.openverse.org', 'https://www.googleapis.com'],
       mediaSrc,
-      frameSrc: ["'self'", 'https://embed.music.apple.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
+      frameSrc: ["'self'", 'https://open.spotify.com', 'https://embed.music.apple.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
       frameAncestors: ["'none'"],
       formAction: ["'self'"],
     },
@@ -44,7 +44,7 @@ app.use(helmet({
 app.use('/api', cors({
   origin: (origin, cb) => cb(null, !!origin && corsOrigins.includes(origin)),
   credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Auth-Mode'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-Auth-Mode', 'X-Spotify-Access-Token'],
   maxAge: 600,
 }));
 app.use('/api', sameOriginOnly(corsOrigins));

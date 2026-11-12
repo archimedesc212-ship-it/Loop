@@ -8,8 +8,12 @@ const externalPreview = require('./externalPreview');
 const theAudioDb = require('./theAudioDb');
 const localMedia = require('./localMedia');
 const ai = require('./ai');
+const spotify = require('./spotify');
 
 const PROVIDERS = [
+  { adapter: spotify, name: 'Spotify', purpose: 'Spotify catalogue search and official embedded playback (PKCE; no audio extraction)', kind: 'CATALOGUE_AND_EMBED',
+    env: [], credential: 'Spotify Client ID stored in LOOP Settings; each listener authorises with PKCE',
+    signup: 'https://developer.spotify.com/dashboard', terms: 'Spotify controls playback through its official Embed. Development Mode is limited; streaming is Premium-only. No cross-service stream mixing, audio extraction, caching or re-hosting.' },
   { adapter: musicbrainz, name: 'MusicBrainz', purpose: 'Music metadata (recordings, ISRC, artists, releases) plus Cover Art Archive release artwork', kind: 'METADATA',
     env: ['MUSICBRAINZ_ENABLED', 'MUSICBRAINZ_USER_AGENT'], credential: 'None (descriptive User-Agent with contact details)',
     signup: 'https://musicbrainz.org/doc/MusicBrainz_API', terms: 'Free for non-commercial use (commercial plans exist); about 1 request/second per IP; identify your application.' },
@@ -40,4 +44,4 @@ function status() {
     signup: p.signup, terms: p.terms, ...p.adapter.check() }));
 }
 
-module.exports = { status, musicbrainz, tmdb, youtube, jamendo, externalPreview, theAudioDb, localMedia, ai };
+module.exports = { status, musicbrainz, tmdb, youtube, jamendo, externalPreview, theAudioDb, localMedia, ai, spotify };
