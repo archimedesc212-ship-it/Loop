@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const SERIES = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181'];
 export const OTHER = '#5A6078';
-const ACCENT = '#1ED760';
+const ACCENT = 'var(--accent)';
 const SURFACE = '#181818';
 
 const niceMax = (v) => {
@@ -187,8 +187,9 @@ export function StackedShare({ rows, bucket = 'bucket', series = 'mood', value =
 /** Weekday × hour heatmap, single-hue sequential (accent). */
 export function Heatmap({ cells }) {
   const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const max = Math.max(1, ...cells.map((c) => c.plays));
-  const at = (d, h) => cells.find((c) => c.weekday === d && c.hour === h);
+  const rows = Array.isArray(cells) ? cells : [];
+  const max = Math.max(1, ...rows.map((c) => Number(c?.plays) || 0));
+  const at = (d, h) => rows.find((c) => c?.weekday === d && c?.hour === h);
   return (
     <div>
       <div className="heat" role="img" aria-label="Plays by weekday and hour">

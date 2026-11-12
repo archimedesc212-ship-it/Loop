@@ -21,19 +21,23 @@ separate adapters that stay off until configured — see [docs/PROVIDERS.md](doc
 
 > **Moods describe music, not people.** LOOP maps words and audio features to musical moods. It never claims to diagnose how anyone feels.
 > **Region is a signal, not a stereotype.** A listener's region adds a small, configurable weight; it never decides their taste.
-> **The public static archive uses the real uploaded music dataset.** It contains 28,372 track-metadata records from 1950–2019 (CC BY 4.0); the lyrics column is excluded. The upload contains no recordings, streaming URLs, track durations, language labels, albums or film metadata, so static archive playback is disabled and no fake songs or recordings are shown. The separate MySQL development seed remains fictional test data.
+> **The public static archive is metadata-first.** When the checksum-pinned CC BY 4.0 dataset is reachable, it contains 28,372 track records from 1950–2019; lyrics are excluded. The dataset contains no recordings, streaming URLs, track durations, language labels, albums or film metadata. If it cannot be fetched or verified, LOOP uses its curated regional starter metadata without inserting a fabricated placeholder track. Audio is not bundled; playback depends on permitted external provider embeds or search links. The separate MySQL development seed remains fictional test data.
 
 ---
 
 ## Public static archive
 
-Cloudflare Workers and Vercel static builds run the dataset-backed archive adapter. The root `npm run build` first verifies the supplied CSV by its pinned SHA-256, then generates `frontend/public/data/music-catalog.json` for the Vite build. It publishes 28,372 actual track records, 5,426 artists and seven genres. Search, catalogue browsing, audio-feature matching, mood exploration and local playlists use those records. Mood names are estimates from the source topic/audio features, not predictions from a trained AI model. No audio is bundled; playback controls are disabled and song pages offer an external recording search.
+Cloudflare Workers and Vercel static builds run the dataset-backed archive adapter. The root `npm run build` verifies the supplied CSV by its pinned SHA-256 before generating `frontend/public/data/music-catalog.json`. With the upstream source available it publishes 28,372 track records, 5,426 artists and seven source genres. If that source is temporarily unavailable, the static app remains browseable from the curated multilingual starter list, and it clearly does not invent a substitute recording. Search, catalogue browsing, audio-feature matching, mood exploration and local playlists use the available metadata. Mood names are estimates from source topic/audio features, not predictions from a trained AI model. No audio is bundled; playback is delegated to official external provider embeds/search links and is not guaranteed for every track.
 
 The Express/MySQL development and integration-test path remains a separate profile with a fictional seed catalogue. It is not what the public static archive reads. Its Kaggle staging importer is also separate from the static catalogue generator.
 
 ## Latest production-readiness audit
 
-See [docs/RELEASE_AUDIT_2026-11-10.md](docs/RELEASE_AUDIT_2026-11-10.md) for exact checks passed, limitations, serverless media safety and required owner-side release actions.
+See [docs/RELEASE_AUDIT_2026-11-11_LOOP_HANDOFF.md](docs/RELEASE_AUDIT_2026-11-11_LOOP_HANDOFF.md) for the latest source changes, checks completed, environment blockers and owner-side release actions.
+
+## Guest listening and optional accounts
+
+LOOP opens directly to the music app. Guest listeners can browse and listen without entering credentials. In database-free mode, supported personal state stays in the current browser and account sign-in is unavailable. To enable optional email/password accounts and cross-device data syncing, deploy the API with the configured MySQL database and set `VITE_DEMO_MODE=false`. A guest who chooses **Create account** is promoted in place so their server-side listener data stays attached to the same user record. See [Guest Mode and Optional Accounts](docs/OPTIONAL_LOGIN_GUEST_MODE.md) for exact behaviour and setup requirements.
 
 ## Production deployment
 
@@ -41,11 +45,11 @@ The active Vercel deployment runbook, required environment variables, database r
 
 ## Latest UI release
 
-The latest UI/assistant implementation and its actual verification boundary are recorded in [docs/RELEASE_UI_ASSISTANT_2026-11-10.md](docs/RELEASE_UI_ASSISTANT_2026-11-10.md).
+The latest UI/assistant implementation and its actual verification boundary are recorded in [docs/RELEASE_UI_ASSISTANT_2026-11-10.md](docs/RELEASE_UI_ASSISTANT_2026-11-10.md). The music-app route/component map and Spotify integration boundaries are in [docs/LOOP_SPOTIFY_INSPIRED_PARITY.md](docs/LOOP_SPOTIFY_INSPIRED_PARITY.md).
 
 ## Visual theme
 
-The listener interface uses LOOP's own Spotify-inspired dark visual system: black app canvas, charcoal navigation/content surfaces, white typography and LOOP green actions. The active stylesheet is `frontend/src/styles/spotify-dark.css`, loaded after `global.css`. The former light-theme override has been removed; this changes presentation only and preserves the existing routes and provider/player behaviour.
+The listener interface uses LOOP's own Spotify-inspired dark visual system: black app canvas, charcoal navigation/content surfaces, white typography and LOOP violet actions. The active stylesheet is `frontend/src/styles/spotify-dark.css`, loaded after `global.css`. The former light-theme override has been removed; this changes presentation only and preserves the existing routes and provider/player behaviour.
 
 ## Expansion roadmap
 
@@ -54,6 +58,8 @@ The curated LOOP roadmap contains 102 music-focused features across 12 categorie
 ## Search and full-length playback
 
 Search autocomplete, high-contrast search input, and provider-specific playback limits are documented in [docs/SEARCH_AND_FULL_LENGTH_PLAYBACK.md](docs/SEARCH_AND_FULL_LENGTH_PLAYBACK.md).
+
+The current provider release adds direct-source Openverse audio with per-track attribution/licence details, keeps YouTube in its official visible player, and links out to Spotify rather than embedding Spotify streams. See [docs/MUSIC_DISCOVERY_PROVIDERS_2026-11-11.md](docs/MUSIC_DISCOVERY_PROVIDERS_2026-11-11.md) and [docs/PROVIDERS.md](docs/PROVIDERS.md) for the source and licensing boundaries.
 
 ## Contents
 
@@ -97,6 +103,14 @@ Search autocomplete, high-contrast search input, and provider-specific playback 
 | API | Node.js 20.19+ / Express 4, `mysql2/promise`, bcryptjs, helmet, express-rate-limit, cors, dotenv |
 | Web app | React 18, React Router 7, Vite 7, Lucide React via the Mana icon wrapper; self-hosted Fraunces + Hanken Grotesk fonts |
 | Quality | ESLint 9; `node:test` API + database suites; Vitest + Testing Library component tests; SQL runner; Playwright browser checks with an axe-core accessibility scan |
+
+## Quick Vercel launch (guest mode)
+
+The easiest first deployment is the browser-only guest profile; a MySQL database is not required:
+
+Follow [the GitHub and Vercel upload guide](docs/GITHUB_VERCEL_UPLOAD.md): push the repository to GitHub, import it into Vercel at the repository root, use `npm ci` / `npm run build` / `frontend/dist`, and deploy without setting `VITE_DEMO_MODE` (its default is guest mode). Enter your public YouTube Data API v3 key under **Settings → Music sources**; the current build stores it in that browser and uses it for discovery without a Vercel environment variable.
+
+Guest playlists, likes and preferences remain in the current browser; they do not sync across devices. For account sign-in and sync, configure MySQL and the server-side secrets described in [the Vercel runbook](docs/DEPLOYMENT_VERCEL.md), then set `VITE_DEMO_MODE=false`.
 
 ## Quick start
 
@@ -193,25 +207,9 @@ Operational additions: `npm run ui:audit` checks the responsive/accessibility so
 
 Details and formulas: [docs/ALGORITHMS.md](docs/ALGORITHMS.md).
 
-## Screenshots
+## UI preview
 
-| | |
-|---|---|
-| ![Home](docs/screenshots/02-home.png) | ![Mood result](docs/screenshots/22-energetic.png) |
-| Home: mood picker and free-text input | "I want something energetic": how MUSE read it, the target sound, the ranked list |
-| ![MUSE World](docs/screenshots/05-world.png) | ![Listening profile](docs/screenshots/09-profile.png) |
-| MUSE World with the evidence it was built from and its versions | Listening profile and Music Mood Journey |
-| ![Private session](docs/screenshots/40-private.png) | ![Review queue](docs/screenshots/32-review.png) |
-| Private session: temporary memory only | Admin review queue for ingested records |
-
-| ![Introduction](docs/screenshots/61-intro-brand.png) | ![Film page](docs/screenshots/66-film.png) |
-| First-visit introduction (skippable; still frame with reduced motion) | Film page: soundtrack, composer, a metadata-only song labelled |
-| ![Queue](docs/screenshots/64-queue.png) | ![Providers](docs/screenshots/70-admin-providers.png) |
-| Player queue, volume and the "Demo sketch (not the recording)" label | Admin › Providers & media: every provider off until configured, no secrets shown |
-| ![Account security](docs/screenshots/69-settings-security.png) | ![Phone](docs/screenshots/71-phone-player.png) |
-| Settings: hidden songs, sessions per device, password change, account deletion | Phone layout with the player and queue button |
-
-More in [docs/screenshots](docs/screenshots), including phone and tablet layouts.
+The source archive does not include the older `docs/screenshots` set referenced by previous project reports. The current UI is implemented in `frontend/src` and can be previewed with `npm run dev` after dependency installation. Responsive and accessibility source checks are available with `npm run ui:audit`.
 
 ## Testing
 
@@ -242,10 +240,13 @@ Latest results, the full test-case table and the browser walk-throughs are in [d
 | [docs/DATA_DICTIONARY.md](docs/DATA_DICTIONARY.md) | Every column of every table (generated from `information_schema`) |
 | [docs/ALGORITHMS.md](docs/ALGORITHMS.md) | Mood analysis, text parsing, preference learning, scoring, diversity, reasons, worlds, trends |
 | [docs/API.md](docs/API.md) | All endpoints with authentication, permissions and error format |
+| [docs/LOOP_SPOTIFY_INSPIRED_PARITY.md](docs/LOOP_SPOTIFY_INSPIRED_PARITY.md) | Music-app UX map, user flows, Spotify API boundaries and product limitations |
+| [docs/GITHUB_VERCEL_UPLOAD.md](docs/GITHUB_VERCEL_UPLOAD.md) | Step-by-step GitHub source upload and Vercel deployment guide |
 | [docs/PERFORMANCE.md](docs/PERFORMANCE.md) | Index design and measured EXPLAIN before/after |
 | [docs/CONCURRENCY.md](docs/CONCURRENCY.md) | Transactions, isolation levels, locking, the deadlock fix, experiments |
 | [docs/SECURITY.md](docs/SECURITY.md) | Sessions, CSRF, RBAC, least privilege, privacy, content rights, known gaps |
 | [docs/PROVIDERS.md](docs/PROVIDERS.md) | Provider integration guide, final API credentials checklist, step-by-step key setup |
+| [docs/MUSIC_DISCOVERY_PROVIDERS_2026-11-11.md](docs/MUSIC_DISCOVERY_PROVIDERS_2026-11-11.md) | Openverse direct audio, official YouTube playback, Spotify hand-off and licensing boundaries |
 | [docs/DATASETS.md](docs/DATASETS.md) | Safe Kaggle 1950–2019 music-feature dataset import, CC BY 4.0 attribution, and limits (metadata/features only; no audio) |
 | [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Every environment variable |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production configuration, upgrades, backup and recovery |
@@ -278,4 +279,17 @@ The root `npm run dev` command prepares the music metadata catalogue first (it d
 
 ## Real YouTube playback
 
-The frontend now uses the Express API by default. Copy `.env.example` to `.env`, configure your database, and set `YOUTUBE_ENABLED=true` plus `YOUTUBE_API_KEY` on the backend. Keep the key server-side; never add it to a `VITE_` variable. Set `VITE_DEMO_MODE=true` only when you intentionally want the offline presentation catalogue. In demo mode, external provider calls are not made.
+The public Vercel build defaults to browser-only guest mode. To use server-side YouTube search and account-backed playback history, configure the Express API and MySQL database, set `YOUTUBE_ENABLED=true` plus `YOUTUBE_API_KEY` on the backend, and build with `VITE_DEMO_MODE=false`. Keep this backend key server-side; never add it to a `VITE_` variable. For the current browser-mode build, paste the public key under **Settings → Music sources**. It is stored locally in the browser; restrict it to YouTube Data API v3 and the deployed site's HTTP referrers in Google Cloud.
+
+## Licensed audio playback
+
+The YouTube Data API provides discovery metadata; selected YouTube results play only through the visible official YouTube iframe, never as extracted/background audio. Openverse results with known Creative Commons/public-domain licence identifiers are played from their original HTTPS source and display creator, source and licence details; Openverse does not verify the rights metadata or guarantee that each URL is a full, working recording. Jamendo streams are optional and subject to its API terms and each recording's licence. Full-catalogue commercial streaming still requires a provider contract that explicitly grants on-demand rights. Spotify is an external hand-off only in this multi-provider release; its streams are not embedded in LOOP. See [docs/MUSIC_DISCOVERY_PROVIDERS_2026-11-11.md](docs/MUSIC_DISCOVERY_PROVIDERS_2026-11-11.md), [docs/PROVIDERS.md](docs/PROVIDERS.md) and [docs/LICENSED_PLAYBACK_SETUP.md](docs/LICENSED_PLAYBACK_SETUP.md) for the policy and setup boundaries.
+
+
+### Jamendo non-commercial streaming
+
+LOOP can search and stream Jamendo catalogue tracks when `JAMENDO_ENABLED=true` and `JAMENDO_CLIENT_ID` are configured on the backend. Search results include artist attribution and the track licence link. Read the per-track licence and Jamendo API terms before use; this integration does not support offline downloads or caching.
+
+## Music settings and worldwide discovery
+
+The current music-discovery build lets listeners add a public YouTube Data API v3 key under **Settings → Music sources**. LOOP uses it for music search, song-related Home banners and worldwide recommendations. The key stays in the browser, so restrict it to YouTube Data API v3 and your deployed site's HTTP referrers. YouTube playback uses the official embedded player; Openverse audio plays from its original source with per-track licence attribution. Spotify is currently an external hand-off only, not an in-app stream, because Spotify's Developer Policy prohibits combining its streams/content with other services. See [the UI recovery and worldwide music update](docs/LOOP_UI_RECOVERY_WORLD_MUSIC_2026-11-11.md).

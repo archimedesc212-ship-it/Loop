@@ -117,28 +117,94 @@ export function PlayerProvider({ children }) {
     if (!isPlayable(song)) { toast.info(`“${song.title}” has metadata only — skipped.`); await startAt(i + 1, q, tried + 1); return; }
     const ctx = ctxRef.current;
     try {
-      // Official YouTube iframe playback; LOOP never extracts or proxies audio.
+      // Openverse audio is played directly from the original HTTPS source URL.
+      // LOOP never downloads, caches, proxies, or re-hosts Openverse audio.
+      // External catalogue plays do not write LOOP's local song-history rows.
+      if (song.playback?.type === 'OPENVERSE_STREAM' && song.openverse?.streamUrl) {
+        handle.current = null;
+        const a = new Audio(song.openverse.streamUrl);
+        a.preload = 'none';
+        a.volume = volRef.current;
+        a.addEventListener('timeupdate', () => {
+          posRef.current = a.currentTime;
+          listened.current = Math.max(listened.current, a.currentTime);
+          setPosition(a.currentTime);
+        });
+        a.addEventListener('ended', () => document.dispatchEvent(new CustomEvent('muse:ended')));
+        a.addEventListener('error', () => {
+          setStatus('idle');
+          toast.error({ message: 'The original audio source could not play this track. It may have been removed or blocked by its host.' });
+        });
+        audio.current = a;
+        setAudioElement(a);
+        setMedia({ type: 'OPENVERSE_STREAM', label: 'Openverse audio', attribution: song.openverse.attribution,
+          sourceUrl: song.openverse.sourceUrl, creatorUrl: song.openverse.creatorUrl,
+          licenseUrl: song.openverse.licenseUrl, licenseLabel: song.openverse.licenseLabel });
+        await a.play();
+        setStatus('playing');
+        return;
+      }
+      // Jamendo catalogue streams are played directly from the HTTPS URL
+      // returned by Jamendo. They are never downloaded, cached, or re-hosted.
+      // External catalogue plays do not write LOOP's local song-history rows.
+      if (song.playback?.type === 'JAMENDO_STREAM' && song.jamendo?.streamUrl) {
+        handle.current = null;
+        const a = new Audio(song.jamendo.streamUrl);
+        a.preload = 'none';
+        a.volume = volRef.current;
+        a.addEventListener('timeupdate', () => {
+          posRef.current = a.currentTime;
+          listened.current = Math.max(listened.current, a.currentTime);
+          setPosition(a.currentTime);
+        });
+        a.addEventListener('ended', () => document.dispatchEvent(new CustomEvent('muse:ended')));
+        a.addEventListener('error', () => {
+          setStatus('idle');
+          toast.error({ message: 'Jamendo could not play this track. It may have been removed or its stream may be unavailable.' });
+        });
+        audio.current = a;
+        setAudioElement(a);
+        setMedia({ type: 'JAMENDO_STREAM', label: 'Jamendo stream', attribution: song.jamendo.attribution,
+          sourceUrl: song.jamendo.trackUrl, licenseUrl: song.jamendo.licenseUrl });
+        await a.play();
+        setStatus('playing');
+        return;
+      }
+      // YouTube is discovery-only in licensed mode. Enable its official iframe
+      // explicitly only for deployments that choose the YouTube playback model.
       if (song.playback?.type === 'YOUTUBE_EMBED' && song.youtube?.embedUrl) {
+        if (import.meta.env.VITE_ENABLE_YOUTUBE_EMBED_PLAYBACK === 'false') {
+          setStatus('idle');
+          setMedia(null);
+          toast.info('This is a YouTube discovery result. LOOP playback requires a licensed audio source for this track.');
+          return;
+        }
         handle.current = null;
         setMedia({ type: 'YOUTUBE_EMBED', label: 'YouTube embedded player', embedUrl: song.youtube.embedUrl, watchUrl: song.youtube.watchUrl, trackName: song.title, artistName: song.artist?.name });
         setStatus('playing');
         return;
       }
-      // Resolve catalogue-only tracks through the server-side YouTube Data API.
-      // The API key stays on the backend; playback uses YouTube's official iframe.
+      // Optional legacy YouTube iframe mode. Disabled by default for licensed playback.
+      // The API key stays on the backend when server-side discovery is used.
       if (song.playback?.type === 'YOUTUBE_LOOKUP') {
+        if (import.meta.env.VITE_ENABLE_YOUTUBE_EMBED_PLAYBACK === 'false') {
+          setStatus('idle');
+          setMedia(null);
+          toast.info('No licensed audio source is attached to this catalogue track yet. YouTube is used for discovery only.');
+          return;
+        }
         const query = `${song.title} ${song.artist?.name || ''} official audio`;
         let videos = [];
         try {
           const result = await api.youtubeSearch(query, 5);
-          videos = result?.videos || [];
+          videos = Array.isArray(result?.videos) ? result.videos : [];
         } catch { /* database-free Vercel uses the optional browser API key below */ }
         if (!videos.length) {
           try { videos = await searchYouTubeBrowser(query, 5); } catch (searchError) {
             console.warn('LOOP YouTube search fallback:', searchError);
           }
         }
-        const video = videos.find((item) => item.embedUrl && item.embeddable !== false);
+        const video = (Array.isArray(videos) ? videos : []).find((item) => item?.embedUrl && item.embeddable !== false);
         if (!video) {
           setStatus('idle');
           setMedia({ type: 'YOUTUBE_SEARCH', label: 'YouTube search', watchUrl: song.recordingSearchUrl || `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, trackName: song.title, artistName: song.artist?.name || '' });
@@ -195,8 +261,9 @@ export function PlayerProvider({ children }) {
     // Finish the previous play in parallel. Do not await a network round-trip
     // before calling HTMLAudioElement.play(): browsers require a fresh click.
     const finishingTask = finishCurrent('switch');
-    const q = ctx.queue && ctx.queue.length ? ctx.queue : [song];
-    const i = Math.max(0, q.findIndex((s) => s.id === song.id));
+    if (!song || typeof song !== 'object') return;
+    const q = Array.isArray(ctx.queue) && ctx.queue.length ? ctx.queue : [song];
+    const i = Math.max(0, q.findIndex((s) => s?.id === song.id));
     ctxRef.current = { origin: ctx.origin, batchId: ctx.batchId, contextCode: ctx.contextCode };
     setQueue(q);
     queueRef.current = q;

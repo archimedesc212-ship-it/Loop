@@ -32,7 +32,7 @@ guest/demo session is available.
 
 ## Embedded YouTube playback in database-free mode (V8 patch)
 
-For Vercel deployments using the browser-only catalogue, set `VITE_YOUTUBE_API_KEY`
+For Vercel deployments using the browser-only catalogue, paste the public YouTube Data API v3 key in **Settings → Music sources** (the legacy `VITE_YOUTUBE_API_KEY` build variable is no longer required)
 to a Google Cloud API key with **YouTube Data API v3** enabled. Restrict the key
 to the YouTube Data API and HTTP referrers for your deployed domain(s). This
 variable is bundled into browser code, so it is public; never use an unrestricted

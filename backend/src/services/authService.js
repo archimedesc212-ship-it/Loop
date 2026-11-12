@@ -21,6 +21,33 @@ async function register({ username, email, password, displayName }, client = {})
   return { session: s, user: await profile(userId) };
 }
 
+
+/**
+ * Promote the currently authenticated anonymous guest in place. Keeping the
+ * same user_id preserves all foreign-key-owned preferences, likes, playlists,
+ * ratings and listening history. This is intentionally available only to a
+ * guest identity created by LOOP, never to an existing registered account.
+ */
+async function upgradeGuestAccount(userId, { username, email, password, displayName }) {
+  const hash = await bcrypt.hash(password, 10);
+  await withTransaction(async (tx) => {
+    const current = await tx.one(
+      `SELECT u.user_id, u.email, r.code AS role_code
+         FROM users u JOIN roles r USING (role_id)
+        WHERE u.user_id = ? FOR UPDATE`, [userId]);
+    if (!current) throw ApiError.notFound('Guest session');
+    if (current.role_code !== 'LISTENER' || !String(current.email || '').toLowerCase().endsWith('@guest.loop.invalid')) {
+      throw new ApiError(409, 'NOT_GUEST_SESSION', 'This session is already linked to an account. Sign out before creating a different account.');
+    }
+    await tx.query(
+      `UPDATE users SET username = ?, email = ?, password_hash = ?, password_changed_at = NOW(),
+                        failed_login_count = 0, locked_until = NULL
+        WHERE user_id = ?`, [username, email, hash, userId]);
+    await tx.query('UPDATE user_profiles SET display_name = ? WHERE user_id = ?', [displayName, userId]);
+  });
+  return profile(userId);
+}
+
 /** Login by username or email. Five wrong passwords lock the account for 15 minutes. */
 async function login({ login: id, password }, client = {}) {
   const u = await one(
@@ -122,4 +149,4 @@ async function profile(userId) {
   };
 }
 
-module.exports = { register, login, profile, checkPassword, changePassword, deleteAccount, MAX_FAILED, LOCK_MINUTES };
+module.exports = { register, upgradeGuestAccount, login, profile, checkPassword, changePassword, deleteAccount, MAX_FAILED, LOCK_MINUTES };

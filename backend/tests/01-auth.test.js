@@ -28,6 +28,30 @@ test('registration rejects duplicates and invalid input with field details', asy
   for (const f of ['username', 'email', 'password', 'displayName']) assert.ok(bad.body.error.details[f], `${f} reported`);
 });
 
+test('registration upgrades the active guest in place and retains its user identity', async () => {
+  const suffix = h.uid();
+  const guestName = `guest_${suffix}`;
+  const guest = await h.api('POST', '/auth/register', { body: {
+    username: guestName, email: `guest+${suffix}@guest.loop.invalid`, password: 'GuestPass123', displayName: 'Guest listener',
+  } });
+  assert.equal(guest.status, 201);
+  const guestId = guest.body.user.id;
+
+  const upgradedName = `member_${suffix}`;
+  const upgraded = await h.api('POST', '/auth/register', { token: guest.body.token, body: {
+    username: upgradedName, email: `${upgradedName}@example.test`, password: 'MemberPass123', displayName: 'LOOP Member',
+  } });
+  assert.equal(upgraded.status, 200);
+  assert.equal(upgraded.body.upgraded, true);
+  assert.equal(upgraded.body.user.id, guestId, 'the same user row is promoted, so user-owned data keeps its foreign keys');
+  assert.equal(upgraded.body.user.username, upgradedName);
+  assert.equal(upgraded.body.user.email, `${upgradedName}@example.test`);
+
+  const signedIn = await h.api('POST', '/auth/login', { body: { login: upgradedName, password: 'MemberPass123' } });
+  assert.equal(signedIn.status, 200);
+  assert.equal(signedIn.body.user.id, guestId);
+});
+
 test('login works with username or email; wrong password is a generic 401', async () => {
   const ok = await h.api('POST', '/auth/login', { body: { login: 'varsha', password: 'Varsha@27' } });
   assert.equal(ok.status, 200);

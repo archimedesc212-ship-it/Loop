@@ -16,12 +16,12 @@
   --text: #ffffff;
   --text-2: #b3b3b3;
   --muted: #a7a7a7;
-  --accent: #1ed760;
-  --accent-rgb: 30, 215, 96;
-  --accent-soft-strong: rgba(30, 215, 96, .24);
-  --accent-ink: #06150b;
-  --accent-soft: rgba(30, 215, 96, 0.13);
-  --good: #1ed760;
+  --accent: #A78BFA;
+  --accent-rgb: 167, 139, 250;
+  --accent-soft-strong: rgba(167, 139, 250, .24);
+  --accent-ink: #140F20;
+  --accent-soft: rgba(167, 139, 250, 0.13);
+  --good: #54D6B2;
   --warn: #f3c969;
   --bad: #f15e6c;
   --radius-s: 6px;
@@ -164,7 +164,7 @@ body { color: var(--text); background: #000; }
 .online-feature-content { padding: clamp(24px, 4vw, 42px); }
 .online-feature-kicker { color: var(--accent); }
 
-/* Buttons, form controls and selected states use LOOP green. */
+/* Buttons, form controls and selected states use LOOP violet. */
 .btn { border-radius: 999px; background: #242424; border-color: rgba(255,255,255,.12); color: #fff; }
 .btn:hover { background: #333; }
 .btn.primary, .play-btn, .assistant-send { background: var(--accent); color: #000; }
@@ -394,7 +394,7 @@ body.loop-immersive-open { overflow: hidden; }
 
 
 /* Personal accent themes: one selected colour flows through the whole LOOP UI. */
-:root { --accent-rgb: 30, 215, 96; }
+:root { --accent-rgb: 167, 139, 250; }
 ::selection { background: var(--accent); color: var(--accent-ink); }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline-color: var(--accent);
@@ -476,4 +476,101 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
  .loop-immersive-lower { grid-template-columns:1fr; }
  .loop-immersive-controls { padding:16px 12px; }
  .youtube-inline-fallback { align-items:flex-start; flex-direction:column; }
+}
+
+/* Music source settings — credentials are local-device configuration, not profile data. */
+.provider-settings-card { border: 1px solid rgba(var(--accent-rgb), .22); }
+.provider-key-input { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+.provider-key-input .input { min-width: 0; }
+.provider-policy-note { padding: 13px 15px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: rgba(255,255,255,.035); color: var(--text-2); font-size: .82rem; line-height: 1.55; }
+.provider-policy-note strong { display: block; color: #fff; margin-bottom: 4px; }
+
+/* Keep the Now Playing target keyboard-operable and visually calm. */
+.player-open-now { min-width: 0; max-width: 100%; display: block; text-align: left; cursor: pointer; border: 0; background: transparent; color: inherit; padding: 4px 2px; border-radius: 8px; }
+.player-open-now:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.player-open-now span { display: block; }
+
+/* One persistent YouTube iframe: it docks above the mini-player and moves to
+   the top of the expanded Now Playing view without creating a second player. */
+.youtube-inline-panel {
+  position: fixed; z-index: 39; left: var(--sidebar); right: 10px;
+  bottom: calc(var(--player) + 12px); width: min(900px, calc(100vw - var(--sidebar) - 20px));
+  height: 252px; margin: 0 auto; padding: 10px 12px 8px;
+  border: 1px solid rgba(255,255,255,.12); border-radius: 16px;
+  background: rgba(18,18,18,.98); box-shadow: 0 -16px 44px rgba(0,0,0,.38);
+  overflow: hidden;
+}
+.youtube-inline-panel iframe {
+  display: block; width: min(100%, 720px); height: 205px; min-height: 200px;
+  margin: 0 auto; border: 0; border-radius: 10px; background: #181818;
+}
+.youtube-inline-heading { height: 22px; margin-bottom: 4px; }
+.youtube-inline-panel > p { margin-top: 2px; text-align: center; }
+.youtube-inline-panel.is-immersive {
+  z-index: 310; top: 78px; bottom: auto; left: 50%; right: auto;
+  width: min(430px, calc(100vw - 28px)); height: auto;
+  padding: 9px; border-radius: 16px; transform: translateX(-50%);
+  box-shadow: 0 22px 80px rgba(0,0,0,.62); backdrop-filter: blur(20px);
+}
+.youtube-inline-panel.is-immersive iframe {
+  width: 100%; height: auto; min-height: 200px; aspect-ratio: 16 / 9;
+}
+.loop-immersive-player.has-youtube .loop-immersive-content { margin-top: 275px; }
+.loop-immersive-player.has-youtube .loop-immersive-stage {
+  grid-template-columns: minmax(90px, 150px) minmax(0,1fr); gap: 20px; width: min(850px,100%);
+}
+.loop-immersive-player.has-youtube .loop-immersive-artwork-wrap { border-radius: 14px; }
+@media (max-width: 900px) {
+  .youtube-inline-panel { left: 8px; right: 8px; width: auto; bottom: calc(var(--player) + 64px + 12px); height: 250px; }
+  .youtube-inline-panel iframe { width: min(100%, 640px); height: 205px; }
+}
+@media (max-width: 760px) {
+  .youtube-inline-panel.is-immersive { top: 62px; }
+  .loop-immersive-player.has-youtube .loop-immersive-content { margin-top: 250px; }
+  .loop-immersive-player.has-youtube .loop-immersive-stage { grid-template-columns: minmax(0,1fr); width: min(390px,100%); text-align: center; }
+  .loop-immersive-player.has-youtube .loop-immersive-artwork-wrap { width: min(34vw,130px); margin: 0 auto; }
+}
+/* Final sizing tune for the official embedded video dock and expanded player. */
+.youtube-inline-panel { height: 270px; bottom: calc(var(--player) + 14px); border-radius: 16px; }
+.youtube-inline-panel iframe { height: 205px; }
+.youtube-inline-panel.is-immersive { width: min(390px, calc(100vw - 28px)); }
+.loop-immersive-player.has-youtube .loop-immersive-content { margin-top: 365px; }
+@media (max-width: 900px) { .youtube-inline-panel { height: 270px; bottom: calc(var(--player) + 64px + 14px); } }
+@media (max-width: 760px) {
+  .youtube-inline-panel.is-immersive { top: 62px; }
+  .loop-immersive-player.has-youtube .loop-immersive-content { margin-top: 350px; }
+}
+
+
+/* Worldwide recommendations: compact image-led song/video tiles. */
+.world-video-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:14px; }
+.world-video-card { min-width:0; display:grid; gap:7px; }
+.world-video-card > strong { color:#fff; font-size:.82rem; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.world-video-card > small { color:var(--text-2); font-size:.72rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.world-video-art { position:relative; display:block; width:100%; aspect-ratio:16/9; padding:0; border:0; border-radius:12px; overflow:hidden; background:#202026; cursor:pointer; }
+.world-video-art img { display:block; width:100%; height:100%; object-fit:cover; transition:transform .25s ease; }
+.world-video-art > span { position:absolute; inset:0; display:grid; place-items:center; color:#fff; background:rgba(0,0,0,.12); opacity:0; transition:opacity .2s ease; }
+.world-video-art:hover img,.world-video-art:focus-visible img { transform:scale(1.04); }
+.world-video-art:hover > span,.world-video-art:focus-visible > span { opacity:1; }
+.world-video-art:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+@media(max-width:1000px) { .world-video-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:560px) { .world-video-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; } }
+
+/* The artwork and metadata on the mini-player both open the full Now Playing view. */
+.player-cover-open { display:block; flex:none; border:0; background:transparent; color:inherit; padding:0; border-radius:9px; cursor:pointer; line-height:0; }
+.player-cover-open:focus-visible { outline:2px solid var(--accent); outline-offset:4px; }
+.player-cover-open .player-artwork { display:block; }
+
+/* Keep the YouTube-supplied thumbnail visible as provided (no crop, tint, or zoom). */
+.online-feature-banner { min-height:320px; }
+.online-feature-image { position:absolute; z-index:-2; inset:0 0 0 auto; width:50%; height:100%; object-fit:contain; opacity:1; transform:none; background:#08090d; transition:none; }
+.online-feature-banner:hover .online-feature-image { transform:none; }
+.online-feature-shade { inset:0 auto 0 0; width:48%; background:linear-gradient(90deg, rgba(9,10,13,.98), rgba(9,10,13,.86) 82%, transparent); }
+.online-feature-content { position:relative; width:52%; max-width:680px; min-height:320px; }
+@media (max-width:640px) {
+  .online-feature-banner { display:flex; flex-direction:column; min-height:0; }
+  .online-feature-image { position:relative; inset:auto; z-index:0; display:block; width:100%; height:auto; max-height:210px; object-fit:contain; opacity:1; transform:none; background:#08090d; }
+  .online-feature-banner:hover .online-feature-image { transform:none; }
+  .online-feature-shade { display:none; }
+  .online-feature-content { width:100%; max-width:none; min-height:0; padding:20px; }
 }

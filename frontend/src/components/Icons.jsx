@@ -89,7 +89,7 @@ export const BrandMark = (props) => (
   <svg viewBox="0 0 64 64" aria-hidden="true" {...props}>
     <rect width="64" height="64" rx="18" fill="#181818" />
     <path d="M9 32c0-12 13-19 23-8l0 0c10 11 23 4 23-8M9 32c0 12 13 19 23 8l0 0c10-11 23-4 23 8"
-      fill="none" stroke="#1ED760" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+      fill="none" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 

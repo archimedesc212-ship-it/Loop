@@ -196,7 +196,7 @@ export function ContentAdmin() {
   const toast = useToast();
   const refs = useApi(() => api.admin.references(), []);
   const [artist, setArtist] = useState({ name: '', disambiguation: '', type: 'SOLO', regionCode: '', languageId: '', formedYear: '', aliases: '' });
-  const [album, setAlbum] = useState({ title: '', albumType: 'ALBUM', releaseYear: new Date().getFullYear(), languageId: '', coverColor1: '#181818', coverColor2: '#1ED760', artistId: '' });
+  const [album, setAlbum] = useState({ title: '', albumType: 'ALBUM', releaseYear: new Date().getFullYear(), languageId: '', coverColor1: '#181818', coverColor2: '#A78BFA', artistId: '' });
   const [mood, setMood] = useState({ name: '', emoji: '🙂', colorHex: '#7CC6B5', description: '', categoryId: 2, energy: 0.4, valence: 0.6, danceability: 0.4, acousticness: 0.5, instrumentalness: 0.3, tempoMin: 70, tempoMax: 110 });
   const [kw, setKw] = useState({ phrase: '', moodId: '', weight: 0.9 });
   const [errs, setErrs] = useState({});

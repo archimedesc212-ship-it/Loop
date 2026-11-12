@@ -11,8 +11,9 @@ import { Play, Save, Arrow } from './Icons';
 
 export const HERO_MOODS = ['Sad', 'Romantic', 'Dreamy', 'Reflective', 'Intense', 'Focused', 'Emotional', 'Energetic', 'Calm', 'Uplifting'];
 
-export function MoodTiles({ moods, selected, onToggle, only }) {
-  const list = only ? only.map((n) => moods.find((m) => m.name === n)).filter(Boolean) : moods;
+export function MoodTiles({ moods = [], selected = [], onToggle = () => {}, only }) {
+  const moodRows = Array.isArray(moods) ? moods : [];
+  const list = only ? only.map((n) => moodRows.find((m) => m.name === n)).filter(Boolean) : moodRows;
   return (
     <div className="mood-grid" role="group" aria-label="Moods">
       {list.map((m) => {

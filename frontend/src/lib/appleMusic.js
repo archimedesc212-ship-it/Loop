@@ -151,7 +151,7 @@ export async function searchAppleMusicCatalog(term, { country, countries, timeou
         album: { id: mapped.trackId, title: mapped.collectionName || 'Single' },
         durationSec: mapped.previewUri ? 30 : (mapped.durationSec || 0),
         releaseYear: item.releaseDate ? Number(String(item.releaseDate).slice(0, 4)) : null,
-        cover: ['#202020', '#1ed760'],
+        cover: ['#202020', '#A78BFA'],
         artworkUrl: mapped.artworkUrl,
         playback: { playable: true, type: 'APPLE_MUSIC_LOOKUP', source: 'APPLE_MUSIC' },
         appleMusic: mapped,

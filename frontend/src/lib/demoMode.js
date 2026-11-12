@@ -36,6 +36,7 @@ const CONTEXTS = [
 const read = (key, fallback) => {
   try { return JSON.parse(localStorage.getItem(STORAGE_PREFIX + key)) ?? fallback; } catch { return fallback; }
 };
+const readArray = (key) => { const value = read(key, []); return Array.isArray(value) ? value : []; };
 const write = (key, value) => {
   try { localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value)); } catch { /* local persistence is optional */ }
 };
@@ -58,9 +59,10 @@ function inferredMoods(record) {
   return [...new Map(list.map((mood) => [mood.id, mood])).values()].slice(0, 3);
 }
 
-function makeCatalogue(payload) {
+export function makeCatalogue(payload) {
   if (!payload || payload.schemaVersion !== 1 || !Array.isArray(payload.records)
-      || payload.records.length < 1 || payload.source?.recordCount !== payload.records.length
+      || (payload.records.length < 1 && payload.source?.fallback !== true)
+      || payload.source?.recordCount !== payload.records.length
       || !Array.isArray(payload.artists) || !Array.isArray(payload.genres)) {
     throw new Error('The music catalogue is missing or incomplete. Reload LOOP to retry the verified dataset.');
   }
@@ -144,10 +146,16 @@ function makeCatalogue(payload) {
     genreCounts.set(song.genre.id, (genreCounts.get(song.genre.id) || 0) + 1);
     artistCounts.set(song.artist.id, (artistCounts.get(song.artist.id) || 0) + 1);
   }
-  const genreList = payload.genres.map(([id, name]) => ({
-    id: Number(id), name, color: (GENRE_COLORS[name] || ['#344052', '#91A1B6'])[1], songs: genreCounts.get(Number(id)) || 0,
+  const allGenres = new Map(payload.genres.map(([id, name]) => [Number(id), name]));
+  const allArtists = new Map(payload.artists.map(([id, name]) => [Number(id), name]));
+  for (const song of songs) {
+    if (!allGenres.has(song.genre.id)) allGenres.set(song.genre.id, song.genre.name);
+    if (!allArtists.has(song.artist.id)) allArtists.set(song.artist.id, song.artist.name);
+  }
+  const genreList = [...allGenres.entries()].map(([id, name]) => ({
+    id, name, color: (GENRE_COLORS[name] || ['#344052', '#91A1B6'])[1], songs: genreCounts.get(id) || 0,
   })).sort((a, b) => b.songs - a.songs);
-  const artistList = payload.artists.map(([id, name]) => ({ id: Number(id), name, type: 'ARTIST', songCount: artistCounts.get(Number(id)) || 0 }));
+  const artistList = [...allArtists.entries()].map(([id, name]) => ({ id, name, type: 'ARTIST', songCount: artistCounts.get(id) || 0 }));
   return {
     songs, songById, artistSongs, artists: artistList, genres: genreList,
     artistById: new Map(artistList.map((artist) => [artist.id, artist])),
@@ -312,8 +320,8 @@ export async function demoRequest(method, path, body) {
   const p = path.split('?')[0];
   const q = new URLSearchParams(path.split('?')[1] || '');
   const user = {
-    id: 1, username: 'listener', displayName: 'Music listener', email: 'listener@loop.local',
-    roleName: 'Listener', role: 'LISTENER', onboarded: true, permissions: [], incognito: read('incognito', false),
+    id: 1, username: 'guest_local', displayName: 'Guest listener', email: 'guest@guest.loop.invalid',
+    roleName: 'Guest listener', role: 'GUEST', onboarded: true, permissions: [], incognito: read('incognito', false),
     regionCode: null, region: null, languages: [], contentFilter: 'OFF', listeningHabit: 'MIXED',
   };
   if (p === '/auth/session' || p === '/auth/me') return { authenticated: true, ...user, session: { id: 'local-catalogue', expiresAt: null } };
@@ -438,12 +446,12 @@ export async function demoRequest(method, path, body) {
     const anchor = q.get('asOfDate') || diaryDateKey();
     const cutoff = new Date(`${anchor}T12:00:00`); cutoff.setDate(cutoff.getDate() - days);
     const cutoffKey = diaryDateKey(cutoff);
-    return read('moodDiary', []).filter((entry) => entry.checkinDate >= cutoffKey).sort((a, b) => b.checkinDate.localeCompare(a.checkinDate));
+    return readArray('moodDiary').filter((entry) => entry.checkinDate >= cutoffKey).sort((a, b) => b.checkinDate.localeCompare(a.checkinDate));
   }
   if (p === '/me/mood-diary/today' && method === 'PUT') {
     const now = new Date();
     const checkinDate = body?.checkinDate || diaryDateKey(now);
-    const rows = read('moodDiary', []);
+    const rows = readArray('moodDiary');
     const previous = rows.find((entry) => entry.checkinDate === checkinDate);
     const mood = MOODS.find((item) => item.id === Number(body?.moodId));
     const entry = {
@@ -461,7 +469,7 @@ export async function demoRequest(method, path, body) {
   }
   if (/^\/me\/mood-diary\/\d+$/.test(p) && method === 'DELETE') {
     const entryId = Number(p.split('/').pop());
-    const rows = read('moodDiary', []);
+    const rows = readArray('moodDiary');
     if (!rows.some((entry) => Number(entry.entryId) === entryId)) return { error: { code: 'NOT_FOUND', message: 'Mood diary entry not found.' } };
     write('moodDiary', removeDiaryEntry(rows, entryId));
     return { deleted: true, entryId };
@@ -537,12 +545,12 @@ export async function demoRequest(method, path, body) {
     return listResult(mood ? choose(catalogue, { moods: [mood.name] }, safeLimit(q.get('limit'), 20, 100)) : [], 'Top-rated archive matches', 'Sorted by topic match; community rating data is not available in this dataset.');
   }
   if (p === '/playlists' && method === 'POST') {
-    const lists = read('playlists', []);
+    const lists = readArray('playlists');
     const songs = [...new Set((body && body.songIds || []).map(Number).filter((id) => catalogue.songById.has(id)))];
     const item = { id: Date.now(), name: String(body && body.name || 'My playlist').slice(0, 80), songCount: songs.length, kind: 'MANUAL', covers: [], songs, totalDurationSec: null };
     write('playlists', [item, ...lists]); return item;
   }
-  if (p === '/playlists') return read('playlists', []);
+  if (p === '/playlists') return readArray('playlists');
   if (p === '/playlists/smart') return [
     { type: 'ENERGY_BOOST', name: 'Energy boost', blurb: 'High-energy records from the dataset' },
     { type: 'CALM_MIX', name: 'Calm mix', blurb: 'Gentler acoustic records from the dataset' },
@@ -556,7 +564,7 @@ export async function demoRequest(method, path, body) {
   }
   if (p.startsWith('/playlists/smart/') && method === 'POST') {
     const type = p.split('/').pop();
-    const lists = read('playlists', []);
+    const lists = readArray('playlists');
     const target = type === 'ENERGY_BOOST' ? { energy: 0.82, valence: 0.7 } : type === 'CALM_MIX' ? { energy: 0.25, acousticness: 0.75 } : {};
     const songs = choose(catalogue, target, 18).map((song) => song.id);
     const item = { id: Date.now(), name: String(body && body.name || 'Archive mix').slice(0, 80), songCount: songs.length, kind: 'SAVED_MIX', covers: [], songs, totalDurationSec: null };
@@ -564,14 +572,14 @@ export async function demoRequest(method, path, body) {
   }
   if (/^\/playlists\/\d+$/.test(p) && method === 'GET') {
     const id = Number(p.split('/')[2]);
-    const item = read('playlists', []).find((playlist) => playlist.id === id);
+    const item = readArray('playlists').find((playlist) => playlist?.id === id);
     if (!item) return { id, name: 'Playlist not found', kind: 'MANUAL', songCount: 0, covers: [], songs: [], totalDurationSec: null };
     return { ...item, songs: getPlaylistSongs(catalogue, item.songs || []) };
   }
   if (/^\/playlists\/\d+\/order$/.test(p) && method === 'PUT') {
     const id = Number(p.split('/')[2]);
-    const lists = read('playlists', []);
-    const item = lists.find((playlist) => playlist.id === id);
+    const lists = readArray('playlists');
+    const item = lists.find((playlist) => playlist?.id === id);
     const requested = Array.isArray(body?.songIds) ? body.songIds.map(Number) : [];
     const current = item?.songs || [];
     if (!item) return { error: { code: 'NOT_FOUND', message: 'Playlist not found.' } };
@@ -584,8 +592,8 @@ export async function demoRequest(method, path, body) {
   }
   if (/^\/playlists\/\d+\/songs$/.test(p) && method === 'POST') {
     const id = Number(p.split('/')[2]);
-    const lists = read('playlists', []);
-    const item = lists.find((playlist) => playlist.id === id);
+    const lists = readArray('playlists');
+    const item = lists.find((playlist) => playlist?.id === id);
     if (!item) return { ok: false };
     item.songs = [...new Set([...(item.songs || []), Number(body && body.songId)])];
     item.songCount = item.songs.length;
@@ -595,20 +603,20 @@ export async function demoRequest(method, path, body) {
   if (/^\/playlists\/\d+\/songs\/\d+$/.test(p) && method === 'DELETE') {
     const id = Number(p.split('/')[2]);
     const songId = Number(p.split('/').pop());
-    const lists = read('playlists', []);
-    const item = lists.find((playlist) => playlist.id === id);
+    const lists = readArray('playlists');
+    const item = lists.find((playlist) => playlist?.id === id);
     if (item) { item.songs = (item.songs || []).filter((x) => x !== songId); item.songCount = item.songs.length; write('playlists', lists); }
     return { ok: true };
   }
   if (/^\/playlists\/\d+$/.test(p) && method === 'DELETE') {
     const id = Number(p.split('/')[2]);
-    write('playlists', read('playlists', []).filter((item) => item.id !== id));
+    write('playlists', readArray('playlists').filter((item) => item?.id !== id));
     return { ok: true };
   }
   if (/^\/playlists\/\d+$/.test(p) && method === 'PATCH') {
     const id = Number(p.split('/')[2]);
-    const lists = read('playlists', []);
-    const item = lists.find((playlist) => playlist.id === id);
+    const lists = readArray('playlists');
+    const item = lists.find((playlist) => playlist?.id === id);
     if (item) { item.name = body.name || item.name; write('playlists', lists); }
     return item || { ok: false };
   }
@@ -618,7 +626,7 @@ export async function demoRequest(method, path, body) {
   if (p === '/insights/activity') return { daily: [], genres: [], heatmap: [], languages: [], contexts: [] };
   if (p === '/insights/calendar') {
     const days = safeLimit(q.get('days'), 365, 365);
-    const saved = new Map(read('moodDiary', []).map((entry) => [entry.checkinDate, entry]));
+    const saved = new Map(readArray('moodDiary').map((entry) => [entry.checkinDate, entry]));
     const today = new Date();
     const daily = Array.from({ length: days }, (_, index) => {
       const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - index);

@@ -1,8 +1,8 @@
 export const accentThemes = [
-  { id: 'green', label: 'LOOP Green', color: '#1ED760', rgb: '30, 215, 96' },
+  { id: 'violet', label: 'LOOP Violet', color: '#A78BFA', rgb: '167, 139, 250' },
   { id: 'blue', label: 'Ocean Blue', color: '#429BFF', rgb: '66, 155, 255' },
   { id: 'red', label: 'Ruby Red', color: '#FF5268', rgb: '255, 82, 104' },
-  { id: 'violet', label: 'Electric Violet', color: '#A78BFA', rgb: '167, 139, 250' },
+  { id: 'green', label: 'Jade', color: '#54D6B2', rgb: '84, 214, 178' },
   { id: 'pink', label: 'Hot Pink', color: '#F472B6', rgb: '244, 114, 182' },
   { id: 'orange', label: 'Sunset Orange', color: '#FB923C', rgb: '251, 146, 60' },
   { id: 'cyan', label: 'Arctic Cyan', color: '#22D3EE', rgb: '34, 211, 238' },

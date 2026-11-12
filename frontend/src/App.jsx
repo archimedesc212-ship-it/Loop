@@ -16,6 +16,7 @@ import Settings from './pages/Settings';
 import PrivateSession from './pages/Private';
 import ArtistApply from './pages/ArtistApply';
 import ArtistStudio from './pages/ArtistStudio';
+import AuthPage from './pages/AuthPage';
 
 const Admin = lazy(() => import('./pages/admin/Admin'));
 
@@ -35,10 +36,10 @@ export default function App() {
   if (!ready) return <div style={{ padding: 40 }}><Thinking label="Opening LOOP" /></div>;
   return (
     <Routes>
-      <Route path="/login" element={<Navigate to="/" replace />} />
-      <Route path="/register" element={<Navigate to="/" replace />} />
-      <Route path="/signup" element={<Navigate to="/" replace />} />
-      <Route path="/create-account" element={<Navigate to="/" replace />} />
+      <Route path="/login" element={<AuthPage mode="login" />} />
+      <Route path="/register" element={<AuthPage mode="register" />} />
+      <Route path="/signup" element={<Navigate to="/register" replace />} />
+      <Route path="/create-account" element={<Navigate to="/register" replace />} />
       <Route path="/welcome" element={<Navigate to="/" replace />} />
       <Route path="/onboarding" element={<Navigate to="/" replace />} />
       <Route element={<Layout />}>

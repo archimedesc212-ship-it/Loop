@@ -105,7 +105,7 @@ export default function ArtistStudio() {
               <h3>Track submissions</h3>
               {profile.data.uploads.length === 0 ? <p className="small muted">No submissions yet.</p> : <div className="stack">{profile.data.uploads.map((upload) => (
                 <div className="row between card" key={upload.id}>
-                  <div className="grow"><strong>{upload.title}</strong><div className="tiny muted">{upload.artistId ? profile.data.artists.find((a) => a.id === upload.artistId)?.name : 'Artist'} · {upload.scanStatus} {upload.durationSec ? `· ${upload.durationSec}s` : ''}</div>{upload.reviewNote && <p className="tiny muted">{upload.reviewNote}</p>}{upload.scanDetail && <p className="tiny muted">{upload.scanDetail}</p>}</div>
+                  <div className="grow"><strong>{upload.title}</strong><div className="tiny muted">{upload.artistId ? (Array.isArray(profile.data.artists) ? profile.data.artists : []).find((a) => a.id === upload.artistId)?.name : 'Artist'} · {upload.scanStatus} {upload.durationSec ? `· ${upload.durationSec}s` : ''}</div>{upload.reviewNote && <p className="tiny muted">{upload.reviewNote}</p>}{upload.scanDetail && <p className="tiny muted">{upload.scanDetail}</p>}</div>
                   <div className="row wrap"><span className={`status-pill ${upload.status.toLowerCase()}`}>{stateLabel(upload.status)}</span>{!['REJECTED', 'TAKEN_DOWN'].includes(upload.status) && <button className="btn ghost sm" onClick={() => withdraw(upload.id)}>Withdraw</button>}</div>
                 </div>
               ))}</div>}

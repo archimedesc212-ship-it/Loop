@@ -49,7 +49,7 @@ async function searchVideos({ q, max = 10, fetchImpl } = {}) {
   if (query.length < 2 || query.length > 120) throw new ProviderError(CODE, 'BAD_QUERY', 'Search query must be between 2 and 120 characters.');
   const c = cfg.youtube;
   const params = new URLSearchParams({
-    part: 'snippet', type: 'video', videoEmbeddable: 'true', videoSyndicated: 'true', q: query,
+    part: 'snippet', type: 'video', videoCategoryId: '10', videoEmbeddable: 'true', videoSyndicated: 'true', q: query,
     maxResults: String(Math.max(1, Math.min(20, Number(max) || 10))), safeSearch: 'moderate', key: c.apiKey,
   });
   const body = await requestJson(CODE, `${c.baseUrl}/search?${params}`, {

@@ -26,7 +26,7 @@ const writeLimiter = rateLimit({
 
 // ---------------------------------------------------------------- auth
 const PASSWORD = r.str(8, 72, /^(?=.*[A-Za-z])(?=.*\d).+$/, 'needs at least one letter and one number');
-router.post('/auth/register', loginLimiter, v({
+router.post('/auth/register', optionalAuth, loginLimiter, v({
   username: r.str(3, 30, /^[a-z0-9_]+$/, 'may use lowercase letters, digits and _ only'),
   email: r.email(),
   password: PASSWORD,
@@ -50,6 +50,7 @@ router.post('/auth/session', optionalAuth, guestSessionLimiter, h(c.auth.createG
 router.use(requireAuth);
 
 // Worldwide provider search (credentials stay on the API server).
+router.get('/music/jamendo', v({ q: r.str(2, 120), limit: opt(r.int(1, 30), 12) }, 'query'), h(c.music.jamendoSearch));
 router.get('/music/youtube', v({ q: r.str(2, 120), limit: opt(r.int(1, 20), 10) }, 'query'), h(c.music.youtubeSearch));
 router.get('/music/musicbrainz', v({ q: r.str(2, 120), limit: opt(r.int(1, 12), 8) }, 'query'), h(c.music.musicbrainzSearch));
 router.get('/music/cover-art', v({ mbid: r.str(36, 36, /^[0-9a-f-]{36}$/i) }, 'query'), h(c.music.coverArt));

@@ -51,7 +51,16 @@ async function meBody(req) {
 }
 
 exports.auth = {
-  register: async (req, res) => sendSession(req, res, 201, await auth.register(b(req), client(req))),
+  register: async (req, res) => {
+    // A guest already has a durable user_id in database mode. Promote that row
+    // in place so likes, playlists, listening history and preferences keep the
+    // same owner instead of being stranded on an anonymous guest record.
+    if (req.user) {
+      const upgraded = await auth.upgradeGuestAccount(req.user.id, b(req));
+      return res.status(200).json({ user: upgraded, upgraded: true });
+    }
+    return sendSession(req, res, 201, await auth.register(b(req), client(req)));
+  },
   login: async (req, res) => sendSession(req, res, 200, await auth.login(b(req), client(req))),
   me: async (req, res) => res.json(await meBody(req)),
   session: async (req, res) => {
@@ -427,6 +436,11 @@ exports.admin = {
 // Public catalogue integrations. YouTube embeds are official YouTube players;
 // MusicBrainz provides metadata and CAA provides release artwork.
 exports.music = {
+  jamendoSearch: async (req, res) => {
+    const provider = require('../providers').jamendo;
+    const tracks = await provider.searchTracks({ q: q(req).q, limit: q(req).limit });
+    res.json({ tracks, source: 'Jamendo', attribution: 'Music provided by Jamendo artists under their individual Creative Commons licences.' });
+  },
   youtubeSearch: async (req, res) => {
     const providers = require('../providers');
     const videos = await providers.youtube.searchVideos({ q: q(req).q, max: q(req).limit });

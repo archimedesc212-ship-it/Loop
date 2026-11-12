@@ -1,6 +1,12 @@
 # LOOP production release and operations (Vercel)
 
-**Target architecture:** Vercel frontend + Vercel Node Function API + managed MySQL 8.0.19+. This is the active runbook for `loop-rho-beige.vercel.app` and the checked-in `vercel.json`.
+**Full-stack account profile:** Vercel frontend + Vercel Node Function API + managed MySQL 8.0.19+. This runbook also describes the simpler static guest profile, which is the recommended first public preview.
+
+## Choose the deployment profile first
+
+LOOP supports two distinct Vercel profiles. The default is the **static guest profile**: leave `VITE_DEMO_MODE` unset or set it to `true`. It requires no database or backend secrets; preferences and playlists remain local to the browser. The full-stack account profile requires `VITE_DEMO_MODE=false`, a compatible MySQL database and every server-side variable in the table below. Do not set the account-mode flag until `/api/ready` is expected to pass.
+
+For the static guest profile, use the root directory, `npm ci`, `npm run build` and output directory `frontend/dist`. An optional YouTube browser API key is public and must be restricted to YouTube Data API v3 plus the deployed site's HTTP referrers. It enables video-ID lookup only; it does not grant commercial streaming rights.
 
 ## Deployment configuration
 
@@ -14,7 +20,7 @@ In Vercel, set the project Root Directory to the repository root (not `frontend`
 
 Deploy through the connected Git repository. Vercel creates deployments for Git pushes; inspect the Preview deployment before promoting it to Production. See [Vercel deployment methods](https://vercel.com/docs/deployments) and [preview promotion](https://vercel.com/docs/deployments/promote-preview-to-production).
 
-## Required Production environment variables
+## Required Production environment variables (full-stack account profile only)
 
 Set these in **Project → Settings → Environment Variables → Production**. Add the same values to Preview only when Preview uses a separate database, separate session secret and separate resources.
 

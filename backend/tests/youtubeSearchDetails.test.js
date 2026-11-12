@@ -24,6 +24,7 @@ test('YouTube search hydrates actual durations and excludes videos no longer emb
   };
   const result = await youtube.searchVideos({ q: 'Full song', max: 2, fetchImpl });
   assert.equal(urls.length, 2);
+  assert.equal(urls[0].searchParams.get('videoCategoryId'), '10', 'search stays in YouTube Music category');
   assert.equal(urls[1].pathname.endsWith('/videos'), true);
   assert.equal(urls[1].searchParams.get('part'), 'contentDetails,status');
   assert.equal(result.length, 1);

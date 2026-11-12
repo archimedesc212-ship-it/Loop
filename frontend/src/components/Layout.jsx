@@ -6,12 +6,23 @@ import { useAuth } from '../hooks/useAuth';
 import { usePlayer } from '../hooks/usePlayer';
 import { useToast } from '../hooks/useToast';
 import { useOnline } from '../hooks/useOnline';
-import { api } from '../services/api';
+import { api, isDemoMode } from '../services/api';
 import { duration } from '../lib/format';
 import { buildSearchSuggestions } from '../lib/searchSuggestions';
 import { formatSleepRemaining } from '../lib/sleepTimer';
 import { registerMoodColors, LikeButton } from './Songs';
 import ImmersivePlayer from './ImmersivePlayer';
+
+function youtubeEmbedWithOrigin(value) {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || !/(^|\.)youtube(?:-nocookie)?\.com$/i.test(url.hostname)) return '';
+    url.searchParams.set('enablejsapi', '1');
+    url.searchParams.set('origin', window.location.origin);
+    url.searchParams.set('playsinline', '1');
+    return url.toString();
+  } catch { return ''; }
+}
 
 const NAV = [
   { to: '/', label: 'Home', short: 'Home', icon: Icon.Home, end: true },
@@ -22,7 +33,16 @@ const NAV = [
 ];
 
 function Sidebar({ collapsed = false }) {
-  const { user, can } = useAuth();
+  const { user, can, refresh } = useAuth();
+  const toast = useToast();
+  const guest = isDemoMode || user.role === 'GUEST' || user.email?.endsWith('@guest.loop.invalid');
+  const signOut = async () => {
+    try {
+      await api.logout();
+      await refresh(); // Continue as a fresh guest after signing out.
+      toast.success('Signed out. You can keep listening as a guest.');
+    } catch (error) { toast.error(error); }
+  };
   const admin = ['health.view', 'catalog.write', 'pipeline.view', 'users.manage', 'artist.review'].some((permission) => can(permission));
   return (
     <aside className={`sidebar${collapsed ? ' collapsed' : ''}`} aria-label="Main">
@@ -42,12 +62,14 @@ function Sidebar({ collapsed = false }) {
           <span className="avatar">{user.displayName.slice(0, 1)}</span>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.displayName}</div>
-            <div className="tiny muted">{user.email?.endsWith('@guest.loop.invalid') ? 'Guest listener' : (user.roleName || 'Listener')}</div>
+            <div className="tiny muted">{guest ? 'Guest listener' : (user.roleName || 'Listener')}</div>
           </div>
         </div>
-        {user.email?.endsWith('@guest.loop.invalid') && <div className="row" style={{ '--gap': '4px' }}>
+        {guest ? <div className="row" style={{ '--gap': '4px' }}>
           <Link to="/login" className="btn ghost sm grow">Sign in</Link>
           <Link to="/register" className="btn primary sm grow">Create account</Link>
+        </div> : <div className="row" style={{ '--gap': '4px' }}>
+          <button type="button" className="btn ghost sm grow" onClick={signOut}>Sign out</button>
         </div>}
         <div className="row" style={{ '--gap': '4px' }}>
           <Link to="/settings" className="btn ghost sm grow"><Icon.Settings />Settings</Link>
@@ -263,7 +285,7 @@ function mediaNote(media, incognito) {
   return `${media.label}${media.attribution ? ` · ${media.attribution}` : ''}${where}`;
 }
 
-function PlayerBar({ onOpenImmersive }) {
+function PlayerBar({ onOpenImmersive, immersiveOpen = false }) {
   const p = usePlayer();
   const { user } = useAuth();
   const [queueOpen, setQueueOpen] = useState(false);
@@ -304,15 +326,15 @@ function PlayerBar({ onOpenImmersive }) {
     <>
       <div className={`player${user?.incognito ? ' private' : ''}`} role="region" aria-label="Player">
         <div className="now">
-          {s.artworkUrl || p.media?.artworkUrl ? <img className="cover player-artwork" src={s.artworkUrl || p.media.artworkUrl} alt="" /> : <Cover colors={s.cover} seed={s.album ? (Number(s.album.id) || 1) * 31 + (Number(s.id) || 1) : (Number(s.id) || 1)} />}
-          <div className="player-open-now" role="button" tabIndex={0} onClick={onOpenImmersive} style={{ minWidth: 0 }}>
-            {(String(s.id).startsWith('yt-'))
-              ? <strong style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</strong>
-              : <Link to={`/song/${s.id}`} style={{ fontWeight: 600, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</Link>}
-            <div className="tiny muted" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={mediaNote(p.media, user?.incognito)}>
-              {s.artist.name} · {mediaNote(p.media, user?.incognito)}
-            </div>
-          </div>
+          <button type="button" className="player-cover-open" onClick={onOpenImmersive} aria-label={`Open artwork and Now Playing for ${s.title}`}>
+            {s.artworkUrl || p.media?.artworkUrl ? <img className="cover player-artwork" src={s.artworkUrl || p.media.artworkUrl} alt="" /> : <Cover colors={s.cover} seed={s.album ? (Number(s.album.id) || 1) * 31 + (Number(s.id) || 1) : (Number(s.id) || 1)} />}
+          </button>
+          <button type="button" className="player-open-now" onClick={onOpenImmersive} aria-label={`Open now playing: ${s.title} by ${s.artist?.name || 'Unknown artist'}`} style={{ minWidth: 0 }}>
+            <strong style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.title}</strong>
+            <span className="tiny muted" style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={mediaNote(p.media, user?.incognito)}>
+              {s.artist?.name || 'Unknown artist'} · {mediaNote(p.media, user?.incognito)}
+            </span>
+          </button>
           {!(String(s.id).startsWith('yt-')) && <span className="hide-sm"><LikeButton song={s} /></span>}
         </div>
         {p.externalPlayback ? (
@@ -390,18 +412,19 @@ function PlayerBar({ onOpenImmersive }) {
         </section>
       )}
       {p.externalPlayback && (p.media?.embedUri || p.media?.embedUrl) && (
-        <section className="youtube-inline-panel" aria-label="YouTube embedded player">
+        <section className={`youtube-inline-panel${immersiveOpen ? ' is-immersive' : ''}`} aria-label="YouTube embedded player">
           <div className="row between youtube-inline-heading">
             <div className="tiny muted">NOW PLAYING · {p.media.trackName} — {p.media.artistName}</div>
             {p.media?.watchUrl ? <a className="tiny link" href={p.media.watchUrl} target="_blank" rel="noreferrer">Open in YouTube</a> : null}
           </div>
           <iframe
             title={`YouTube player: ${p.media.trackName}`}
-            src={p.media.embedUrl}
+            src={youtubeEmbedWithOrigin(p.media.embedUrl)}
             width="100%"
             height="315"
             allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *"
             frameBorder="0"
+            allowFullScreen
             loading="eager"
             referrerPolicy="strict-origin-when-cross-origin"
           />
@@ -460,7 +483,7 @@ export default function Layout() {
         )}
         <Outlet />
       </main>
-      <PlayerBar onOpenImmersive={() => setImmersiveOpen(true)} />
+      <PlayerBar onOpenImmersive={() => setImmersiveOpen(true)} immersiveOpen={immersiveOpen} />
       <ImmersivePlayer open={immersiveOpen} onClose={() => setImmersiveOpen(false)} />
       <LearnedNote />
       <MobileNav />

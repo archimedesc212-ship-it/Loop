@@ -23,6 +23,12 @@ module.exports = {
     baseUrl: e.TMDB_BASE_URL || 'https://api.themoviedb.org/3',
     minIntervalMs: 50,
   },
+  jamendo: {
+    enabled: on(e.JAMENDO_ENABLED),
+    clientId: e.JAMENDO_CLIENT_ID || '',
+    baseUrl: e.JAMENDO_BASE_URL || 'https://api.jamendo.com/v3.0',
+    minIntervalMs: 100,
+  },
   youtube: {
     enabled: on(e.YOUTUBE_ENABLED),
     apiKey: e.YOUTUBE_API_KEY || '',

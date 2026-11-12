@@ -175,21 +175,21 @@ if (require.main === module) {
   build().catch((error) => {
     // Vercel's static deployment must remain buildable even if the upstream CSV
     // is temporarily unavailable. The UI adds its curated multilingual starter
-    // songs separately; this minimal, clearly-labelled archive record keeps the
-    // catalogue contract valid without inventing a large dataset.
+    // songs separately; an empty verified-shape payload keeps the catalogue
+    // contract valid without inserting a fabricated track.
     const output = path.resolve(__dirname, '../frontend/public/data/music-catalog.json');
     fs.mkdirSync(path.dirname(output), { recursive: true });
     const fallback = {
       schemaVersion: 1,
-      source: { title: 'LOOP offline starter catalogue', authors: [], license: 'Metadata starter', sha256: null,
-        recordCount: 1, yearRange: [2024, 2024], lyricsIncluded: false, audioIncluded: false,
+      source: { title: 'LOOP curated offline starter catalogue', authors: [], license: 'Curated metadata; source recordings are not bundled', sha256: null,
+        recordCount: 0, yearRange: null, lyricsIncluded: false, audioIncluded: false,
         durationIncluded: false, languageIncluded: false, fallback: true },
-      artists: [[1, 'LOOP Starter']],
-      genres: [[1, 'Pop']],
-      records: [[1, 1, 'LOOP Starter Track', 2024, 1, 'music', 0.6, 0.6, 0.6, 0.4, 0.1, 0.6, []]],
+      artists: [],
+      genres: [],
+      records: [],
     };
     fs.writeFileSync(output, JSON.stringify(fallback));
-    console.warn(`LOOP: upstream catalogue unavailable (${error.message}); using offline starter catalogue.`);
+    console.warn(`LOOP: upstream catalogue unavailable (${error.message}); using curated offline starter metadata.`);
   });
 }
 

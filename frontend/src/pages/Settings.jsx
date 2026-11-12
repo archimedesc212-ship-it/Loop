@@ -6,6 +6,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { Field, PageHead, ErrorState, ListSkeleton } from '../components/ui';
 import { accentThemes, applyAccentTheme, getAccentTheme } from '../lib/theme';
+import { getMusicProviderSettings, saveMusicProviderSettings } from '../lib/providerSettings';
+import { verifyYouTubeApiKey } from '../lib/youtubeBrowser';
 
 export default function Settings() {
   const { user, setUser } = useAuth();
@@ -17,9 +19,14 @@ export default function Settings() {
   const [exportPassword, setExportPassword] = useState('');
   const [exportBusy, setExportBusy] = useState(false);
   const [accentTheme, setAccentTheme] = useState(() => getAccentTheme().id);
+  const [youtubeApiKey, setYoutubeApiKey] = useState(() => getMusicProviderSettings().youtubeApiKey);
+  const [showYoutubeKey, setShowYoutubeKey] = useState(false);
+  const [providerBusy, setProviderBusy] = useState(false);
+  const [providerStatus, setProviderStatus] = useState('');
   useEffect(() => {
-    setForm({ displayName: user.displayName, regionCode: user.region ? user.region.code : '', contentFilter: user.contentFilter,
-      listeningHabit: user.listeningHabit || 'MIXED', languageIds: user.languages.map((l) => l.id) });
+    if (!user) { setForm(null); return; }
+    setForm({ displayName: user.displayName || '', regionCode: user.region ? user.region.code : '', contentFilter: user.contentFilter || 'OFF',
+      listeningHabit: user.listeningHabit || 'MIXED', languageIds: (Array.isArray(user.languages) ? user.languages : []).map((l) => l.id) });
   }, [user]);
   if (!form) return null;
   const toggleLang = (id) => setForm((f) => ({ ...f, languageIds: f.languageIds.includes(id) ? f.languageIds.filter((x) => x !== id) : [...f.languageIds, id].slice(0, 5) }));
@@ -31,6 +38,29 @@ export default function Settings() {
       setUser(u);
       toast.success('Settings saved');
     } catch (err) { toast.error(err); } finally { setBusy(false); }
+  };
+  const saveProviderKey = (e) => {
+    e.preventDefault();
+    try {
+      saveMusicProviderSettings({ youtubeApiKey });
+      setProviderStatus(youtubeApiKey.trim() ? 'YouTube key saved on this device.' : 'YouTube key cleared.');
+      toast.success(youtubeApiKey.trim() ? 'YouTube API key saved' : 'YouTube API key cleared');
+    } catch (error) {
+      setProviderStatus(error.message || 'Could not save the key in this browser.');
+      toast.error(error);
+    }
+  };
+  const testProviderKey = async () => {
+    setProviderBusy(true);
+    setProviderStatus('Checking the key…');
+    try {
+      await verifyYouTubeApiKey(youtubeApiKey);
+      setProviderStatus('Key verified. YouTube music search and home banners are ready.');
+      toast.success('YouTube API key verified');
+    } catch (error) {
+      setProviderStatus(error.message || 'The key could not be verified.');
+      toast.error(error);
+    } finally { setProviderBusy(false); }
   };
   const exportData = async (e) => {
     e.preventDefault();
@@ -79,13 +109,37 @@ export default function Settings() {
           <div className="appearance-preview-actions"><span className="appearance-preview-pill">Selected theme</span><span className="appearance-preview-play">▶</span></div>
         </div>
       </section>
+      <section className="card stack section provider-settings-card" aria-labelledby="provider-settings-title">
+        <div className="stack" style={{ '--gap': '5px' }}>
+          <h2 id="provider-settings-title">Music sources</h2>
+          <p className="small soft">Add your YouTube Data API v3 key here once. LOOP uses it for worldwide song discovery, YouTube thumbnails and the rotating Home spotlight. The key stays in this browser and is not sent to LOOP's database.</p>
+        </div>
+        <form className="stack" onSubmit={saveProviderKey}>
+          <Field label="YouTube Data API v3 key" hint="This is a public browser API key, not an account password. Restrict it in Google Cloud to YouTube Data API v3 and your LOOP website's HTTP referrers.">
+            <div className="provider-key-input">
+              <input className="input" type={showYoutubeKey ? 'text' : 'password'} value={youtubeApiKey} onChange={(event) => { setYoutubeApiKey(event.target.value); setProviderStatus(''); }} autoComplete="off" spellCheck="false" maxLength={256} placeholder="Paste your YouTube API key" aria-label="YouTube Data API v3 key" />
+              <button type="button" className="btn ghost sm" onClick={() => setShowYoutubeKey((value) => !value)}>{showYoutubeKey ? 'Hide' : 'Show'}</button>
+            </div>
+          </Field>
+          <div className="row wrap">
+            <button className="btn primary" type="submit">Save key in Settings</button>
+            <button className="btn ghost" type="button" onClick={testProviderKey} disabled={providerBusy || !youtubeApiKey.trim()}>{providerBusy ? 'Checking…' : 'Test key'}</button>
+            <button className="btn ghost" type="button" onClick={() => { setYoutubeApiKey(''); saveMusicProviderSettings({ youtubeApiKey: '' }); setProviderStatus('YouTube key cleared.'); }}>Clear key</button>
+          </div>
+          {providerStatus && <p className="small" role="status">{providerStatus}</p>}
+        </form>
+        <div className="provider-policy-note">
+          <strong>Spotify credentials are not used in this multi-source player.</strong> Spotify's current developer policy prohibits combining Spotify streams or content with another service. LOOP can keep a separate “Open in Spotify” link, but it cannot combine Spotify API music with YouTube/Openverse playback here.
+        </div>
+        <p className="tiny muted">Openverse needs no API key. It returns openly licensed recordings with source and licence information. YouTube playback stays inside its official embedded player; LOOP does not extract audio from videos.</p>
+      </section>
       {opts.error && <ErrorState error={opts.error} onRetry={opts.reload} />}
       <form className="stack" style={{ '--gap': '18px' }} onSubmit={save}>
         <Field label="Display name"><input className="input" value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} maxLength={60} /></Field>
         <div className="field"><span>Languages</span>
-          {opts.data && opts.data.languages.length === 0 && <p className="small muted">The supplied dataset has no language column. LOOP leaves language unknown rather than guessing it from the artist or title.</p>}
+          {opts.data && Array.isArray(opts.data.languages) && opts.data.languages.length === 0 && <p className="small muted">The supplied dataset has no language column. LOOP leaves language unknown rather than guessing it from the artist or title.</p>}
           <div className="row wrap" style={{ '--gap': '8px' }}>
-            {opts.data && opts.data.languages.map((l) => {
+            {Array.isArray(opts.data?.languages) && opts.data.languages.map((l) => {
               const at = form.languageIds.indexOf(l.id);
               return <button type="button" key={l.id} className={`pick${at >= 0 ? ' on' : ''}`} aria-pressed={at >= 0} onClick={() => toggleLang(l.id)}>{at >= 0 && <span className="order">{at + 1}</span>}{l.name} <span className="muted">{l.nativeName}</span></button>;
             })}
@@ -94,7 +148,7 @@ export default function Settings() {
         <div className="grid-2">
           <Field label="Region" hint="Regional metadata was not included in the supplied dataset, so LOOP does not infer it.">
             <select className="select" value={form.regionCode} onChange={(e) => setForm({ ...form, regionCode: e.target.value })}>
-              <option value="">Prefer not to say</option>{opts.data && opts.data.regions.map((r) => <option key={r.code} value={r.code}>{r.name}</option>)}
+              <option value="">Prefer not to say</option>{Array.isArray(opts.data?.regions) && opts.data.regions.map((r) => <option key={r.code} value={r.code}>{r.name}</option>)}
             </select>
           </Field>
           <Field label="Content filter" hint="Applied to recommendations, search, trending and playback.">

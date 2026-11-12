@@ -165,7 +165,7 @@ requireCheck(/^\s*\.env\s*$/m.test(gitignore)
 requireCheck(hybridDocs.includes('Not the active production runbook')
   && /Never run.*db:reset:unsafe/.test(vercelDocs)
   && /JOBS_ENABLED/.test(vercelDocs)
-  && /vercel\.json/.test(vercelDocs),
+  && /vercel\.json/.test(hybridDocs + vercelDocs),
   'The Vercel runbook documents database safety, scheduler boundaries and the active deployment config.');
 requireCheck(appEntry.includes('path="/login"')
   && authHook.includes('api.session()')

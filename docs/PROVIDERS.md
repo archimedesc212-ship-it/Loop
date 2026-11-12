@@ -25,6 +25,31 @@ Admin UI: **Admin › Providers & media**. Status without secrets: `GET /api/rea
 
 ## The providers
 
+### Openverse — openly licensed audio discovery and direct-source playback
+
+- **Purpose**: search the Openverse audio catalogue from the listener's browser and play a returned HTTPS audio URL directly from its original host. This adapter accepts music-category results with a known Creative Commons or public-domain licence identifier and a source page, creator information and licence URL.
+- **Credentials**: no API key is required for anonymous search. Requests use the public `https://api.openverse.org/v1/audio/` endpoint with a small first page. Anonymous rate limits are enforced by Openverse and may change; respect the response headers and do not scrape or loop requests.
+- **Playback boundary**: LOOP uses the browser audio element against the original URL. It does not download, cache, proxy, convert, or re-host the recording. Full-length playback depends on the source URL still working and allowing browser playback; Openverse does not guarantee every result is a complete or playable recording.
+- **Rights and attribution**: Openverse aggregates third-party metadata and does not verify that each licence is accurate. Independently inspect the original source and per-track licence before use. LOOP displays the creator, source, licence link and the API-provided attribution text. CC BY / BY-SA require attribution; NC licences are only suitable for non-commercial use; ND licences must remain unadapted; SA conditions apply to adaptations. Public launch or any change to LOOP's business model requires a fresh rights review.
+- **Notice**: the Search page states that it is made using Openverse but is not endorsed or certified by Openverse. Do not imply Openverse endorsement or use its logos without permission.
+- **Test**: `frontend/src/lib/openverse.test.js` covers mapping, HTTPS-only URLs, licence allow-list, bounded requests and rate-limit errors with mock responses. A browser/live-source playback test is still required for the chosen tracks.
+- **References**: https://api.openverse.org/v1/ · https://docs.openverse.org/api/reference/made_with_ov.html · https://docs.openverse.org/_preview/2205/terms_of_service.html
+
+### Spotify — external hand-off only (no in-app Spotify streams)
+
+- **Purpose**: the Search page offers `Open in Spotify`, which opens Spotify's own search page or app. This does not call Spotify's Web API or display Spotify catalogue content. No Spotify credential is used.
+- **Why no SDK in this build**: Spotify's Developer Policy prohibits products integrating Spotify streams or content with another service and products that mimic or replace Spotify's core experience without prior written permission. Streaming is limited to Premium subscribers; the Web Playback SDK also requires prior written approval for commercial projects. LOOP is already a multi-provider music discovery/listening app, so embedding Spotify streams alongside YouTube/Openverse/Jamendo is not enabled. A Client ID, Client Secret, Access Token or Premium account does not override these restrictions.
+- **Credentials**: do not add Spotify Client Secret or access token to frontend code, `VITE_*` variables, source control, or this project. For this external link-out feature no Spotify API key is required.
+- **References**: https://developer.spotify.com/policy · https://developer.spotify.com/documentation/web-playback-sdk · https://developer.spotify.com/documentation/web-api/concepts/authorization
+
+### Jamendo — non-commercial catalogue search and streaming
+
+- **Purpose**: search independent tracks and stream the HTTPS `audio` URL returned by Jamendo's `/tracks/` read method. The player uses the browser audio element; LOOP does not download, cache, proxy, or re-host Jamendo audio.
+- **Credentials**: create an application at https://devportal.jamendo.com/ and set `JAMENDO_ENABLED=true` plus `JAMENDO_CLIENT_ID`. The read-only plan is sufficient for search.
+- **Terms**: Jamendo's API terms permit non-commercial API use; commercial advantage, advertising, subscriptions, or other monetization require a separate licence. Each recording has its own Creative Commons terms. LOOP displays artist attribution and the licence link where returned; users must respect attribution, non-commercial, share-alike, and no-derivatives conditions. Do not offer offline access or caching.
+- **Integration**: `GET /api/music/jamendo?q=<query>&limit=12` returns normalized tracks including a direct stream URL, source page, and licence URL.
+- **Test**: enable the provider and search from the Search page; start a Jamendo result and verify play/pause/seek/next. Automated adapter tests use a local mock server and never contact Jamendo.
+
 ### 1. MusicBrainz — recording metadata
 
 - **Purpose**: discover recordings (title, artist, album, duration, ISRC, year) for the ingestion pipeline (Admin › Pipeline › "Ingest from MusicBrainz"). Metadata only; no audio, artwork or audio features (songs stay `PENDING_ANALYSIS` until analysed).
@@ -90,6 +115,7 @@ Admin UI: **Admin › Providers & media**. Status without secrets: `GET /api/rea
 |---|---|---|---|---|---|---|
 | MusicBrainz | recording metadata for ingestion | none — a User-Agent with your contact email or URL | `MUSICBRAINZ_ENABLED=true`, `MUSICBRAINZ_USER_AGENT` | https://musicbrainz.org/doc/MusicBrainz_API | non-commercial free; ~1 req/s per IP | Admin › Providers & media › MusicBrainz › **Test** (expects "OK … 1 result"), then Admin › Pipeline › "Ingest from MusicBrainz" and check the job log and Review queue |
 | TMDB | film details for soundtracks | API Read Access Token (v4) or API key (v3) | `TMDB_ENABLED=true`, `TMDB_READ_ACCESS_TOKEN` or `TMDB_API_KEY` | https://www.themoviedb.org/settings/api | non-commercial free with attribution + logo; commercial needs a licence | **Test** on the TMDB row; then Film details › "Find on TMDB" for a film and open `/film/:id` — the overview and the TMDB notice appear; run it again → "already up to date" |
+| Jamendo | non-commercial catalogue search and direct streaming | `JAMENDO_ENABLED=true`, `JAMENDO_CLIENT_ID` | Jamendo developer application Client ID | https://devportal.jamendo.com/ | non-commercial API use; per-track CC terms and attribution; no offline caching | Search page → Jamendo independent music → play a track; verify licence link and stream attribution |
 | YouTube Data API v3 | video links on song pages | Google Cloud API key with YouTube Data API v3 enabled | `YOUTUBE_ENABLED=true`, `YOUTUBE_API_KEY` | https://console.cloud.google.com/apis/library/youtube.googleapis.com | 100 search calls/day by default; YouTube API Services Terms | **Test** (uses 1 search call); then `POST /api/admin/songs/1/video-links` as admin and open `/song/1` → "Watch elsewhere" |
 | TheAudioDB | artist banners/fan art and optional album covers | shared development/test key `123` (premium key optional) | `THEAUDIODB_ENABLED=true`, `THEAUDIODB_API_KEY=123` | https://www.theaudiodb.com/free_music_api | free v1 rate limit 30/minute; current terms limit free shared-key use to development/testing; confirm production plan | **Test** in Admin › Providers & media; open an artist page with an exact TheAudioDB match → banner appears. This never enables audio playback |
 | Licensed preview provider | short playable previews | whatever your contracted provider issues (bearer key) | `EXTERNAL_PREVIEW_ENABLED=true`, `EXTERNAL_PREVIEW_BASE_URL`, `EXTERNAL_PREVIEW_API_KEY`, `EXTERNAL_PREVIEW_MEDIA_ORIGIN` | your provider | per contract; must cover streaming previews | **Test** (resolves one ISRC); enable the source, register preview rows (SQL above), play a song with an ISRC → the player shows "Licensed preview · <attribution>" |

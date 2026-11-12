@@ -1,6 +1,6 @@
 /* =====================================================================
    LOOP design system
-   Spotify-inspired charcoal surfaces with a clear LOOP green accent.
+   Charcoal listening surfaces with LOOP's own violet accent.
    Mood colours come from the database and appear only where a mood is shown.
    ===================================================================== */
 :root {
@@ -16,10 +16,10 @@
   --text: #ECE8DF;
   --text-2: #B9BCCB;
   --muted: #8C92A8;
-  --accent: #1ED760;
-  --accent-rgb: 30, 215, 96;
-  --accent-soft-strong: rgba(30, 215, 96, .24);
-  --accent-ink: #07140B;
+  --accent: #A78BFA;
+  --accent-rgb: 167, 139, 250;
+  --accent-soft-strong: rgba(167, 139, 250, .24);
+  --accent-ink: #140F20;
   --accent-soft: rgba(var(--accent-rgb), .14);
   --good: #7CC6A4;
   --warn: #E8B94F;

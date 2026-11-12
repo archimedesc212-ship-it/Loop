@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePlayer } from '../hooks/usePlayer';
 import { api } from '../services/api';
 import { getAccentTheme } from '../lib/theme';
+import { EMPTY_LYRICS, normalizeLyricsPayload } from '../lib/lyrics';
 import * as Icon from './Icons';
 import { Cover } from './Art';
 
@@ -125,7 +126,7 @@ export default function ImmersivePlayer({ open, onClose }) {
   const [artworkVisible, setArtworkVisible] = useState(true);
   const [visualizerEnabled, setVisualizerEnabled] = useState(true);
   const [annotationsVisible, setAnnotationsVisible] = useState(true);
-  const [lyricsData, setLyricsData] = useState({ lyric: null, lines: [], note: null, favourite: false });
+  const [lyricsData, setLyricsData] = useState(() => normalizeLyricsPayload(EMPTY_LYRICS));
   const [selectedLine, setSelectedLine] = useState(null);
   const [annotationText, setAnnotationText] = useState('');
   const [noteText, setNoteText] = useState('');
@@ -137,7 +138,7 @@ export default function ImmersivePlayer({ open, onClose }) {
   const activeLine = useMemo(() => {
     if (player.externalPlayback) return null;
     const ms = player.position * 1000;
-    const lines = lyricsData.lines || [];
+    const lines = Array.isArray(lyricsData?.lines) ? lyricsData.lines : [];
     let found = null;
     for (const line of lines) {
       if (line.startMs <= ms) found = line;
@@ -148,12 +149,19 @@ export default function ImmersivePlayer({ open, onClose }) {
 
   useEffect(() => {
     if (!open || !current?.id) return undefined;
+    if (!/^\d+$/.test(String(current.id))) {
+      setSelectedLine(null); setMessage(''); setLyricsData(normalizeLyricsPayload(EMPTY_LYRICS)); setNoteText('');
+      return undefined;
+    }
     let cancelled = false;
     setSelectedLine(null); setMessage('');
+    setLyricsData(normalizeLyricsPayload(EMPTY_LYRICS));
+    setNoteText('');
     api.lyrics(current.id).then((data) => {
       if (!cancelled) {
-        setLyricsData(data || { lyric: null, lines: [], note: null, favourite: false });
-        setNoteText(data?.note?.text || '');
+        const normalized = normalizeLyricsPayload(data);
+        setLyricsData(normalized);
+        setNoteText(normalized.note?.text || '');
       }
     }).catch((error) => {
       if (!cancelled) setMessage(error.message || 'Could not load saved lyrics.');
@@ -173,17 +181,17 @@ export default function ImmersivePlayer({ open, onClose }) {
   }, [open, onClose]);
 
   const addAnnotation = async () => {
-    if (!selectedLine || !annotationText.trim() || !current?.id) return;
+    if (!selectedLine || !annotationText.trim() || !current?.id || !canSaveSongData) return;
     setSaving(true);
     try {
       const result = await api.addLyricAnnotation(current.id, { lineId: selectedLine, text: annotationText.trim() });
-      setLyricsData((old) => ({ ...old, lines: old.lines.map((line) => line.id === selectedLine ? { ...line, annotations: [...(line.annotations || []), result] } : line) }));
+      setLyricsData((old) => ({ ...old, lines: (Array.isArray(old.lines) ? old.lines : []).map((line) => line.id === selectedLine ? { ...line, annotations: [...(line.annotations || []), result] } : line) }));
       setAnnotationText(''); setMessage('Annotation saved privately.');
     } catch (error) { setMessage(error.message || 'Could not save annotation.'); }
     finally { setSaving(false); }
   };
   const toggleFavourite = async () => {
-    if (!current?.id) return;
+    if (!current?.id || !canSaveSongData) return;
     setSaving(true);
     try {
       await api.like(current.id, !lyricsData.favourite);
@@ -193,7 +201,7 @@ export default function ImmersivePlayer({ open, onClose }) {
     finally { setSaving(false); }
   };
   const saveNote = async () => {
-    if (!current?.id) return;
+    if (!current?.id || !canSaveSongData) return;
     setSaving(true);
     try {
       const result = await api.saveSongNote(current.id, noteText);
@@ -209,11 +217,13 @@ export default function ImmersivePlayer({ open, onClose }) {
     } catch { setMessage('Fullscreen is not available in this browser.'); }
   };
   if (!open || !current) return null;
-  const selected = lyricsData.lines.find((line) => line.id === selectedLine);
+  const lyricLines = Array.isArray(lyricsData?.lines) ? lyricsData.lines : [];
+  const selected = lyricLines.find((line) => line.id === selectedLine);
   const external = player.externalPlayback;
+  const canSaveSongData = /^\d+$/.test(String(current?.id ?? ''));
   const youtubeSearchFallback = player.media?.type === 'YOUTUBE_SEARCH' && player.media?.watchUrl;
   return (
-    <section className={`loop-immersive-player${artworkVisible && artwork ? ' artwork-on' : ' visualizer-only'}${visualizerEnabled ? ' visualizer-enabled' : ''}`} role="dialog" aria-modal="true" aria-label="Immersive music player">
+    <section className={`loop-immersive-player${artworkVisible && artwork ? ' artwork-on' : ' visualizer-only'}${visualizerEnabled ? ' visualizer-enabled' : ''}${external && player.media?.embedUrl ? ' has-youtube' : ''}`} role="dialog" aria-modal="true" aria-label="Immersive music player">
       {artworkVisible && artwork && <div className="loop-immersive-art" style={{ backgroundImage: `url("${artwork}")` }} />}
       <div className="loop-immersive-shade" />
       <div className="loop-immersive-visualizer"><VisualizerCanvas audioElement={player.audioElement} active={player.status === 'playing'} enabled={visualizerEnabled} palette={palette} /></div>
@@ -242,10 +252,6 @@ export default function ImmersivePlayer({ open, onClose }) {
             </div>
           </div>
         </div>
-        {external && player.media?.embedUrl && <div className="loop-immersive-video">
-          <iframe title={`YouTube player: ${current.title}`} src={player.media.embedUrl} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" />
-          <a href={player.media.watchUrl} target="_blank" rel="noreferrer">Having trouble? Open this track on YouTube <Icon.Arrow /></a>
-        </div>}
         {youtubeSearchFallback && <div className="loop-immersive-video-fallback">
           <p>We couldn't find an embeddable upload for this track.</p>
           <a href={player.media.watchUrl} target="_blank" rel="noreferrer">Find and play it on YouTube <Icon.Arrow /></a>
@@ -265,7 +271,7 @@ export default function ImmersivePlayer({ open, onClose }) {
               <button className="icon-btn" onClick={player.setRepeat} aria-label="Toggle repeat" aria-pressed={player.repeat !== 'off'}>↻</button>
             </div>
             <div className="loop-immersive-toggles">
-              <button className={lyricsData.favourite ? 'active' : ''} onClick={toggleFavourite} aria-pressed={lyricsData.favourite}>{lyricsData.favourite ? '♥ Favourited' : '♡ Favourite'}</button>
+              <button className={lyricsData.favourite ? 'active' : ''} onClick={toggleFavourite} aria-pressed={lyricsData.favourite} disabled={!canSaveSongData} title={!canSaveSongData ? 'Favourites are available for LOOP catalogue songs' : undefined}>{lyricsData.favourite ? '♥ Favourited' : '♡ Favourite'}</button>
               <button className={artworkVisible ? 'active' : ''} onClick={() => setArtworkVisible((v) => !v)}>{artworkVisible ? 'Hide artwork' : 'Show artwork'}</button>
               <button className={visualizerEnabled ? 'active' : ''} onClick={() => setVisualizerEnabled((v) => !v)}>{visualizerEnabled ? 'Visualizer on' : 'Visualizer off'}</button>
               <button className={annotationsVisible ? 'active' : ''} onClick={() => setAnnotationsVisible((v) => !v)}>{annotationsVisible ? 'Hide lyrics' : 'Show lyrics'}</button>
@@ -274,19 +280,19 @@ export default function ImmersivePlayer({ open, onClose }) {
           {annotationsVisible && <aside className="loop-annotation-panel" aria-label="Lyrics and annotations">
             <div className="loop-annotation-heading"><span>LYRICS & YOUR ANNOTATIONS</span><span className="loop-annotation-dot" /></div>
             {lyricsData.lyric && <p className="loop-lyric-source">Lyrics: {lyricsData.lyric.sourceLabel} · {lyricsData.lyric.sourceType === 'LICENSED' ? 'licensed' : 'user provided'}</p>}
-            {lyricsData.lines.length ? <div className="loop-lyrics-list">
-              {lyricsData.lines.map((line) => <div key={line.id} className={`loop-lyric-line${activeLine === line.id ? ' active' : ''}${selectedLine === line.id ? ' selected' : ''}`}>
+            {lyricLines.length ? <div className="loop-lyrics-list">
+              {lyricLines.map((line) => <div key={line.id} className={`loop-lyric-line${activeLine === line.id ? ' active' : ''}${selectedLine === line.id ? ' selected' : ''}`}>
                 <button onClick={() => setSelectedLine(line.id)}>{line.text}</button>
-                {line.annotations?.map((annotation) => <div className="loop-lyric-annotation" key={annotation.id}><span>{annotation.text}</span>{annotation.mine && <button onClick={async () => { try { await api.deleteLyricAnnotation(annotation.id); setLyricsData((old) => ({ ...old, lines: old.lines.map((l) => l.id === line.id ? { ...l, annotations: l.annotations.filter((a) => a.id !== annotation.id) } : l) })); } catch (e) { setMessage(e.message); } }}>Delete</button>}</div>)}
+                {line.annotations?.map((annotation) => <div className="loop-lyric-annotation" key={annotation.id}><span>{annotation.text}</span>{annotation.mine && <button onClick={async () => { try { await api.deleteLyricAnnotation(annotation.id); setLyricsData((old) => ({ ...old, lines: (Array.isArray(old.lines) ? old.lines : []).map((l) => l.id === line.id ? { ...l, annotations: (l.annotations || []).filter((a) => a.id !== annotation.id) } : l) })); } catch (e) { setMessage(e.message); } }}>Delete</button>}</div>)}
               </div>)}
             </div> : <p className="loop-annotation-empty">No licensed or user-provided lyrics are saved for this song yet. LOOP will not invent lyrics.</p>}
-            {selected && <div className="loop-annotation-compose"><label htmlFor="loop-annotation-text">Add a private note to this lyric</label><textarea id="loop-annotation-text" value={annotationText} onChange={(e) => setAnnotationText(e.target.value)} maxLength={2000} placeholder="Meaning, context, slang, personal interpretation…" /><button disabled={saving || !annotationText.trim()} onClick={addAnnotation}>{saving ? 'Saving…' : 'Save annotation'}</button></div>}
-            <div className="loop-note-compose"><label htmlFor="loop-song-note">Your song note</label><textarea id="loop-song-note" value={noteText} onChange={(e) => setNoteText(e.target.value)} maxLength={5000} placeholder="Save what this song means to you…" /><button disabled={saving} onClick={saveNote}>{saving ? 'Saving…' : 'Save note'}</button></div>
+            {selected && canSaveSongData && <div className="loop-annotation-compose"><label htmlFor="loop-annotation-text">Add a private note to this lyric</label><textarea id="loop-annotation-text" value={annotationText} onChange={(e) => setAnnotationText(e.target.value)} maxLength={2000} placeholder="Meaning, context, slang, personal interpretation…" /><button disabled={saving || !annotationText.trim()} onClick={addAnnotation}>{saving ? 'Saving…' : 'Save annotation'}</button></div>}
+            <div className="loop-note-compose"><label htmlFor="loop-song-note">Your song note</label><textarea id="loop-song-note" value={noteText} onChange={(e) => setNoteText(e.target.value)} maxLength={5000} placeholder={canSaveSongData ? 'Save what this song means to you…' : 'Private notes are available for LOOP catalogue songs.'} disabled={!canSaveSongData} /><button disabled={saving || !canSaveSongData} onClick={saveNote}>{saving ? 'Saving…' : 'Save note'}</button></div>
             {message && <p className="loop-player-message" role="status">{message}</p>}
           </aside>}
         </div>
       </div>
-      {external && <p className="loop-immersive-provider-note">Playback is provided by the official YouTube embed. Browser security prevents LOOP from reading YouTube's audio samples or playback clock, so live visualization and synchronized lyric highlighting are unavailable for this source. Lyrics and your saved annotations remain available.</p>}
+      {external && <p className="loop-immersive-provider-note">YouTube playback stays in its official embedded player above. LOOP cannot extract its audio or read its playback clock, so seek and live visualization are controlled by YouTube.</p>}
     </section>
   );
 }

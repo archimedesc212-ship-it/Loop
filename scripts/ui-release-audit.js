@@ -12,15 +12,18 @@ const html = read('frontend/index.html');
 const css = read('frontend/src/styles/global.css');
 const layout = read('frontend/src/components/Layout.jsx');
 const main = read('frontend/src/main.jsx');
+const catalogBuilder = read('scripts/prepare-music-catalog.js');
+const demoAdapter = read('frontend/src/lib/demoMode.js');
 const src = path.join(root, 'frontend/src');
 
 check('Mobile viewport is configured', /name=["']viewport["']/.test(html));
-check('LOOP dark palette uses charcoal and green', /--bg:\s*#121212/i.test(css) && /--accent:\s*#1ED760/i.test(css));
+check('LOOP dark palette uses charcoal and its own violet accent', /--bg:\s*#121212/i.test(css) && /--accent:\s*#A78BFA/i.test(css) && !/#1ED760/i.test(css));
 check('Responsive breakpoints cover tablet and phone widths', /max-width:\s*900px/.test(css) && /max-width:\s*640px/.test(css));
 check('Reduced-motion preference is respected', /prefers-reduced-motion:\s*reduce/.test(css));
 check('Keyboard focus indicator exists', /:focus-visible/.test(css));
 check('Player has a visible official-provider fallback link', /Open in YouTube/.test(layout) && !/Open on Apple Music/.test(layout));
 check('Dark-theme stylesheet is loaded', /spotify-dark\.css/.test(main));
+check('Offline catalogue fallback never invents a placeholder track', /recordCount:\s*0/.test(catalogBuilder) && /records:\s*\[\]/.test(catalogBuilder) && /payload\.source\?\.fallback !== true/.test(demoAdapter));
 check('Layout contains a main landmark and skip link', /<main\b/.test(layout) && /skip-link/.test(layout));
 
 const files = [];

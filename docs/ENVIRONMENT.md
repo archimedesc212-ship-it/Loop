@@ -79,3 +79,17 @@ any change**. Invalid numeric values stop the API with a clear message.
 
 The current state of every provider (never the values) is shown at start-up, at
 `GET /api/ready` and in **Admin › Providers & media**. For Vercel-specific runtime behaviour, see [DEPLOYMENT_VERCEL.md](DEPLOYMENT_VERCEL.md).
+
+## Openverse (openly licensed audio discovery)
+
+Openverse is searched directly from the browser at `https://api.openverse.org/v1/audio/`; no API key or `.env` variable is required for anonymous access. The app requests a small first page only and links each result to its original source, creator and licence. Anonymous usage is rate-limited (the response headers report the applicable limits); avoid automated scraping or aggressive search loops. Openverse does not guarantee that licence metadata is accurate, so verify the original source and licence before using a track. LOOP does not download, cache, proxy, or re-host the audio.
+
+## Spotify (external hand-off only)
+
+LOOP currently offers an `Open in Spotify` link to Spotify's own search page. It does not call Spotify's Web API, display Spotify catalogue data, or stream Spotify audio, so no Spotify credential is used by this feature. Do not add `VITE_SPOTIFY_CLIENT_SECRET` or expose a Spotify secret in the browser. Spotify's Developer Policy prohibits products integrating Spotify streams/content with another service and products that mimic or replace Spotify's core experience without prior written permission. Spotify streaming is Premium-only; the Web Playback SDK also states that commercial use requires Spotify's prior written approval. LOOP is a multi-source music product, so a Spotify SDK integration is intentionally not enabled in this release. See [the Spotify policy](https://developer.spotify.com/policy) and [Web Playback SDK legal notes](https://developer.spotify.com/documentation/web-playback-sdk).
+
+## Jamendo (non-commercial independent music catalogue)
+
+Set `JAMENDO_ENABLED=true` and `JAMENDO_CLIENT_ID` from your Jamendo developer application. Keep it server-side. The API is limited to non-commercial use under Jamendo terms; per-track Creative Commons licences and attribution apply. No offline caching, download, proxying or re-hosting is implemented.
+
+The Jamendo read-only API is sufficient; no Jamendo user OAuth is needed for public track search/streaming. Its API terms currently state non-commercial use is free and define commercial use to include advertising, affiliation revenue and monetary compensation. Confirm the terms and individual track licence before public launch.

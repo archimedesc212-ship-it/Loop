@@ -31,7 +31,7 @@ export default function AuthPage({ mode = 'login' }) {
       }
       await refresh();
       toast.success(registering ? 'Your LOOP account is ready.' : 'Signed in to LOOP.');
-      navigate(location.state?.from || (registering ? '/artist/apply' : '/'), { replace: true });
+      navigate(location.state?.from || '/', { replace: true });
     } catch (error) { toast.error(error); } finally { setBusy(false); }
   };
 
@@ -40,9 +40,10 @@ export default function AuthPage({ mode = 'login' }) {
       <PageHead kicker="Your music space" title={registering ? 'Create your LOOP account' : 'Welcome back'} />
       {isDemoMode ? (
         <section className="panel stack">
-          <strong>Account access requires the connected API</strong>
-          <p className="small muted">This build is currently in browser demo mode. Set <code>VITE_DEMO_MODE=false</code> and configure the backend and database to create or access an account.</p>
-          <Link className="btn ghost" to="/">Return to LOOP</Link>
+          <strong>Keep listening as a guest, or enable LOOP accounts</strong>
+          <p className="small muted">This deployment is running in database-free mode. Guest listening, local favourites and playlists continue to work. Account sign-in and cross-device sync become available after connecting the LOOP API and database and setting <code>VITE_DEMO_MODE=false</code>.</p>
+          <p className="small muted">When accounts are enabled, creating an account from this device upgrades the current guest profile so its server-side preferences, likes and playlists stay with the new account.</p>
+          <Link className="btn primary" to="/">Continue as Guest</Link>
         </section>
       ) : (
         <form className="panel stack" onSubmit={submit}>
@@ -57,6 +58,8 @@ export default function AuthPage({ mode = 'login' }) {
           <p className="small muted">{registering ? 'Already have an account?' : 'New to LOOP?'}{' '}
             <Link className="link" to={registering ? '/login' : '/register'}>{registering ? 'Sign in' : 'Create an account'}</Link>
           </p>
+          {!registering && <p className="tiny muted">Want to keep this guest profile's preferences and playlists? Choose Create an account instead; signing in switches to your existing account.</p>}
+          <p className="small"><Link className="link" to="/">← Keep listening as a guest</Link></p>
           <p className="tiny muted">LOOP stores passwords as bcrypt hashes and uses secure, HTTP-only session cookies. Never share your password with anyone.</p>
         </form>
       )}

@@ -27,7 +27,7 @@ LOOP is being kept as a straightforward music discovery/listening application ra
 - Artist and admin areas appear only where the signed-in role allows them.
 - The Mana Universal Icon Kit supplied with the project is integrated through `frontend/src/components/mana/Icon.jsx` and `lucide-react`.
 - Icon components in `frontend/src/components/Icons.jsx` are compatibility aliases backed by Lucide so existing pages use the same icon system.
-- The default UI uses a Spotify-inspired charcoal layout, green accents, album artwork, horizontal music shelves and a persistent bottom player while retaining LOOP branding.
+- The default UI uses a Spotify-inspired charcoal layout, LOOP violet accents, album artwork, horizontal music shelves and a persistent bottom player while retaining LOOP branding.
 
 ## Kept out of the normal user flow
 

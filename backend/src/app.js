@@ -17,7 +17,8 @@ app.disable('x-powered-by');
 // clients cannot spoof their IP to dodge rate limits.
 app.set('trust proxy', trustProxy);
 
-const mediaSrc = ["'self'", 'blob:', 'https://audio-ssl.itunes.apple.com', 'https://audio.itunes.apple.com'];
+// Openverse returns original audio URLs hosted by many providers; permit HTTPS media only.
+const mediaSrc = ["'self'", 'blob:', 'https:', 'https://audio-ssl.itunes.apple.com', 'https://audio.itunes.apple.com', 'https://*.jamendo.com', 'https://*.jamendo.net'];
 const previewOrigin = externalPreview.mediaOrigin();
 if (previewOrigin) mediaSrc.push(previewOrigin);
 
@@ -28,8 +29,8 @@ app.use(helmet({
       scriptSrc: ["'self'", 'https://itunes.apple.com'],
       styleSrc: ["'self'", "'unsafe-inline'"],
       fontSrc: ["'self'", 'data:'],
-      imgSrc: ["'self'", 'data:', 'https://r2.theaudiodb.com', 'https://www.theaudiodb.com', 'https://is1-ssl.mzstatic.com', 'https://is2-ssl.mzstatic.com', 'https://is3-ssl.mzstatic.com', 'https://is4-ssl.mzstatic.com', 'https://*.mzstatic.com', 'https://i.ytimg.com', 'https://coverartarchive.org', 'https://*.archive.org'],
-      connectSrc: ["'self'"],
+      imgSrc: ["'self'", 'data:', 'https://r2.theaudiodb.com', 'https://www.theaudiodb.com', 'https://is1-ssl.mzstatic.com', 'https://is2-ssl.mzstatic.com', 'https://is3-ssl.mzstatic.com', 'https://is4-ssl.mzstatic.com', 'https://*.mzstatic.com', 'https://i.ytimg.com', 'https://coverartarchive.org', 'https://*.archive.org', 'https://usercontent.jamendo.com', 'https://api.openverse.org'],
+      connectSrc: ["'self'", 'https://api.openverse.org', 'https://www.googleapis.com'],
       mediaSrc,
       frameSrc: ["'self'", 'https://embed.music.apple.com', 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
       frameAncestors: ["'none'"],

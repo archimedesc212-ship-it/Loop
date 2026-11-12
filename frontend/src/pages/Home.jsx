@@ -48,15 +48,24 @@ export default function Home() {
   const featuredVideo = featuredVideos[featuredIndex] || null;
   useEffect(() => {
     let active = true;
-    api.youtubeSearch('global music hits official music video', 8)
-      .catch(() => searchYouTubeBrowser('global music hits official music video', 8).then((videos) => ({ videos })))
-      .then((result) => {
-        if (!active) return;
-        const videos = (result?.videos || []).filter((video) => video.thumbnailUrl && video.externalId);
-        if (videos.length) { setFeaturedVideos(videos); setFeaturedIndex(0); }
-      })
-      .catch(() => {})
-      .finally(() => { if (active) setFeaturedLoading(false); });
+    const query = 'global music hits official music video';
+    const loadSpotlight = async () => {
+      let videos = [];
+      try {
+        const result = await api.youtubeSearch(query, 8);
+        videos = Array.isArray(result?.videos) ? result.videos : [];
+      } catch { /* use the key saved in Settings for a browser-side search */ }
+      // A deployed API may be online but have no YouTube key configured. In
+      // that case the Settings key is the source of truth for the Home banners.
+      if (!videos.length) {
+        try { videos = await searchYouTubeBrowser(query, 8); } catch { videos = []; }
+      }
+      if (!active) return;
+      const usable = (Array.isArray(videos) ? videos : []).filter((video) => video?.thumbnailUrl && video?.externalId && video?.embedUrl && video.embeddable !== false);
+      if (usable.length) { setFeaturedVideos(usable); setFeaturedIndex(0); }
+      setFeaturedLoading(false);
+    };
+    loadSpotlight().catch(() => { if (active) setFeaturedLoading(false); });
     return () => { active = false; };
   }, []);
   useEffect(() => {
@@ -64,17 +73,18 @@ export default function Home() {
     const timer = window.setInterval(() => setFeaturedIndex((index) => (index + 1) % featuredVideos.length), 8500);
     return () => window.clearInterval(timer);
   }, [featuredVideos.length]);
-  const playFeatured = () => {
-    if (!featuredVideo) return;
+  const playFeatured = (requestedVideo = featuredVideo) => {
+    if (!requestedVideo) return;
     const queue = featuredVideos.map((video) => ({
       id: `yt-${video.externalId}`, title: video.title, artist: { name: video.channel || 'YouTube' },
       album: { title: 'Featured videos' }, durationSec: video.durationSec || 0, artworkUrl: video.thumbnailUrl,
       cover: ['#263d38', '#1a2228'], playback: { playable: true, type: 'YOUTUBE_EMBED' },
       youtube: { embedUrl: video.embedUrl, watchUrl: video.sourceUrl },
     }));
-    const song = queue[featuredIndex];
+    const index = featuredVideos.findIndex((video) => video.externalId === requestedVideo.externalId);
+    const song = index >= 0 ? queue[index] : null;
     if (song?.youtube?.embedUrl) player.play(song, { queue, origin: 'WORLD' });
-    else navigate(`/search?q=${encodeURIComponent(featuredVideo.title)}`);
+    else navigate(`/search?q=${encodeURIComponent(requestedVideo.title)}`);
   };
   const hour = new Date().getHours();
   const greeting = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -103,13 +113,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="online-feature-banner" aria-label="Featured music from YouTube">
+      <section className="online-feature-banner" aria-label="Worldwide featured music">
         {featuredVideo?.thumbnailUrl && <img className="online-feature-image" src={featuredVideo.thumbnailUrl} alt="" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" />}
         <div className="online-feature-shade" />
         <div className="online-feature-content">
-          <span className="online-feature-kicker">{featuredLoading ? 'DISCOVERING MUSIC' : 'FEATURED FROM AROUND THE WEB'}</span>
+          <span className="online-feature-kicker">{featuredLoading ? 'DISCOVERING WORLDWIDE MUSIC' : 'WORLD MUSIC SPOTLIGHT'}</span>
           <h2>{featuredVideo?.title || 'Discover your next favourite song'}</h2>
-          <p>{featuredVideo?.channel ? `Featured video from ${featuredVideo.channel}` : 'Explore new sounds, artists and music from around the world.'}</p>
+          <p>{featuredVideo?.channel ? `Now featuring ${featuredVideo.channel}. This banner uses the matching YouTube thumbnail and opens the official player inside LOOP.` : 'Explore new sounds, artists and music from around the world.'}</p>
           <div className="row wrap">
             {featuredVideo && <button className="btn primary" type="button" onClick={playFeatured}><Play />Play featured</button>}
             <Link className="btn ghost" to={featuredVideo ? `/search?q=${encodeURIComponent(featuredVideo.title)}` : '/search?q=global%20music'}>Explore this sound</Link>
@@ -120,9 +130,19 @@ export default function Home() {
             <div className="featured-dots" role="group" aria-label="Choose featured video">{featuredVideos.map((video, index) => <button key={video.externalId} type="button" className={index === featuredIndex ? 'active' : ''} onClick={() => setFeaturedIndex(index)} aria-label={`Show featured item ${index + 1}`} aria-pressed={index === featuredIndex} />)}</div>
             <button className="icon-btn" type="button" onClick={() => setFeaturedIndex((index) => (index + 1) % featuredVideos.length)} aria-label="Next featured video"><Next /></button>
           </div>}
-          <small className="online-feature-note">Featured video details and thumbnails are supplied by YouTube. Playback uses its official embedded player.</small>
+          <small className="online-feature-note">Each spotlight rotates to a different song-related YouTube thumbnail. Playback stays in YouTube’s official embedded player.</small>
         </div>
       </section>
+
+      {featuredVideos.length > 0 && <section className="section world-video-section" aria-label="Worldwide music recommendations">
+        <div className="section-head"><div><h2 className="section-title">Worldwide music picks</h2><p className="small muted">Music videos and official uploads discovered from YouTube’s music category.</p></div><Link className="small link" to="/search?q=global%20music%20hits">Explore worldwide</Link></div>
+        <div className="world-video-grid">{featuredVideos.slice(0, 6).map((video) => <article className="world-video-card" key={video.externalId}>
+          <button className="world-video-art" type="button" onClick={() => playFeatured(video)} aria-label={`Play ${video.title}`}>
+            <img src={video.thumbnailUrl} alt="" loading="lazy" referrerPolicy="strict-origin-when-cross-origin" /><span><Play /></span>
+          </button>
+          <strong title={video.title}>{video.title}</strong><small>{video.channel || 'YouTube'}</small>
+        </article>)}</div>
+      </section>}
 
       <div className="home-section-intro"><span className="home-eyebrow">CURATED FOR YOUR DAY</span><h2>Made to match your mood</h2><p>Your mixes, recent favourites and sounds worth discovering.</p></div>
       <Shelf title="Made for you" sub="A daily mix based on your listening and mood preferences." to="/mix/daily" state={daily} />
@@ -133,11 +153,14 @@ export default function Home() {
       <Shelf title="Tamil hits" sub="A starter collection of Tamil film and independent music." to="/search?q=Tamil" state={tamil} />
 
       <section className="section">
-        <div className="section-head"><div><h2 className="section-title">Explore music worldwide</h2><p className="small muted">Discover Telugu, Hindi, Tamil and global music from the collections available in LOOP.</p></div><Link to="/search" className="small link">Open global search</Link></div>
+        <div className="section-head"><div><h2 className="section-title">Explore music worldwide</h2><p className="small muted">Explore music across South Asia, East Asia, Africa, Europe, the Middle East and the Americas. Choose a region or sound to search worldwide.</p></div><Link to="/search" className="small link">Open global search</Link></div>
         <div className="world-discovery-grid">
           {[
-            ['Bollywood', 'Bollywood hits'], ['K-pop', 'K-pop'], ['Afrobeats', 'Afrobeats'], ['Latin pop', 'Latin pop'],
-            ['Arabic', 'Arabic pop'], ['J-pop', 'Japanese pop'], ['Global hits', 'global hits'], ['Rock classics', 'classic rock'],
+            ['Global Top Hits', 'global top hits official music'], ['Bollywood', 'Bollywood latest hits'], ['Telugu', 'Telugu latest hit songs'], ['Hindi', 'Hindi pop hits'],
+            ['Tamil', 'Tamil hit songs'], ['Punjabi', 'Punjabi pop hits'], ['K-pop', 'K-pop global hits'], ['J-pop', 'Japanese pop hits'],
+            ['Afrobeats', 'Afrobeats global hits'], ['Amapiano', 'Amapiano hits'], ['Latin Pop', 'Latin pop hits'], ['Reggaeton', 'reggaeton hits'],
+            ['Arabic Pop', 'Arabic pop hits'], ['Turkish Pop', 'Turkish pop hits'], ['French Pop', 'French pop hits'], ['Brazilian', 'Brazilian funk hits'],
+            ['Indonesian', 'Indonesian pop hits'], ['Thai Pop', 'Thai pop hits'], ['Rock', 'global rock hits'], ['Electronic', 'electronic dance hits'],
           ].map(([label, query]) => <Link key={label} className="world-discovery-tile" to={`/search?q=${encodeURIComponent(query)}`}>{label}<Arrow /></Link>)}
         </div>
       </section>

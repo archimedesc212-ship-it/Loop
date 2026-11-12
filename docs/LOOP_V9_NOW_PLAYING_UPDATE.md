@@ -6,7 +6,7 @@
 - Kept YouTube playback on the official iframe; no audio extraction or proxying.
 
 ## Vercel
-Keep `VITE_DEMO_MODE=true`. For the browser-side YouTube search fallback, configure `VITE_YOUTUBE_API_KEY` at build time, restricted in Google Cloud to YouTube Data API v3 and the deployed site's HTTP referrers. Redeploy after changing environment variables.
+Keep `VITE_DEMO_MODE=true`. For the browser-side YouTube search fallback, open **Settings → Music sources**, paste the public YouTube Data API v3 key, save and test it. No build-time `VITE_` variable or redeploy is required. Restrict the key in Google Cloud to YouTube Data API v3 and the deployed site's HTTP referrers.
 
 ## Validation
 - 28 plain JavaScript files passed `node --check`.

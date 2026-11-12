@@ -3,6 +3,7 @@
 const musicbrainz = require('./musicbrainz');
 const tmdb = require('./tmdb');
 const youtube = require('./youtube');
+const jamendo = require('./jamendo');
 const externalPreview = require('./externalPreview');
 const theAudioDb = require('./theAudioDb');
 const localMedia = require('./localMedia');
@@ -15,6 +16,9 @@ const PROVIDERS = [
   { adapter: tmdb, name: 'TMDB', purpose: 'Film metadata for soundtrack albums', kind: 'METADATA',
     env: ['TMDB_ENABLED', 'TMDB_READ_ACCESS_TOKEN or TMDB_API_KEY'], credential: 'API Read Access Token (v4) or API key (v3)',
     signup: 'https://www.themoviedb.org/settings/api', terms: `Free for non-commercial use with attribution (commercial use needs a TMDB licence). Notice: "${tmdb.ATTRIBUTION}" plus an approved TMDB logo in About/Credits. Images are not stored by MUSE.` },
+  { adapter: jamendo, name: 'Jamendo', purpose: 'Non-commercial independent music discovery and direct catalogue streaming', kind: 'PLAYBACK',
+    env: ['JAMENDO_ENABLED', 'JAMENDO_CLIENT_ID'], credential: 'Jamendo developer application Client ID',
+    signup: 'https://devportal.jamendo.com/', terms: 'Non-commercial API use only; respect each track’s Creative Commons licence and attribution. No offline caching or re-hosting. Commercial use requires a separate licence.' },
   { adapter: youtube, name: 'YouTube Data API v3', purpose: 'Search embeddable videos and play through the official YouTube iframe player', kind: 'VIDEO_METADATA',
     env: ['YOUTUBE_ENABLED', 'YOUTUBE_API_KEY'], credential: 'Google Cloud API key with YouTube Data API v3 enabled',
     signup: 'https://console.cloud.google.com/apis/library/youtube.googleapis.com', terms: 'YouTube API Services Terms; default search quota is limited; playback uses the official embedded player only. Never download, extract, proxy or re-host audio.' },
@@ -36,4 +40,4 @@ function status() {
     signup: p.signup, terms: p.terms, ...p.adapter.check() }));
 }
 
-module.exports = { status, musicbrainz, tmdb, youtube, externalPreview, theAudioDb, localMedia, ai };
+module.exports = { status, musicbrainz, tmdb, youtube, jamendo, externalPreview, theAudioDb, localMedia, ai };

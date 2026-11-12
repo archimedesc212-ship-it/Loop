@@ -82,7 +82,7 @@ export default function MoodRatings({ songId, privateSession = false }) {
   if (!data) return null;
 
   const paused = privateSession || data.privateSession;
-  const moods = data.moods;
+  const moods = Array.isArray(data.moods) ? data.moods : [];
   const shown = showAll ? moods : moods.filter((m) => relevant(m) || drafts[m.id] !== undefined);
   const list = shown.length ? shown : moods;
   const pending = Object.entries(drafts)

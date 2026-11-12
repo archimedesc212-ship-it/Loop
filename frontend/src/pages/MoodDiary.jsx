@@ -25,7 +25,8 @@ export default function MoodDiary() {
   const todayKey = diaryDateKey();
   const calendarDays = moodCalendarDays(calendarMonth.getFullYear(), calendarMonth.getMonth(), activity.data?.daily || []);
   const monthLabel = calendarMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-  const todayEntry = (entries.data || []).find((entry) => entry.checkinDate === todayKey) || null;
+  const entryRows = Array.isArray(entries.data) ? entries.data : [];
+  const todayEntry = entryRows.find((entry) => entry?.checkinDate === todayKey) || null;
 
   useEffect(() => {
     setMoodId(todayEntry?.moodId ? String(todayEntry.moodId) : '');
